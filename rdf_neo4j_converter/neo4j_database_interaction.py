@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 
+
 # The SematicGraphDB class is used to interact with a Neo4j database.
 # It provides methods to create nodes, relationships, and execute arbitrary Cypher queries.
 class SemanticGraphDB:
@@ -35,11 +36,9 @@ class SemanticGraphDB:
     # Create a node and a relationship between it and another node.
     def create_node_and_relationship(self, node1_label, node1_properties, relationship_type, node2_label,
                                      node2_properties):
-
         with self._driver.session() as session:
             session.execute_write(self._create_node_rel, node1_label, node1_properties, relationship_type, node2_label,
                                   node2_properties)
-
 
     # Helper method to create a node and a relationship.
     @staticmethod
@@ -50,5 +49,3 @@ class SemanticGraphDB:
             f"(b:{node2_label} {{properties2}})"
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
-
-
