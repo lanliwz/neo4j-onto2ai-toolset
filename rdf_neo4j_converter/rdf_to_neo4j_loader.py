@@ -1,9 +1,9 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
-from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-from rdflib import Graph
 import os
 
-from rdflib.namespace import RDF, RDFS, OWL, SKOS, DC, DCTERMS
+from rdflib import Graph
+from rdflib.namespace import RDFS, OWL, SKOS, DC
+from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 
 # AnnotationProperty
 # OWL.AnnotationProperty
@@ -44,7 +44,6 @@ PROPERTY_AXIOMS = {
 INDIVIDUAL_AXIOMS = {
     OWL.NamedIndividual
 }
-
 
 # set the configuration to connect to your Aura DB
 url = os.getenv("Neo4jFinDBUrl")
@@ -117,20 +116,24 @@ config = Neo4jStoreConfig(auth_data=auth_data,
                           handle_vocab_uri_strategy=HANDLE_VOCAB_URI_STRATEGY.SHORTEN,
                           batching=True)
 already_loaded = set()
-def load_ontology(graph:Graph, uri, format):
+
+
+def load_ontology(graph: Graph, uri, format):
     """
     Recursively load an ontology and all its imports into a graph.
-    :param graph: An rdflib.Graph instance.
+    :param format:
+    :param graph: A rdflib.Graph instance.
     :param uri: URI of the ontology to load.
     """
     if uri not in already_loaded:
         print(f"Loading: {uri}")
-        graph.parse(uri,format=format)
+        graph.parse(uri, format=format)
         already_loaded.add(uri)
 
         # Find all import statements in the currently loaded ontology.
         for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
             load_ontology(graph, imported_uri, format)
+
 
 # file_path = 'https://github.com/jbarrasa/gc-2022/raw/main/search/onto/concept-scheme-skos.ttl'
 # format="ttl"
@@ -142,14 +145,14 @@ def load_ontology(graph:Graph, uri, format):
 file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
 # file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/'
 # file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
-format="application/rdf+xml"
+format = "application/rdf+xml"
 
 # Create the RDF Graph, parse & ingest the data to Neo4j, and close the store(If the field batching is set to True in the Neo4jStoreConfig, remember to close the store to prevent the loss of any uncommitted records.)
 neo4j_aura = Graph(store=Neo4jStore(config=config))
 # Calling the parse method will implictly open the store
 # neo4j_aura.parse(file_path, format=format)
 g = Graph()
-load_ontology(g,file_path,format)
+load_ontology(g, file_path, format)
 
 for url in already_loaded:
     neo4j_aura.parse(url, format=format)
