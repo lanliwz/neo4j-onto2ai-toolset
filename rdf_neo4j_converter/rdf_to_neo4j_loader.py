@@ -109,7 +109,8 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'sm': 'http://www.omg.org/techprocess/ab/SpecificationMetadata/',
             'lcc-lr': 'https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/',
             'cmns-cxtid': 'https://www.omg.org/spec/Commons/ContextualIdentifiers/',
-            'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/'}
+            'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/',
+            'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/'}
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
                           custom_prefixes=prefixes,
@@ -127,7 +128,7 @@ def load_ontology(graph:Graph, uri, format):
         graph.parse(uri,format=format)
         already_loaded.add(uri)
 
-        # Find all import statements in the currently loaded ontology
+        # Find all import statements in the currently loaded ontology.
         for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
             load_ontology(graph, imported_uri, format)
 
@@ -137,7 +138,8 @@ def load_ontology(graph:Graph, uri, format):
 # file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/ClientsAndAccounts.rdf'
 # file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/CodesAndCodeSets.rdf'
 # file_path = 'https://www.omg.org/spec/Commons/Designators/'
-file_path =  'https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/'
+# file_path =  'https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/'
+file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
 # file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/'
 # file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
 format="application/rdf+xml"
