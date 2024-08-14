@@ -1,8 +1,8 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 import os
 
-from rdflib import Graph
-from rdflib.namespace import RDFS, OWL, SKOS, DC
+from rdflib import Graph,URIRef
+from rdflib.namespace import RDFS, OWL, SKOS, DC, RDF
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 
 # AnnotationProperty
@@ -156,5 +156,32 @@ load_ontology(g, file_path, format)
 
 for url in already_loaded:
     neo4j_aura.parse(url, format=format)
+
+from rdflib.plugins.sparql import prepareQuery
+
+# load individuals
+query_str = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    SELECT ?individual ?type
+    WHERE {
+        ?individual a ?type ;
+            a owl:NamedIndividual .
+        FILTER (?type != owl:NamedIndividual)    
+    }
+"""
+
+# Prepare the query
+query = prepareQuery(query_str, initNs=dict(g.namespaces()))
+
+# Execute the query and retrieve results
+results = g.query(query)
+
+# Iterate over results and print named individuals and their types
+for row in results:
+    individual = row.individual
+    type_class = row.type
+    neo4j_aura.add((individual, RDF.type, type_class))
+    print(f"Individual: {individual}, Type: {type_class}")
+
 
 neo4j_aura.close(True)
