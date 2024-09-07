@@ -55,39 +55,63 @@ class SemanticGraphDB:
 url = os.getenv("Neo4jFinDBUrl")
 username = os.getenv("Neo4jFinDBUserName")
 password = os.getenv("Neo4jFinDBPassword")
-database = 'neo4j'
+database = 'rdfmodel1'
 
 db = SemanticGraphDB(url,username,password,database)
 
 allValuesFrom = '''
 //Create REL allValuesFrom
-match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
-WITH n,res,onp 
-match (res)-[some:owl__allValuesFrom]->(des:owl__Class)
-with n,onp,des
+MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
+WITH n,res,onp,sub 
+MATCH (res)-[some:owl__allValuesFrom]->(des:owl__Class)
+WITH n,onp,des,sub,some,res
 CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
 YIELD rel
 SET rel.restriction_type='allValuesFrom'
-return n,onp,des
+WITH sub,some
+DELETE some
 '''
 
+someValueFrom = '''
+//Create REL someValuesFrom
+match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
+WITH n,res,onp 
+match (res)-[some:owl__someValuesFrom]->(des:owl__Class)
+with n,onp,des,some
+CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
+YIELD rel
+SET rel.restriction_type='someValuesFrom'
+DELETE some
+'''
+
+domain_range = '''
+//CREATE REL domain-range 
+match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 
+WITH n,op,c,d,r
+CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
+YIELD rel
+DELETE d,r
+'''
 domain_onProperty = '''
 //CREATE REL domain-onProperty Restriction 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
-WITH n,op,res
+WITH n,op,res,d
 MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
 CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), des)
 YIELD rel
-return n,rel,des
+DELETE d
 '''
+
 range_onProperty = '''
-//CREATE REL domain-range 
-match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 
-WITH n,op,c
-CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
+//CREATE REL range-onProperty Restriction 
+match (n:owl__Class)<-[d:rdfs__range]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
+WITH n,op,res,d
+MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
 YIELD rel
-return n,op,c
+DELETE d
 '''
+
 oneOf = '''
 //Create REL oneOf
 MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
@@ -96,25 +120,14 @@ MATCH ()-[:rdf__first]->(object)
 WITH cls,o1f,object,eq,mc
 CALL apoc.create.relationship(cls, 'oneOf', null,object)
 YIELD rel
-DELETE eq,mc,o1f
+DELETE o1f
 '''
-someValueFrom = '''
-//Create REL someValuesFrom
-match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
-WITH n,res,onp 
-match (res)-[some:owl__someValuesFrom]->(des:owl__Class)
-with n,onp,des
-CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
-YIELD rel
-SET rel.restriction_type='someValuesFrom'
-return n,onp,des;
-'''
-delete_someValueFrom = '''
-//DEL REL someValuesFrom
-match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
-WITH sub, n,res,onp 
-match (res)-[some:owl__someValuesFrom]->(des:owl__Class)
-DELETE sub,some;
-'''
-db.execute_cypher(delete_someValueFrom)
+
+
+db.execute_cypher(allValuesFrom)
+db.execute_cypher(someValueFrom)
+db.execute_cypher(domain_range)
+db.execute_cypher(domain_onProperty)
+db.execute_cypher(range_onProperty)
+db.execute_cypher(oneOf)
 db.close()

@@ -51,10 +51,7 @@ username = os.getenv("Neo4jFinDBUserName")
 password = os.getenv("Neo4jFinDBPassword")
 database = os.getenv("Neo4jFinDBName")
 
-auth_data = {'uri': url,
-             'database': "neo4j",
-             'user': username,
-             'pwd': password}
+
 prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
             'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
@@ -111,6 +108,11 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/',
             'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/'}
 # Define your custom mappings & store config
+auth_data = {'uri': url,
+             'database': "rdfmodel1",
+             'user': username,
+             'pwd': password}
+
 config = Neo4jStoreConfig(auth_data=auth_data,
                           custom_prefixes=prefixes,
                           handle_vocab_uri_strategy=HANDLE_VOCAB_URI_STRATEGY.SHORTEN,
@@ -142,9 +144,9 @@ def load_ontology(graph: Graph, uri, format):
 # file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/CodesAndCodeSets.rdf'
 # file_path = 'https://www.omg.org/spec/Commons/Designators/'
 # file_path =  'https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/'
-file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
+# file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
 # file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
+file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
 format = "application/rdf+xml"
 
 # Create the RDF Graph, parse & ingest the data to Neo4j, and close the store(If the field batching is set to True in the Neo4jStoreConfig, remember to close the store to prevent the loss of any uncommitted records.)
