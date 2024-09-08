@@ -1,5 +1,3 @@
-import os
-
 from neo4j import GraphDatabase
 
 
@@ -52,12 +50,9 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
-url = os.getenv("Neo4jFinDBUrl")
-username = os.getenv("Neo4jFinDBUserName")
-password = os.getenv("Neo4jFinDBPassword")
-database = 'rdfmodel1'
 
-db = SemanticGraphDB(url,username,password,database)
+
+
 
 allValuesFrom = '''
 //Create REL allValuesFrom
@@ -122,12 +117,11 @@ CALL apoc.create.relationship(cls, 'oneOf', null,object)
 YIELD rel
 DELETE o1f
 '''
-
-
-db.execute_cypher(allValuesFrom)
-db.execute_cypher(someValueFrom)
-db.execute_cypher(domain_range)
-db.execute_cypher(domain_onProperty)
-db.execute_cypher(range_onProperty)
-db.execute_cypher(oneOf)
-db.close()
+# delete duplicated hasFactor
+del_dup_rels = '''
+MATCH (n)-[r]->(m)
+WITH n,m,COUNT(r) AS relCount,COLLECT(r) as rels
+WHERE relCount > 1
+WITH n,m,rels
+FOREACH (r IN rels[1..] | DELETE r)
+'''

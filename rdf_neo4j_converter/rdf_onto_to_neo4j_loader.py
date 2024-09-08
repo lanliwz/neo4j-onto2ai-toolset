@@ -5,6 +5,10 @@ from rdflib import Graph,URIRef
 from rdflib.namespace import RDFS, OWL, SKOS, DC, RDF
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 
+from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, domain_onProperty, range_onProperty, \
+    domain_range, SemanticGraphDB, del_dup_rels
+
+from neo4j_db import auth_data,neo4j_bolt_url,username,password,neo4j_db_name
 # AnnotationProperty
 # OWL.AnnotationProperty
 
@@ -46,10 +50,6 @@ INDIVIDUAL_AXIOMS = {
 }
 
 # set the configuration to connect to your Aura DB
-url = os.getenv("Neo4jFinDBUrl")
-username = os.getenv("Neo4jFinDBUserName")
-password = os.getenv("Neo4jFinDBPassword")
-database = os.getenv("Neo4jFinDBName")
 
 
 prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
@@ -108,10 +108,7 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/',
             'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/'}
 # Define your custom mappings & store config
-auth_data = {'uri': url,
-             'database': "rdfmodel1",
-             'user': username,
-             'pwd': password}
+
 
 config = Neo4jStoreConfig(auth_data=auth_data,
                           custom_prefixes=prefixes,
@@ -187,3 +184,16 @@ for row in results:
 
 
 neo4j_aura.close(True)
+
+db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
+
+db.execute_cypher(allValuesFrom)
+db.execute_cypher(someValueFrom)
+db.execute_cypher(domain_range)
+db.execute_cypher(domain_onProperty)
+db.execute_cypher(range_onProperty)
+db.execute_cypher(oneOf)
+
+# clean up duplicated edge
+db.execute_cypher(del_dup_rels)
+db.close()
