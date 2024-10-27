@@ -146,5 +146,6 @@ remove n:Resource
 '''
 # remove Resource label for owl__Class
 rm_redounded_label='''
-match (n:owl__Class|owl__ObjectProperty|owl__DataProperty) remove n:Resource
+match (n:owl__Class|owl__ObjectProperty|owl__DatatypeProperty|owl__AnnotationProperty|owl__FunctionalProperty|owl__TransitiveProperty)
+remove n:Resource
 '''
