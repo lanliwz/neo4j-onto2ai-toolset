@@ -9,6 +9,8 @@ from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, doma
     domain_range, SemanticGraphDB, del_dup_rels
 
 from neo4j_db import auth_data,neo4j_bolt_url,username,password,neo4j_db_name
+from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes
+
 # AnnotationProperty
 # OWL.AnnotationProperty
 
@@ -159,7 +161,7 @@ for url in already_loaded:
 from rdflib.plugins.sparql import prepareQuery
 
 # load individuals
-query_str = """
+query4individuals = """
     PREFIX owl: <http://www.w3.org/2002/07/owl#>
     SELECT ?individual ?type
     WHERE {
@@ -170,7 +172,7 @@ query_str = """
 """
 
 # Prepare the query
-query = prepareQuery(query_str, initNs=dict(g.namespaces()))
+query = prepareQuery(query4individuals, initNs=dict(g.namespaces()))
 
 # Execute the query and retrieve results
 results = g.query(query)
@@ -182,6 +184,31 @@ for row in results:
     neo4j_aura.add((individual, RDF.type, type_class))
     print(f"Individual: {individual}, Type: {type_class}")
 
+query4dataprop = """
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    SELECT DISTINCT ?clz ?property ?datatype
+    WHERE {
+      ?property rdfs:domain ?clz .
+      ?property rdfs:range ?datatype .
+      FILTER(STRSTARTS(STR(?datatype), STR(xsd:)))
+    }
+"""
+
+# Prepare the query
+query = prepareQuery(query4dataprop, initNs=dict(g.namespaces()))
+
+# Execute the query and retrieve results
+results = g.query(query)
+
+# Iterate over results and print named individuals and their types
+for row in results:
+    clz = row.clz
+    type_class = row.datatype
+    prop = row.property
+    neo4j_aura.add((clz, prop, type_class))
+    print(f"subj: {clz}, pred: {prop}, Type: {type_class}")
 
 neo4j_aura.close(True)
 
@@ -193,7 +220,9 @@ db.execute_cypher(domain_range)
 db.execute_cypher(domain_onProperty)
 db.execute_cypher(range_onProperty)
 db.execute_cypher(oneOf)
+db.execute_cypher(xsd_datatypes)
 
 # clean up duplicated edge
 db.execute_cypher(del_dup_rels)
 db.close()
+

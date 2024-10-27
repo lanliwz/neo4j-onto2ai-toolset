@@ -85,6 +85,7 @@ match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]-
 WITH n,op,c,d,r
 CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
 YIELD rel
+SET rel.objectproperty_type='domain_range'
 DELETE d,r
 '''
 domain_onProperty = '''
@@ -92,8 +93,10 @@ domain_onProperty = '''
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
 WITH n,op,res,d
 MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+WHERE n <> des
 CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), des)
 YIELD rel
+SET rel.objectproperty_type='domain'
 DELETE d
 '''
 
@@ -102,8 +105,10 @@ range_onProperty = '''
 match (n:owl__Class)<-[d:rdfs__range]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
 WITH n,op,res,d
 MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+WHERE n <> des
 CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
 YIELD rel
+SET rel.objectproperty_type='range'
 DELETE d
 '''
 
@@ -124,4 +129,17 @@ WITH n,m,COUNT(r) AS relCount,COLLECT(r) as rels
 WHERE relCount > 1
 WITH n,m,rels
 FOREACH (r IN rels[1..] | DELETE r)
+'''
+# convert xsd datatypes
+xsd_datatypes = '''
+MATCH (n:Resource)
+WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
+WITH n, substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
+CALL {
+    WITH n, extractedString
+    CALL apoc.create.addLabels(n, ['xsd_'+extractedString]) YIELD node
+    RETURN node
+}
+with n
+remove n:Resource
 '''
