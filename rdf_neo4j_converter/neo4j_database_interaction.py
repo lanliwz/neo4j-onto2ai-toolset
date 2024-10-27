@@ -62,7 +62,7 @@ MATCH (res)-[some:owl__allValuesFrom]->(des:owl__Class)
 WITH n,onp,des,sub,some,res
 CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
 YIELD rel
-SET rel.restriction_type='allValuesFrom'
+SET rel.inferred_by='allValuesFrom',rel.property_type='owl__ObjectProperty'
 WITH sub,some
 DELETE some
 '''
@@ -75,7 +75,7 @@ match (res)-[some:owl__someValuesFrom]->(des:owl__Class)
 with n,onp,des,some
 CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
 YIELD rel
-SET rel.restriction_type='someValuesFrom'
+SET rel.inferred_by='someValuesFrom',rel.property_type='owl__ObjectProperty'
 DELETE some
 '''
 
@@ -85,7 +85,7 @@ match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]-
 WITH n,op,c,d,r
 CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
 YIELD rel
-SET rel.objectproperty_type='domain_range'
+SET rel.property_type='owl__ObjectProperty', rel.inferred_by='domain-range'
 DELETE d,r
 '''
 domain_onProperty = '''
@@ -96,7 +96,7 @@ MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
 CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), des)
 YIELD rel
-SET rel.objectproperty_type='domain'
+SET rel.property_type='owl__ObjectProperty',rel.inferred_by='domain'
 DELETE d
 '''
 
@@ -108,7 +108,7 @@ MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
 CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
 YIELD rel
-SET rel.objectproperty_type='range'
+SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
 
@@ -120,6 +120,7 @@ MATCH ()-[:rdf__first]->(object)
 WITH cls,o1f,object,eq,mc
 CALL apoc.create.relationship(cls, 'oneOf', null,object)
 YIELD rel
+SET rel.inferred_by='oneOf'
 DELETE o1f
 '''
 # delete duplicated hasFactor
