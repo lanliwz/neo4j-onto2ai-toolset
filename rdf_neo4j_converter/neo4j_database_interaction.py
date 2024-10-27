@@ -144,3 +144,7 @@ CALL {
 with n
 remove n:Resource
 '''
+# remove Resource label for owl__Class
+rm_redounded_label='''
+match (n:owl__Class|owl__ObjectProperty|owl__DataProperty) remove n:Resource
+'''

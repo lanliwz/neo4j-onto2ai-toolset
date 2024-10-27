@@ -9,7 +9,7 @@ from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, doma
     domain_range, SemanticGraphDB, del_dup_rels
 
 from neo4j_db import auth_data,neo4j_bolt_url,username,password,neo4j_db_name
-from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes
+from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes, rm_redounded_label
 
 # AnnotationProperty
 # OWL.AnnotationProperty
@@ -224,5 +224,6 @@ db.execute_cypher(xsd_datatypes)
 
 # clean up duplicated edge
 db.execute_cypher(del_dup_rels)
+db.execute_cypher(rm_redounded_label)
 db.close()
 
