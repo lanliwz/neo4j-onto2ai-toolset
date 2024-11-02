@@ -9,7 +9,8 @@ from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, doma
     domain_range, SemanticGraphDB, del_dup_rels
 
 from neo4j_db import auth_data,neo4j_bolt_url,username,password,neo4j_db_name
-from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes, rm_redounded_label
+from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes, rm_redounded_label, range_onProperty_object, \
+    range_onProperty_datatype, range_onProperty_datarange
 
 # AnnotationProperty
 # OWL.AnnotationProperty
@@ -218,7 +219,9 @@ db.execute_cypher(allValuesFrom)
 db.execute_cypher(someValueFrom)
 db.execute_cypher(domain_range)
 db.execute_cypher(domain_onProperty)
-db.execute_cypher(range_onProperty)
+db.execute_cypher(range_onProperty_object)
+db.execute_cypher(range_onProperty_datatype)
+db.execute_cypher(range_onProperty_datarange)
 db.execute_cypher(oneOf)
 db.execute_cypher(xsd_datatypes)
 

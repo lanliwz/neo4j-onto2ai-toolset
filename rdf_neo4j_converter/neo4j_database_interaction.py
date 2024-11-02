@@ -112,6 +112,42 @@ SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
 
+range_onProperty_datarange = '''
+MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[d:owl__onDataRange]-(dtype) 
+with n,res,dtype,d 
+MATCH (res)-[:owl__onProperty]->(prop) 
+with n,res,dtype,prop,d 
+CALL apoc.create.relationship(n, last(split(properties(prop).uri,"/")), properties(prop), dtype)
+YIELD rel
+SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='datarange'
+DELETE d
+'''
+
+
+range_onProperty_object = '''
+//CREATE REL range-onProperty Restriction 
+match (n:owl__Class)<-[d:rdfs__range]-(:owl__ObjectProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
+WITH n,op,res,d
+MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+WHERE n <> des
+CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
+YIELD rel
+SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
+DELETE d
+'''
+
+range_onProperty_datatype = '''
+//CREATE REL range-onProperty Restriction 
+match (n)<-[d:rdfs__range]-(:owl__DatatypeProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__DatatypeProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
+WITH n,op,res,d
+MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+WHERE n <> des
+CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
+YIELD rel
+SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='range'
+DELETE d
+'''
+
 oneOf = '''
 //Create REL oneOf
 MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
@@ -138,7 +174,7 @@ WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
 WITH n, substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
 CALL {
     WITH n, extractedString
-    CALL apoc.create.addLabels(n, ['xsd_'+extractedString]) YIELD node
+    CALL apoc.create.addLabels(n, ['xsd__'+extractedString]) YIELD node
     RETURN node
 }
 with n
