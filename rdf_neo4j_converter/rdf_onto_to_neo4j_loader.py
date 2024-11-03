@@ -1,8 +1,10 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 import os
+import urllib
 
 from rdflib import Graph,URIRef
 from rdflib.namespace import RDFS, OWL, SKOS, DC, RDF
+from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 
 from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, domain_onProperty, range_onProperty, \
@@ -109,7 +111,10 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'lcc-lr': 'https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/',
             'cmns-cxtid': 'https://www.omg.org/spec/Commons/ContextualIdentifiers/',
             'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/',
-            'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/'}
+            'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/',
+            'fibo-be-cor-cor' : 'https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/',
+            'fibo-be-le-corb' : 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/',
+            'fibo-be-gov-gove' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/'}
 # Define your custom mappings & store config
 
 
@@ -127,14 +132,26 @@ def load_ontology(graph: Graph, uri, format):
     :param graph: A rdflib.Graph instance.
     :param uri: URI of the ontology to load.
     """
-    if uri not in already_loaded:
-        print(f"Loading: {uri}")
-        graph.parse(uri, format=format)
-        already_loaded.add(uri)
+    try:
+        if uri not in already_loaded:
+            print(f"Loading: {uri}")
+            graph.parse(uri, format=format)
+            already_loaded.add(uri)
 
-        # Find all import statements in the currently loaded ontology.
-        for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
-            load_ontology(graph, imported_uri, format)
+            # Find all import statements in the currently loaded ontology.
+            for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
+                load_ontology(graph, imported_uri, format)
+
+    except FileNotFoundError:
+        print(f"Error: The file at '{uri}' was not found.")
+    except urllib.error.HTTPError as e:
+        print(f"HTTP error encountered: {e}")
+    except BadSyntax as e:
+        print(f"Syntax error in the ontology file: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
 
 
 # file_path = 'https://github.com/jbarrasa/gc-2022/raw/main/search/onto/concept-scheme-skos.ttl'
@@ -147,6 +164,8 @@ def load_ontology(graph: Graph, uri, format):
 # file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
 # file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/'
 file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
+# file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/MetadataBELegalEntities/LegalEntitiesModule'
+# file_path ='https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/NorthAmericanEntities/USExampleEntities/'
 format = "application/rdf+xml"
 
 # Create the RDF Graph, parse & ingest the data to Neo4j, and close the store(If the field batching is set to True in the Neo4jStoreConfig, remember to close the store to prevent the loss of any uncommitted records.)

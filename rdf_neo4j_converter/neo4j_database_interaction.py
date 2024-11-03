@@ -119,7 +119,7 @@ MATCH (res)-[:owl__onProperty]->(prop)
 with n,res,dtype,prop,d 
 CALL apoc.create.relationship(n, last(split(properties(prop).uri,"/")), properties(prop), dtype)
 YIELD rel
-SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='datarange'
+SET rel.property_type=prop.rdfs__label, rel.inferred_by='owl__onDataRange'
 DELETE d
 '''
 
