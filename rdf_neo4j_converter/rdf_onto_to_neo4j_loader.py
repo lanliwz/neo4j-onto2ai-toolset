@@ -1,5 +1,4 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
-import os
 import urllib
 
 from rdflib import Graph,URIRef
@@ -7,12 +6,8 @@ from rdflib.namespace import RDFS, OWL, SKOS, DC, RDF
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 
-from neo4j_database_interaction import oneOf, allValuesFrom, someValueFrom, domain_onProperty, range_onProperty, \
-    domain_range, SemanticGraphDB, del_dup_rels
-
-from neo4j_db import auth_data,neo4j_bolt_url,username,password,neo4j_db_name
-from rdf_neo4j_converter.neo4j_database_interaction import xsd_datatypes, rm_redounded_label, range_onProperty_object, \
-    range_onProperty_datatype, range_onProperty_datarange
+from neo4j_db import auth_data
+from rdf_neo4j_converter.neo4j_db import rdfmodel2neo4jmodel
 
 # AnnotationProperty
 # OWL.AnnotationProperty
@@ -233,20 +228,5 @@ for row in results:
 
 neo4j_aura.close(True)
 
-db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
-db.execute_cypher(allValuesFrom)
-db.execute_cypher(someValueFrom)
-db.execute_cypher(domain_range)
-db.execute_cypher(domain_onProperty)
-db.execute_cypher(range_onProperty_object)
-db.execute_cypher(range_onProperty_datatype)
-db.execute_cypher(range_onProperty_datarange)
-db.execute_cypher(oneOf)
-db.execute_cypher(xsd_datatypes)
-
-# clean up duplicated edge
-db.execute_cypher(del_dup_rels)
-db.execute_cypher(rm_redounded_label)
-db.close()
-
+rdfmodel2neo4jmodel()
