@@ -51,7 +51,14 @@ class SemanticGraphDB:
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
 
-
+restrict_cardinality = '''
+// Cardinality key/value
+MATCH (res:owl__Restriction)
+WITH res, [key IN keys(res) 
+WHERE key CONTAINS 'Cardinality'] AS cardinalityKeys 
+WHERE  res[head(cardinalityKeys)] is not null 
+RETURN res,head(cardinalityKeys), res[head(cardinalityKeys)]
+'''
 
 
 allValuesFrom = '''
