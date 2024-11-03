@@ -133,7 +133,9 @@ def load_ontology(graph: Graph, uri, format):
     :param uri: URI of the ontology to load.
     """
     try:
-        if uri not in already_loaded:
+        if uri in already_loaded:
+            None
+        else:
             print(f"Loading: {uri}")
             graph.parse(uri, format=format)
             already_loaded.add(uri)
@@ -141,7 +143,6 @@ def load_ontology(graph: Graph, uri, format):
             # Find all import statements in the currently loaded ontology.
             for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
                 load_ontology(graph, imported_uri, format)
-
     except FileNotFoundError:
         print(f"Error: The file at '{uri}' was not found.")
     except urllib.error.HTTPError as e:
