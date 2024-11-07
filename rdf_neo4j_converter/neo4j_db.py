@@ -1,6 +1,6 @@
 import os
 from neo4j import GraphDatabase
-from neo4j_cypher_statement import *
+from cypher_statement import *
 
 neo4j_bolt_url = os.getenv("Neo4jFinDBUrl")
 username = os.getenv("Neo4jFinDBUserName")
@@ -65,9 +65,18 @@ class SemanticGraphDB:
 def rdfmodel2neo4jmodel():
     db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
+    db.execute_cypher(crt_rel__restrict_cardinality_1)
+    db.execute_cypher(crt_rel__restrict_cardinality_2)
+
+    db.execute_cypher(domain_range_1)
+    db.execute_cypher(domain_range_2)
+
+    db.execute_cypher(data_property_without_range)
+    db.execute_cypher(object_property_without_range)
+
     db.execute_cypher(allValuesFrom)
     db.execute_cypher(someValueFrom)
-    db.execute_cypher(domain_range)
+
     db.execute_cypher(domain_onProperty)
     db.execute_cypher(range_onProperty_object)
     db.execute_cypher(range_onProperty_datatype)
@@ -79,3 +88,8 @@ def rdfmodel2neo4jmodel():
     db.execute_cypher(del_dup_rels)
     db.execute_cypher(rm_redounded_label)
     db.close()
+
+rdfmodel2neo4jmodel()
+# db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
+# db.execute_cypher(domain_range_2)
+# db.close()

@@ -1,13 +1,36 @@
 
-restrict_cardinality = '''
-// Cardinality key/value
-MATCH (res:owl__Restriction)
-WITH res, [key IN keys(res) 
-WHERE key CONTAINS 'Cardinality'] AS cardinalityKeys 
-WHERE  res[head(cardinalityKeys)] is not null 
-RETURN res,head(cardinalityKeys), res[head(cardinalityKeys)]
-'''
 
+
+crt_rel__restrict_cardinality_1 = '''
+// relationship with cardinality 
+MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
+WITH n,res,onp,sub 
+MATCH (res)-[]->(des:owl__Class)
+WITH n,onp,des,sub,res
+CALL apoc.create.relationship(n, last(split(properties(onp).uri,"/")), properties(onp), des)
+YIELD rel
+WITH onp,rel,res, [key IN keys(res) WHERE key CONTAINS 'Cardinality'] AS cardinalityKeys where  res[head(cardinalityKeys)] is not null 
+set rel[ head(cardinalityKeys)]=res[head(cardinalityKeys)]
+//CLEAN ALL CONVERTED NODES
+with res, onp
+MATCH (res)-[DEL1]-(),(onp)-[DEL2]-()
+DELETE DEL1,DEL2
+DELETE res,onp
+'''
+crt_rel__restrict_cardinality_2 = '''
+// relationship with cardinality 
+MATCH (n:owl__Class)-[sub:rdfs__subClassOf]-> (res:owl__Restriction)-[:owl__onDataRange]->(dtype:Resource) with n,res,dtype 
+MATCH (res)-[:owl__onProperty]->(prop:owl__DatatypeProperty) with n,res,prop,dtype 
+CALL apoc.create.relationship(n, last(split(properties(prop).uri,"/")), properties(prop), dtype)
+YIELD rel
+WITH prop,rel,res, [key IN keys(res) WHERE key CONTAINS 'Cardinality'] AS cardinalityKeys 
+WHERE  res[head(cardinalityKeys)] is not null 
+SET rel[ head(cardinalityKeys)]=res[head(cardinalityKeys)]
+with res, prop
+MATCH (res)-[DEL1]-(),(prop)-[DEL2]-()
+DELETE DEL1,DEL2
+DELETE res,prop
+'''
 
 allValuesFrom = '''
 //Create REL allValuesFrom
@@ -34,7 +57,7 @@ SET rel.inferred_by='someValuesFrom',rel.property_type='owl__ObjectProperty'
 DELETE some
 '''
 
-domain_range = '''
+domain_range_1 = '''
 //CREATE REL domain-range 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 
 WITH n,op,c,d,r
@@ -43,6 +66,17 @@ YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='domain-range'
 DELETE d,r
 '''
+
+domain_range_2 = '''
+//CREATE REL domain-range 
+match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__DatatypeProperty)-[r:rdfs__range]->(c:Resource) 
+WITH n,op,c,d,r
+CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
+YIELD rel
+SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='domain-range'
+DELETE d,r
+'''
+
 domain_onProperty = '''
 //CREATE REL domain-onProperty Restriction 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
@@ -67,6 +101,38 @@ SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
 
+data_property_without_range = '''
+//  data property with domain without range
+MATCH (prop:owl__DatatypeProperty)-[:rdfs__domain]->(cls:owl__Class) 
+WHERE 
+NOT (prop)-[:rdfs__range]-()
+WITH prop,cls
+CREATE (n:rdfs__Datatype) 
+SET n.rdfs__label='undefined'
+WITH cls,prop,n
+CALL apoc.create.relationship(cls, last(split(properties(prop).uri,"/")),properties(prop), n)
+YIELD rel
+WITH cls,rel,n,prop
+MATCH (prop)-[r]-()
+DELETE r
+DELETE prop
+'''
+object_property_without_range = '''
+//  object property with domain without range
+MATCH (prop:owl__ObjectProperty)-[:rdfs__domain]->(cls:owl__Class) 
+WHERE 
+NOT (prop)-[:rdfs__range]-()
+WITH prop,cls
+CREATE (n:owl__Class) 
+SET n.rdfs__label='undefined'
+WITH cls,prop,n
+CALL apoc.create.relationship(cls, last(split(properties(prop).uri,"/")),properties(prop), n)
+YIELD rel
+WITH cls,rel,n,prop
+MATCH (prop)-[r]-()
+DELETE r
+DELETE prop
+'''
 range_onProperty_datarange = '''
 MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[d:owl__onDataRange]-(dtype) 
 with n,res,dtype,d 
@@ -129,11 +195,11 @@ WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
 WITH n, substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
 CALL {
     WITH n, extractedString
-    CALL apoc.create.addLabels(n, ['xsd__'+extractedString]) YIELD node
+    CALL apoc.create.addLabels(n, ['xsd__'+extractedString,'rdfs__Datatype']) YIELD node
     RETURN node
 }
 with n
-remove n:Resource
+REMOVE n:Resource
 '''
 # remove Resource label for owl__Class
 rm_redounded_label='''
