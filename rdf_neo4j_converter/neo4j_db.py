@@ -89,7 +89,7 @@ def rdfmodel2neo4jmodel():
     db.execute_cypher(rm_redounded_label)
     db.close()
 
-rdfmodel2neo4jmodel()
+# rdfmodel2neo4jmodel()
 # db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 # db.execute_cypher(domain_range_2)
 # db.close()

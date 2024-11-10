@@ -98,6 +98,6 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'cmns-cxtid': 'https://www.omg.org/spec/Commons/ContextualIdentifiers/',
             'fibo-fnd-utl-alx': 'https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/',
             'fibo-be-le-lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/',
-            'fibo-be-cor-cor' : 'https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/',
-            'fibo-be-le-corb' : 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/',
-            'fibo-be-gov-gove' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/'}
+            'fibo-be-corp-corp' : 'https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/',
+            'fibo-be-le-cb' : 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/',
+            'fibo-be-ge-ge' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/'}

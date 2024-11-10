@@ -1,6 +1,5 @@
 
 
-
 crt_rel__restrict_cardinality_1 = '''
 // relationship with cardinality 
 MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  

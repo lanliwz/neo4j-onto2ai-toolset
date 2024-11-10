@@ -5,6 +5,7 @@ from rdflib import Graph,URIRef
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 from neo4j_db import auth_data
+from rdf_neo4j_converter.utility import get_rdf_data
 from rdf_statement import *
 
 
@@ -32,7 +33,8 @@ def load_ontology(graph: Graph, uri, format):
             None
         else:
             print(f"Loading: {uri}")
-            graph.parse(uri, format=format)
+            rdfdata = get_rdf_data(uri)
+            graph.parse(data=rdfdata, format=format)
             already_loaded.add(uri)
 
             # Find all import statements in the currently loaded ontology.
@@ -72,7 +74,8 @@ g = Graph()
 load_ontology(g, file_path, format)
 
 for url in already_loaded:
-    neo4j_aura.parse(url, format=format)
+    rdfdata = get_rdf_data(url)
+    neo4j_aura.parse(data=rdfdata, format=format)
 
 from rdflib.plugins.sparql import prepareQuery
 
