@@ -5,6 +5,7 @@ from rdflib import Graph,URIRef
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 from neo4j_db import auth_data
+from rdf_neo4j_converter.sparql_statement import query4dataprop, query4individuals
 from rdf_neo4j_converter.utility import get_rdf_data
 from rdf_statement import *
 
@@ -79,16 +80,6 @@ for url in already_loaded:
 
 from rdflib.plugins.sparql import prepareQuery
 
-# load individuals
-query4individuals = """
-    PREFIX owl: <http://www.w3.org/2002/07/owl#>
-    SELECT ?individual ?type
-    WHERE {
-        ?individual a ?type ;
-            a owl:NamedIndividual .
-        FILTER (?type != owl:NamedIndividual)    
-    }
-"""
 
 # Prepare the query
 query = prepareQuery(query4individuals, initNs=dict(g.namespaces()))
@@ -103,17 +94,6 @@ for row in results:
     neo4j_aura.add((individual, RDF.type, type_class))
     print(f"Individual: {individual}, Type: {type_class}")
 
-query4dataprop = """
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-
-    SELECT DISTINCT ?clz ?property ?datatype
-    WHERE {
-      ?property rdfs:domain ?clz .
-      ?property rdfs:range ?datatype .
-      FILTER(STRSTARTS(STR(?datatype), STR(xsd:)))
-    }
-"""
 
 # Prepare the query
 query = prepareQuery(query4dataprop, initNs=dict(g.namespaces()))

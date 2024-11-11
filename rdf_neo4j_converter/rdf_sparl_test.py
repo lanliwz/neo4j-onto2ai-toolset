@@ -2,10 +2,13 @@ from rdflib import Graph, URIRef
 from rdflib.plugins.sparql import prepareQuery
 from rdflib.namespace import RDF, OWL
 
+from rdf_neo4j_converter.utility import get_rdf_data
+
 file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
 # Load RDF data into a graph
 sg = Graph()
-sg.parse(file_path, format="xml")  # Load RDF data from file, adjust format if necessary
+rdfdata = get_rdf_data(file_path)
+sg.parse(data=rdfdata, format="xml")  # Load RDF data from file, adjust format if necessary
 
 og = Graph()
 
@@ -32,4 +35,4 @@ for row in results:
     individual = row.individual
     type_class = row.type
     # og.add((individual, RDF.type, type_class))
-    print(f"Individual: {individual}, Type: {type_class}")
+    print(f"Individual: {individual}, Pred: {RDF.type}, Type: {type_class}")

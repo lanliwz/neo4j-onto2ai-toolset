@@ -57,4 +57,4 @@ def download_as_rdf(url):
         print(f"Failed to retrieve the URL: {e}")
 
 
-print(get_rdf_data('https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/Agents/'))
+# print(get_rdf_data('https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/Agents/'))
