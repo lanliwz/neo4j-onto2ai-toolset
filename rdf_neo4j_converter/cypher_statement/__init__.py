@@ -191,13 +191,14 @@ FOREACH (r IN rels[1..] | DELETE r)
 xsd_datatypes = '''
 MATCH (n:Resource)
 WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
-WITH n, substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
+WITH n, 'xsd__'+substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
 CALL {
     WITH n, extractedString
-    CALL apoc.create.addLabels(n, ['xsd__'+extractedString,'rdfs__Datatype']) YIELD node
+    CALL apoc.create.addLabels(n, [extractedString,'rdfs__Datatype']) YIELD node
     RETURN node
 }
-with n
+with n,extractedString
+SET n.rdfs_label = extractedString
 REMOVE n:Resource
 '''
 # remove Resource label for owl__Class
