@@ -168,6 +168,16 @@ SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='range'
 DELETE d
 '''
 
+union_of_datatype = '''
+MATCH (dt:rdfs__Datatype)-[ui:owl__unionOf]->(rs)
+MATCH path=(rs)-[:rdf__first|rdf__rest*1..]->(xsdtp:rdfs__Datatype)
+WITH xsdtp, dt, rs,ui
+MATCH (ddt:rdfs__Datatype)-[eq:owl__equivalentClass]->(dt)
+with ddt, collect(xsdtp.rdfs__label) AS xsdtp_collection,eq,ui
+set ddt.owl__unionOf = xsdtp_collection
+DELETE eq,ui
+'''
+
 oneOf = '''
 //Create REL oneOf
 MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
@@ -198,7 +208,7 @@ CALL {
     RETURN node
 }
 with n,extractedString
-SET n.rdfs_label = extractedString
+SET n.rdfs__label = extractedString
 REMOVE n:Resource
 '''
 # remove Resource label for owl__Class

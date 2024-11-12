@@ -81,8 +81,10 @@ def rdfmodel2neo4jmodel():
     db.execute_cypher(range_onProperty_object)
     db.execute_cypher(range_onProperty_datatype)
     db.execute_cypher(range_onProperty_datarange)
-    db.execute_cypher(oneOf)
     db.execute_cypher(xsd_datatypes)
+    db.execute_cypher(union_of_datatype)
+    db.execute_cypher(oneOf)
+
 
     # clean up duplicated edge
     db.execute_cypher(del_dup_rels)
