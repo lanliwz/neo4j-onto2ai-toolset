@@ -1,4 +1,10 @@
+del_all_node =  '''
+MATCH (n) DETACH DELETE n
+'''
 
+del_all_relationship =  '''
+MATCH ()-[n]-() DETACH DELETE n
+'''
 
 crt_rel__restrict_cardinality_1 = '''
 // relationship with cardinality 

@@ -1,16 +1,8 @@
 import os
 from neo4j import GraphDatabase
 from cypher_statement import *
+from connect import *
 
-neo4j_bolt_url = os.getenv("Neo4jFinDBUrl")
-username = os.getenv("Neo4jFinDBUserName")
-password = os.getenv("Neo4jFinDBPassword")
-neo4j_db_name = 'rdfmodel'
-
-auth_data = {'uri': neo4j_bolt_url,
-             'database': neo4j_db_name,
-             'user': username,
-             'pwd': password}
 
 # The SematicGraphDB class is used to interact with a Neo4j database.
 # It provides methods to create nodes, relationships, and execute arbitrary Cypher queries.
@@ -61,9 +53,12 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
+def clean_up_neo4j_graph(db:SemanticGraphDB):
+    db.execute_cypher(del_all_relationship)
+    db.execute_cypher(del_all_node)
 
-def rdfmodel2neo4jmodel():
-    db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
+
+def rdf_to_neo4j_graph(db : SemanticGraphDB):
 
     db.execute_cypher(crt_rel__restrict_cardinality_1)
     db.execute_cypher(crt_rel__restrict_cardinality_2)
@@ -85,13 +80,8 @@ def rdfmodel2neo4jmodel():
     db.execute_cypher(union_of_datatype)
     db.execute_cypher(oneOf)
 
-
     # clean up duplicated edge
     db.execute_cypher(del_dup_rels)
     db.execute_cypher(rm_redounded_label)
-    db.close()
 
-rdfmodel2neo4jmodel()
-# db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
-# db.execute_cypher(domain_range_2)
-# db.close()
+
