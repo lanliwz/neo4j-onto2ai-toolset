@@ -37,7 +37,7 @@ DELETE DEL1,DEL2
 DELETE res,prop
 '''
 
-allValuesFrom = '''
+allValueFrom = '''
 //Create REL allValuesFrom
 MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
 WITH n,res,onp,sub 
@@ -49,7 +49,14 @@ SET rel.inferred_by='allValuesFrom',rel.property_type='owl__ObjectProperty'
 WITH sub,some
 DELETE some
 '''
-
+allValueFrom_01 = '''
+match (cls:owl__Class)-[link]->(cls1:owl__Class) 
+with cls,link,cls1 
+match (cls)-[sub:rdfs__subClassOf]->(restriction)-[some:owl__allValuesFrom]->(cls1) 
+SET link.inferred_by='allValuesFrom'
+DELETE sub,some
+DELETE restriction
+'''
 someValueFrom = '''
 //Create REL someValuesFrom
 match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
@@ -61,7 +68,14 @@ YIELD rel
 SET rel.inferred_by='someValuesFrom',rel.property_type='owl__ObjectProperty'
 DELETE some
 '''
-
+someValueFrom_01 = '''
+match (cls:owl__Class)-[link]->(cls1:owl__Class) 
+with cls,link,cls1 
+match (cls)-[sub:rdfs__subClassOf]->(restriction)-[some:owl__someValuesFrom]->(cls1) 
+SET link.inferred_by='someValuesFrom'
+DELETE sub,some
+DELETE restriction
+'''
 domain_range_1 = '''
 //CREATE REL domain-range 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 

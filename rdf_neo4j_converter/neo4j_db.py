@@ -69,8 +69,11 @@ def rdf_to_neo4j_graph(db : SemanticGraphDB):
     db.execute_cypher(data_property_without_range)
     db.execute_cypher(object_property_without_range)
 
-    db.execute_cypher(allValuesFrom)
+    db.execute_cypher(allValueFrom)
+    db.execute_cypher(allValueFrom_01)
     db.execute_cypher(someValueFrom)
+    db.execute_cypher(someValueFrom_01)
+
 
     db.execute_cypher(domain_onProperty)
     db.execute_cypher(range_onProperty_object)

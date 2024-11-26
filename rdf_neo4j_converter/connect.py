@@ -3,7 +3,7 @@ import os
 neo4j_bolt_url = os.getenv("Neo4jFinDBUrl")
 username = os.getenv("Neo4jFinDBUserName")
 password = os.getenv("Neo4jFinDBPassword")
-neo4j_db_name = 'rdf1'
+neo4j_db_name = 'rdf'
 
 auth_data = {'uri': neo4j_bolt_url,
              'database': neo4j_db_name,
