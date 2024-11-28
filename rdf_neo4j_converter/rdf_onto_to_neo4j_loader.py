@@ -1,13 +1,10 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 import urllib
-
-from rdflib import Graph,URIRef
+from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-from neo4j_db import auth_data
-from rdf_neo4j_converter.connect import password
 from rdf_neo4j_converter.neo4j_db import clean_up_neo4j_graph, rdf_to_neo4j_graph, SemanticGraphDB
-from rdf_neo4j_converter.sparql_statement import query4dataprop, query4individuals
+from rdf_neo4j_converter.sparql_statement import query4dataprop
 from rdf_neo4j_converter.utility import get_rdf_data
 from rdf_statement import *
 from connect import *
@@ -16,8 +13,6 @@ from connect import *
 
 
 # Define your custom mappings & store config
-
-
 config = Neo4jStoreConfig(auth_data=auth_data,
                           custom_prefixes=prefixes,
                           handle_vocab_uri_strategy=HANDLE_VOCAB_URI_STRATEGY.SHORTEN,
