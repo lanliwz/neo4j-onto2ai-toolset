@@ -1,5 +1,9 @@
 from neo4j import GraphDatabase
+from numpy.core.records import record
+
 import cypher_statement.onto2schema_util
+import cypher_statement.schema_util
+from rdf_neo4j_converter.cypher_statement.schema_util import *
 
 
 # The SematicGraphDB class is used to interact with a Neo4j database.
@@ -22,6 +26,37 @@ class SemanticGraphDB:
     def execute_cypher(self, query):
         with self._driver.session() as session:
             session.execute_write(self._execute_cypher, query)
+
+    # read graph data
+    #
+    def get_node2node_relationship(self,label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset,query_node2node_relationship(label))
+            return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
+
+    def get_start_nodes(self,label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset,query_start_nodes(label))
+            return [f"(:{record['start_node']}) can be described as {record['annotation_properties']}"
+                    for record in result
+                    if record['start_node'] is not None]
+
+    def get_end_nodes(self,label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset, query_end_nodes(label))
+            return [f"(:{record['end_node']}) can be described as {record['annotation_properties']}"
+                    for record in result
+                    if record['end_node'] is not None]
+
+    def get_relationships(self,label=None):
+        with self._driver.session() as session:
+            return session.execute_read(self._get_dataset, query_relationships(label))
+
+    @staticmethod
+    def _get_dataset(tx,query):
+        result = tx.run(query)
+        return [record.data() for record in result]
+
 
     # Helper method to create a node.
     @staticmethod
@@ -51,7 +86,7 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
-def clean_up_neo4j_graph(db:SemanticGraphDB):
+def clean_up_neo4j_graph(db : SemanticGraphDB):
     db.execute_cypher(cypher_statement.onto2schema_util.del_all_relationship)
     db.execute_cypher(cypher_statement.onto2schema_util.del_all_node)
 
