@@ -100,4 +100,9 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'fibo_be_le_lei': 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/',
             'fibo_be_corp_corp' : 'https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/',
             'fibo_be_le_cb' : 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/',
-            'fibo_be_ge_ge' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/'}
+            'fibo_be_ge_ge' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/',
+            'fibo-fbc-pas-fpas': 'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/',
+            'fibo-fbc-dae-dbt':'https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/',
+            'fibo-fbc-fct-breg':'https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/',
+            'fibo-fbc-pas-caa':'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/',
+            'fibo-fbc-fi-fi':'https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/'}

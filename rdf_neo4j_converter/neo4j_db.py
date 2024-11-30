@@ -49,8 +49,9 @@ class SemanticGraphDB:
                     if record['end_node'] is not None]
 
     def get_relationships(self,label=None):
-        with self._driver.session() as session:
-            return session.execute_read(self._get_dataset, query_relationships(label))
+        with (self._driver.session() as session):
+            result = session.execute_read(self._get_dataset, query_relationships(label))
+            return [f"[:{record['relationship']}] is a relationship, can be described as {record['annotation_properties']}" for record in result]
 
     @staticmethod
     def _get_dataset(tx,query):
