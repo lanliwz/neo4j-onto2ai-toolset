@@ -4,8 +4,8 @@ WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith
 '''
 
 node2node_relationship_return = '''
-WITH r,[word IN split(n.rdfs__label, ' ') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
-[word IN split(m.rdfs__label, ' ') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
+WITH r,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
+[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(start_node_raw, '') AS start_node,
 type(r) as relationship,
 apoc.text.join(end_node_raw, '') AS end_node
@@ -16,13 +16,13 @@ RETURN DISTINCT type(r) as relationship, properties(r) as annotation_properties
 '''
 
 start_nodes_return  = '''
-WITH n,[word IN split(n.rdfs__label, ' ') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw
+WITH n,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw
 RETURN DISTINCT apoc.text.join(start_node_raw, '') AS start_node, 
 apoc.map.removeKey(properties(n), 'rdfs__label') as annotation_properties
 '''
 
 end_nodes_return = '''
-WITH m,[word IN split(m.rdfs__label, ' ') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
+WITH m,[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(end_node_raw, '') AS end_node, 
 apoc.map.removeKey(properties(m), 'rdfs__label') as annotation_properties
 '''
