@@ -186,6 +186,25 @@ with ddt, collect(xsdtp.rdfs__label) AS xsdtp_collection,eq,ui
 set ddt.owl__unionOf = xsdtp_collection
 DELETE eq,ui
 '''
+# WIP
+union_of_class = '''
+MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[f:rdf__first]->(obj) 
+with sub,obj,r,f
+CALL apoc.create.relationship(sub, type(r), {}, obj) yield rel 
+set rel.owl__objectProperty='rdf__unionOf'
+DELETE f
+'''
+
+union_of_class_1 = '''
+// CREATE REL unionOf
+MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[:rdf__rest]-()-[f:rdf__first]->(obj)
+WITH sub, obj,  midr,mid1,r,type(r) AS relType,f
+CALL apoc.create.relationship(sub, relType, {}, obj) yield rel 
+set rel.owl__objectProperty='rdf__unionOf'
+DELETE f,midr,r
+DELETE mid1
+'''
+
 oneOf = '''
 //Create REL oneOf
 MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
@@ -199,10 +218,9 @@ DELETE o1f
 '''
 # delete duplicated hasFactor
 del_dup_rels = '''
-MATCH (n)-[r]->(m)
-WITH n,m,COUNT(r) AS relCount,COLLECT(r) as rels
-WHERE relCount > 1
-WITH n,m,rels
+MATCH (a)-[r]->(b)
+WITH a, b, type(r) AS relType, properties(r) AS relProps, COLLECT(r) AS rels
+WHERE SIZE(rels) > 1
 FOREACH (r IN rels[1..] | DELETE r)
 '''
 # convert xsd datatypes

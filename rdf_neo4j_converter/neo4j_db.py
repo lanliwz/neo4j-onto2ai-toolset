@@ -115,7 +115,10 @@ def rdf_to_neo4j_graph(db : SemanticGraphDB):
     db.execute_cypher(cypher_statement.onto2schema_util.range_onProperty_datarange)
     db.execute_cypher(cypher_statement.onto2schema_util.xsd_datatypes)
     db.execute_cypher(cypher_statement.onto2schema_util.union_of_datatype)
+    db.execute_cypher(cypher_statement.onto2schema_util.union_of_class)
+    db.execute_cypher(cypher_statement.onto2schema_util.union_of_class_1)
     db.execute_cypher(cypher_statement.onto2schema_util.oneOf)
+
 
     # clean up duplicated edge
     db.execute_cypher(cypher_statement.onto2schema_util.del_dup_rels)

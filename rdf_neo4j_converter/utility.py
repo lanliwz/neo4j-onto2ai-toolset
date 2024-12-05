@@ -22,7 +22,7 @@ def url_to_filepath(url, ext = '.rdf'):
     parsed_url = urlparse(url)
 
     # Replace '.' in the domain with '_'
-    domain = parsed_url.netloc.replace('.', '_')
+    domain = 'ontology/' + parsed_url.netloc.replace('.', '_')
 
     # Use the path and filename from the URL as the file path
     path = parsed_url.path.strip('/')
