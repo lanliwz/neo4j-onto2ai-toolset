@@ -1,8 +1,4 @@
 from neo4j import GraphDatabase
-from numpy.core.records import record
-
-import cypher_statement.gen_schema
-import cypher_statement.get_schema
 from onto2schema.cypher_statement.get_schema import *
 from onto2schema.cypher_statement.gen_schema import *
 
