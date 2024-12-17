@@ -1,10 +1,9 @@
 from neo4j import GraphDatabase
 from numpy.core.records import record
 
-import cypher_statement.infer_schema_statement
-import cypher_statement.get_schema_statement
-from rdf_neo4j_converter.cypher_statement.get_schema_statement import *
-from rdf_neo4j_converter.cypher_statement.infer_schema_statement import *
+import cypher_statement.onto2schema_util
+import cypher_statement.schema_util
+from rdf_neo4j_converter.cypher_statement.schema_util import *
 
 
 # The SematicGraphDB class is used to interact with a Neo4j database.
@@ -89,40 +88,40 @@ class SemanticGraphDB:
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
 def clean_up_neo4j_graph(db : SemanticGraphDB):
-    db.execute_cypher(del_all_relationship)
-    db.execute_cypher(del_all_node)
+    db.execute_cypher(cypher_statement.onto2schema_util.del_all_relationship)
+    db.execute_cypher(cypher_statement.onto2schema_util.del_all_node)
 
 
 def rdf_to_neo4j_graph(db : SemanticGraphDB):
 
-    db.execute_cypher(crt_rel__restrict_cardinality_1)
-    db.execute_cypher(crt_rel__restrict_cardinality_2)
+    db.execute_cypher(cypher_statement.onto2schema_util.crt_rel__restrict_cardinality_1)
+    db.execute_cypher(cypher_statement.onto2schema_util.crt_rel__restrict_cardinality_2)
 
-    db.execute_cypher(domain_range_1)
-    db.execute_cypher(domain_range_2)
+    db.execute_cypher(cypher_statement.onto2schema_util.domain_range_1)
+    db.execute_cypher(cypher_statement.onto2schema_util.domain_range_2)
 
-    db.execute_cypher(data_property_without_range)
-    db.execute_cypher(object_property_without_range)
+    db.execute_cypher(cypher_statement.onto2schema_util.data_property_without_range)
+    db.execute_cypher(cypher_statement.onto2schema_util.object_property_without_range)
 
-    db.execute_cypher(allValueFrom)
-    db.execute_cypher(allValueFrom_01)
-    db.execute_cypher(someValueFrom)
-    db.execute_cypher(someValueFrom_01)
+    db.execute_cypher(cypher_statement.onto2schema_util.allValueFrom)
+    db.execute_cypher(cypher_statement.onto2schema_util.allValueFrom_01)
+    db.execute_cypher(cypher_statement.onto2schema_util.someValueFrom)
+    db.execute_cypher(cypher_statement.onto2schema_util.someValueFrom_01)
 
 
-    db.execute_cypher(domain_onProperty)
-    db.execute_cypher(range_onProperty_object)
-    db.execute_cypher(range_onProperty_datatype)
-    db.execute_cypher(range_onProperty_datarange)
-    db.execute_cypher(xsd_datatypes)
-    db.execute_cypher(union_of_datatype)
-    db.execute_cypher(union_of_class)
-    db.execute_cypher(union_of_class_1)
-    db.execute_cypher(oneOf)
+    db.execute_cypher(cypher_statement.onto2schema_util.domain_onProperty)
+    db.execute_cypher(cypher_statement.onto2schema_util.range_onProperty_object)
+    db.execute_cypher(cypher_statement.onto2schema_util.range_onProperty_datatype)
+    db.execute_cypher(cypher_statement.onto2schema_util.range_onProperty_datarange)
+    db.execute_cypher(cypher_statement.onto2schema_util.xsd_datatypes)
+    db.execute_cypher(cypher_statement.onto2schema_util.union_of_datatype)
+    db.execute_cypher(cypher_statement.onto2schema_util.union_of_class)
+    db.execute_cypher(cypher_statement.onto2schema_util.union_of_class_1)
+    db.execute_cypher(cypher_statement.onto2schema_util.oneOf)
 
 
     # clean up duplicated edge
-    db.execute_cypher(del_dup_rels)
-    db.execute_cypher(rm_redounded_label)
+    db.execute_cypher(cypher_statement.onto2schema_util.del_dup_rels)
+    db.execute_cypher(cypher_statement.onto2schema_util.rm_redounded_label)
 
 
