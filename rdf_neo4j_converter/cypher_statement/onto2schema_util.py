@@ -219,7 +219,8 @@ DELETE o1f
 # delete duplicated hasFactor
 del_dup_rels = '''
 MATCH (a)-[r]->(b)
-WITH a, b, type(r) AS relType, properties(r) AS relProps, COLLECT(r) AS rels
+//WITH a, b, type(r) AS relType, properties(r) AS relProps, COLLECT(r) AS rels
+WITH a, b, type(r) AS relType, r.uri AS relProps, COLLECT(r) AS rels
 WHERE SIZE(rels) > 1
 FOREACH (r IN rels[1..] | DELETE r)
 '''
