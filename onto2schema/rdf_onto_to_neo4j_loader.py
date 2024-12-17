@@ -3,9 +3,9 @@ import urllib
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-from rdf_neo4j_converter.neo4j_db import clean_up_neo4j_graph, rdf_to_neo4j_graph, SemanticGraphDB
-from rdf_neo4j_converter.sparql_statement import query4dataprop
-from rdf_neo4j_converter.utility import get_rdf_data
+from onto2schema.neo4j_db import clean_up_neo4j_graph, rdf_to_neo4j_graph, SemanticGraphDB
+from onto2schema.sparql_statement import query4dataprop
+from onto2schema.utility import get_rdf_data
 from rdf_statement import *
 from connect import *
 

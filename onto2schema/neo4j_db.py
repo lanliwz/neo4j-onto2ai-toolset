@@ -3,8 +3,8 @@ from numpy.core.records import record
 
 import cypher_statement.gen_schema
 import cypher_statement.get_schema
-from rdf_neo4j_converter.cypher_statement.get_schema import *
-from rdf_neo4j_converter.cypher_statement.gen_schema import *
+from onto2schema.cypher_statement.get_schema import *
+from onto2schema.cypher_statement.gen_schema import *
 
 
 # The SematicGraphDB class is used to interact with a Neo4j database.
