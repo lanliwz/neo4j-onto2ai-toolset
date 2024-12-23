@@ -1,7 +1,11 @@
 import requests
 import os
 from urllib.parse import urlparse
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+ONTO_ROOT = os.getenv('ONTOLOGY_ROOT_PATH')
 def get_rdf_data(url, ext='.rdf'):
     file_path = url_to_filepath(url,ext)
     if not os.path.exists(file_path):
@@ -22,7 +26,7 @@ def url_to_filepath(url, ext = '.rdf'):
     parsed_url = urlparse(url)
 
     # Replace '.' in the domain with '_'
-    domain = 'ontology/' + parsed_url.netloc.replace('.', '_')
+    domain = ONTO_ROOT + parsed_url.netloc.replace('.', '_')
 
     # Use the path and filename from the URL as the file path
     path = parsed_url.path.strip('/')
