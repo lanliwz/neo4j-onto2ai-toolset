@@ -110,3 +110,15 @@ Guidelines for Designing a Graph Database with Ontology:
 - Protect Sensitive Data:
 - Implement measures to secure data according to its classification in the ontology.
 - Example: Encrypt sensitive attributes like paymentInfo on Order nodes.
+
+## Settings
+### Google Cloud
+```commandline
+gcloud init
+gcloud auth application-default login
+pip install langchain google-cloud-aiplatform
+
+export GOOGLE_APPLICATION_CREDENTIALS="~/.config/gcloud/application_default_credentials.json"
+export GOOGLE_PROJECT_ID="PROJECT-ID"
+
+```
