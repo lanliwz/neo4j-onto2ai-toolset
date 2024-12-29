@@ -2,24 +2,17 @@ from neo4j_utility import SemanticGraphDB
 from neo4j_connect import *
 from cypher_statement.get_schema import *
 
-start_node ='party'
-db = SemanticGraphDB(neo4j_bolt_url ,username,password,neo4j_db_name)
 
-nodes_rels = db.get_node2node_relationship(start_node)
+db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
 
-for n in nodes_rels:
-    print(n)
+def get_schema(start_node:str):
+    schema = ("\n".join(db.get_node2node_relationship(start_node))
+              + "\n".join(db.get_end_nodes(start_node))
+              + "\n".join(db.get_start_nodes(start_node))
+              + "\n".join(db.get_relationships(start_node))
+              )
 
-end_nodes = db.get_end_nodes(start_node)
+    return schema
 
-for n in end_nodes:
-    print(n)
-
-start_nodes = db.get_start_nodes(start_node)
-
-for n in start_nodes:
-    print(n)
-
-rels = db.get_relationships(start_node)
-for n in rels:
-    print(n)
+# start_node ='person'
+# print(get_schema(start_node))
