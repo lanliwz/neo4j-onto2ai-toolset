@@ -186,4 +186,4 @@ langgraph.add_edge("generate_final_answer", END)
 
 langgraph = langgraph.compile()
 
-print(langgraph.invoke({"question": "what is the account balance for account 556886 in the year 2024"}))
+print(langgraph.invoke({"question": "what are the account payments in the year 2024, group by account"}))

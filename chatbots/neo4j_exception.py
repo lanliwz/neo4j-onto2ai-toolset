@@ -4,6 +4,7 @@ from chatbots.cypher_validation import validate_cypher_chain
 from langgraph_state import *
 from cypher_corrector import *
 from llm_neo4j_connect import llm,graph
+import logging
 
 
 def validate_cypher(state: OverallState) -> OverallState:
@@ -33,31 +34,31 @@ def validate_cypher(state: OverallState) -> OverallState:
     )
     if llm_output.errors:
         errors.extend(llm_output.errors)
-    if llm_output.filters:
-        for filter in llm_output.filters:
-            # Do mapping only for string values
-            if (
-                not [
-                    prop
-                    for prop in graph.structured_schema["node_props"][
-                        filter.node_label
-                    ]
-                    if prop["property"] == filter.property_key
-                ][0]["type"]
-                == "STRING"
-            ):
-                continue
-            mapping = graph.query(
-                f"MATCH (n:{filter.node_label}) WHERE toLower(n.`{filter.property_key}`) = toLower($value) RETURN 'yes' LIMIT 1",
-                {"value": filter.property_value},
-            )
-            if not mapping:
-                print(
-                    f"Missing value mapping for {filter.node_label} on property {filter.property_key} with value {filter.property_value}"
-                )
-                mapping_errors.append(
-                    f"Missing value mapping for {filter.node_label} on property {filter.property_key} with value {filter.property_value}"
-                )
+    # if llm_output.filters:
+    #     for filter in llm_output.filters:
+    #         # Do mapping only for string values
+    #         if (
+    #             not [
+    #                 prop
+    #                 for prop in graph.structured_schema["node_props"][
+    #                     filter.node_label
+    #                 ]
+    #                 if prop["property"] == filter.property_key
+    #             ][0]["type"]
+    #             == "STRING"
+    #         ):
+    #             continue
+    #         mapping = graph.query(
+    #             f"MATCH (n:{filter.node_label}) WHERE toLower(n.`{filter.property_key}`) = toLower($value) RETURN 'yes' LIMIT 1",
+    #             {"value": filter.property_value},
+    #         )
+    #         if not mapping:
+    #             print(
+    #                 f"Missing value mapping for {filter.node_label} on property {filter.property_key} with value {filter.property_value}"
+    #             )
+    #             mapping_errors.append(
+    #                 f"Missing value mapping for {filter.node_label} on property {filter.property_key} with value {filter.property_value}"
+    #             )
     if mapping_errors:
         next_action = "end"
     elif errors:
@@ -81,6 +82,7 @@ def execute_cypher(state: OverallState) -> OverallState:
     """
 
     records = graph.query(state.get("cypher_statement"))
+    logging.info(state.get("cypher_statement"))
     return {
         "database_records": records if records else no_results,
         "next_action": "end",
