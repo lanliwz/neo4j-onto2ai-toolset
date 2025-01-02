@@ -1,7 +1,7 @@
 from neo4j.exceptions import CypherSyntaxError
 
 from chatbots.cypher_validation import validate_cypher_chain
-from langgraph_state import *
+from execute_state import *
 from cypher_corrector import *
 from llm_neo4j_connect import llm,graph
 import logging
@@ -75,16 +75,3 @@ def validate_cypher(state: OverallState) -> OverallState:
 
 no_results = "I couldn't find any relevant information in the database"
 
-
-def execute_cypher(state: OverallState) -> OverallState:
-    """
-    Executes the given Cypher statement.
-    """
-
-    records = graph.query(state.get("cypher_statement"))
-    logging.info(state.get("cypher_statement"))
-    return {
-        "database_records": records if records else no_results,
-        "next_action": "end",
-        "steps": ["execute_cypher"],
-    }

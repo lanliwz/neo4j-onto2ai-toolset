@@ -11,3 +11,4 @@ graph = Neo4jGraph(
     database=os.getenv("Neo4jFinDBName"),
     enhanced_schema=True
 )
+
