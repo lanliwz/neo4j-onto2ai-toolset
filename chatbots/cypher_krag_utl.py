@@ -1,52 +1,8 @@
 from cypher_validation import *
 from cypher_exception import *
-from execute_state import *
 from cypher_excecution import *
+from kg_chatbot_guardrails import *
 
-
-
-guardrails_system = """
-As an intelligent assistant, your primary objective is to decide whether a given question is related to account/balance/billing/payment or not. 
-If the question is related, output "account". Otherwise, output "end".
-To make this decision, assess the content of the question and determine if it refers to any account balance, transaction, billing, payment, 
-or related topics. Provide only the specified output: "account" or "end".
-"""
-
-guardrails_prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            guardrails_system,
-        ),
-        (
-            "human",
-            ("{question}"),
-        ),
-    ]
-)
-
-class GuardrailsOutput(BaseModel):
-    decision: Literal["account", "end"] = Field(
-        description="Decision on whether the question is related to account"
-    )
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
-
-guardrails_chain = guardrails_prompt | llm.with_structured_output(GuardrailsOutput)
-
-
-def guardrails(state: InputState) -> OverallState:
-    """
-    Decides if the question is related to account or not.
-    """
-    guardrails_output = guardrails_chain.invoke({"question": state.get("question")})
-    database_records = None
-    if guardrails_output.decision == "end":
-        database_records = "This questions is not about account. Therefore I cannot answer this question."
-    return {
-        "next_action": guardrails_output.decision,
-        "database_records": database_records,
-        "steps": ["guardrail"],
-    }
 
 
 from langchain_core.output_parsers import StrOutputParser
@@ -160,31 +116,3 @@ def validate_cypher_condition(
 
 
 
-from langgraph.graph import END, START, StateGraph
-
-
-langgraph = StateGraph(OverallState, input=InputState, output=OutputState)
-langgraph.add_node(guardrails)
-langgraph.add_node(generate_cypher)
-langgraph.add_node(validate_cypher)
-langgraph.add_node(correct_cypher)
-langgraph.add_node(execute_cypher)
-langgraph.add_node(generate_final_answer)
-
-langgraph.add_edge(START, "guardrails")
-langgraph.add_conditional_edges(
-    "guardrails",
-    guardrails_condition,
-)
-langgraph.add_edge("generate_cypher", "validate_cypher")
-langgraph.add_conditional_edges(
-    "validate_cypher",
-    validate_cypher_condition,
-)
-langgraph.add_edge("execute_cypher", "generate_final_answer")
-langgraph.add_edge("correct_cypher", "validate_cypher")
-langgraph.add_edge("generate_final_answer", END)
-
-langgraph = langgraph.compile()
-
-print(langgraph.invoke({"question": "what are the account payments in the year 2024, group by account"}))

@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from llm_neo4j_connect import llm,graph
+from llm_neo4j_connect import *
 
 validate_cypher_system = """
 You are a Cypher expert reviewing a statement written by a junior developer.
