@@ -34,21 +34,21 @@ class SemanticGraphDB:
     def get_start_nodes(self,label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset,query_start_nodes(label))
-            return [f"(:{record['start_node']}) can be described as {record['annotation_properties']}"
+            return [f"(:{record['start_node']}) is a node, annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['start_node'] is not None]
 
     def get_end_nodes(self,label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset, query_end_nodes(label))
-            return [f"(:{record['end_node']}) can be described as {record['annotation_properties']}"
+            return [f"(:{record['end_node']}) is a node, annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['end_node'] is not None]
 
     def get_relationships(self,label=None):
         with (self._driver.session() as session):
             result = session.execute_read(self._get_dataset, query_relationships(label))
-            return [f"[:{record['relationship']}] is a relationship, can be described as {record['annotation_properties']}" for record in result]
+            return [f"[:{record['relationship']}] is a relationship, annotation properties  {record['annotation_properties']}" for record in result]
 
     @staticmethod
     def _get_dataset(tx,query):
@@ -122,3 +122,11 @@ def rdf_to_neo4j_graph(db : SemanticGraphDB):
     db.execute_cypher(rm_redounded_label)
 
 
+def get_schema(start_node:str,db : SemanticGraphDB):
+    schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
+              + "\n".join(db.get_end_nodes(start_node)) + '\n'
+              + "\n".join(db.get_start_nodes(start_node)) + '\n'
+              + "\n".join(db.get_relationships(start_node)) + '\n'
+              )
+
+    return schema
