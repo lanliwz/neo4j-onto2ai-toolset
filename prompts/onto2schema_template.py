@@ -37,6 +37,8 @@ Add with statement between Merge and Match.
 add defined variable to each WITH statement.
 add skos__definition to each node and relationship.
 create the node if not exist.
+instead of merge node, check if exists, create the node only not exists, then match again.
+match only with rdfs__label.
 Schema: {schema}
 Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
 """

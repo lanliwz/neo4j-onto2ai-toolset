@@ -15,6 +15,6 @@ db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
 #
 #     return schema
 
-start_node ='language'
+start_node ='adult'
     # 'person'
 print(get_schema(start_node,db))
