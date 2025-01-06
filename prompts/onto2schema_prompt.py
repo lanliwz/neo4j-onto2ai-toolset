@@ -25,7 +25,7 @@ def enhance_schema(start_node:str, db):
     final_template = PromptTemplate.from_template(gen_realworld_relationship_template)
     return final_template.invoke(schema)
 
-print(enhance_schema("person",db))
+print(enhance_schema("language",db))
 
 
 

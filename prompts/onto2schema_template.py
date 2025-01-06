@@ -33,9 +33,10 @@ No change to exist node. To reference existing node, the node type is :owl__Clas
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
 no new owl__ObjectProperty created.
-Add with statement between Merge and Match
-add defined variable to each WITH statement
-add skos__definition to each node and relationship
+Add with statement between Merge and Match.
+add defined variable to each WITH statement.
+add skos__definition to each node and relationship.
+create the node if not exist.
 Schema: {schema}
 Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
 """
