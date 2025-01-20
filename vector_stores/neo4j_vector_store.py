@@ -27,7 +27,7 @@ def load_textfile_embeddings(file_path):
     return vector_store
 
 
-def load_pdffile_embeddings(file_path):
+def load_pdffile_embeddings(file_path, db_name, index_name):
     embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     loader = PyPDFLoader(file_path)
     docs = loader.load()
@@ -42,45 +42,60 @@ def load_pdffile_embeddings(file_path):
         url=os.getenv("Neo4jFinDBUrl"),
         username=os.getenv("Neo4jFinDBUserName"),
         password=os.getenv("Neo4jFinDBPassword"),
-        database=vector_db,
+        database=db_name,
+        index_name=index_name,
     )
     vector_store.add_documents(all_splits)
     return vector_store
 
-def get_embeddings(index_name:str):
-    retrieval_query = """
-    RETURN node.Description AS text, score, {account:node.Account} AS metadata
-    """
+def get_embedding_store(index_name:str, retrieval_query: str, vector_db:str):
     embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     store = Neo4jVector.from_existing_index(
         embeddings,
         url=os.getenv("Neo4jFinDBUrl"),
         username=os.getenv("Neo4jFinDBUserName"),
         password=os.getenv("Neo4jFinDBPassword"),
-        database=os.getenv("Neo4jFinDBName"),
+        database=vector_db,
         index_name=index_name,
         retrieval_query=retrieval_query,
     )
     return store
 
-def load_from_graph_embeddings(index_name:str, node_label:str, properties:[str]):
+def load_from_graph_embeddings(index_name:str, node_label:str, properties:[str], vector_db):
     embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
     existing_graph = Neo4jVector.from_existing_graph(
         embedding=embeddings,
         url=os.getenv("Neo4jFinDBUrl"),
         username=os.getenv("Neo4jFinDBUserName"),
         password=os.getenv("Neo4jFinDBPassword"),
-        database=os.getenv("Neo4jFinDBName"),
+        database=vector_db,
         index_name=index_name,
         node_label=node_label,
         text_node_properties=properties,
         embedding_node_property="embedding",
     )
 # file_path = "../resource/62N-2022-2-23-TaxBillView.pdf"
-# store = load_pdffile_embeddings(file_path)
-# print(store.similarity_search("how much paid?"))
+# store = load_pdffile_embeddings(file_path,'pdf','tax_index')
+retrieval_query = """
+RETURN node.text AS text, score, {start_index:node.start_index} AS metadata
+"""
+store = get_embedding_store('tax_index',retrieval_query,'pdf')
+print(store.similarity_search("how much paid?"))
+
 
 # store = load_from_graph_embeddings("transaction_index",'JerseyCityTaxBilling',['Description'])
-
-# store = get_embeddings("transaction_index")
+# retrieval_query = """
+#     RETURN node.Description AS text, score, {account:node.Account} AS metadata
+#     """
+# store = get_embeddings("transaction_index",retrieval_query,"financedb")
+#
 # print(store.similarity_search("MONTGORY"))
+
+# store = load_from_graph_embeddings("class_index",'owl__Class',['rdfs__label','skos__definition'])
+
+# retrieval_query = """
+# RETURN node.rdfs__label AS text, score, {owl__Class: node.rdfs__label} AS metadata
+# """
+# store = get_embeddings("owl__Class_index", retrieval_query,"rdf")
+#
+# print(store.similarity_search("party in the contract"))

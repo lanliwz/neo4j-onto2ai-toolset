@@ -123,4 +123,5 @@ export GOOGLE_PROJECT_ID="PROJECT-ID"
 
 ```
 ## Retrival Augmented Generation with Knowledge Graph
-![img.png](qa_workflow.png)
+![img.png](resource/images/qa_workflow.png)
+

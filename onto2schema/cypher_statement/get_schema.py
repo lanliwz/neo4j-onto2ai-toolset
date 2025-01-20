@@ -18,13 +18,13 @@ RETURN DISTINCT type(r) as relationship, properties(r) as annotation_properties
 start_nodes_return  = '''
 WITH n,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw
 RETURN DISTINCT apoc.text.join(start_node_raw, '') AS start_node, 
-apoc.map.removeKey(properties(n), 'rdfs__label') as annotation_properties
+apoc.map.removeKeys(properties(n), ['embedding']) as annotation_properties
 '''
 
 end_nodes_return = '''
 WITH m,[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(end_node_raw, '') AS end_node, 
-apoc.map.removeKey(properties(m), 'rdfs__label') as annotation_properties
+apoc.map.removeKeys(properties(m), ['embedding']) as annotation_properties
 '''
 
 def query_schema(label=None):
