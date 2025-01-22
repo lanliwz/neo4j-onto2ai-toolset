@@ -13,3 +13,16 @@ def execute_cypher(state: OverallState) -> OverallState:
         "next_action": "end",
         "steps": ["execute_cypher"],
     }
+
+def execute_cypher_g(state: OverallState, graph: Neo4jGraph) -> OverallState:
+    """
+    Executes the given Cypher statement.
+    """
+
+    records = graph.query(state.get("cypher_statement"))
+    # logging.info(state.get("cypher_statement"))
+    return {
+        "database_records": records if records else no_results,
+        "next_action": "end",
+        "steps": ["execute_cypher"],
+    }
