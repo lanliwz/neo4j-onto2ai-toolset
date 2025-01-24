@@ -1,6 +1,6 @@
-from chatbots.cypher_corrector import correct_cypher
-from chatbots.cypher_excecution import execute_cypher
-from chatbots.cypher_exception import validate_cypher
+from chatbots.cypher_syntax_corrector import correct_cypher
+from chatbots.cypher_runner import execute_cypher
+from chatbots.cypher_exception_handler import validate_cypher
 from chatbots.cypher_krag_utl import *
 from langgraph.graph import END, START, StateGraph
 
@@ -29,4 +29,5 @@ langgraph.add_edge("generate_final_answer", END)
 
 langgraph = langgraph.compile()
 
-print(langgraph.invoke({"question": "what are the account payments in the year 2024, group by account"}))
+# print(langgraph.invoke({"question": "what are the account payments in the year 2024, group by account"}))
+print(langgraph.invoke({"question": "what are the total account payments in the year 2024, by account?"}))

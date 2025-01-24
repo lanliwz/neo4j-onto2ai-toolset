@@ -1,6 +1,6 @@
-from kg_chatbot_guardrails import *
+from entrance_guard import *
 from langchain_core.output_parsers import StrOutputParser
-from account_query_examples import *
+from tax4jc_query_examples import *
 
 text2cypher_prompt = ChatPromptTemplate.from_messages(
     [

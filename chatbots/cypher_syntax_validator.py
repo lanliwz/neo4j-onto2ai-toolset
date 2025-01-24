@@ -34,6 +34,7 @@ Make sure you don't make any mistakes!"""
 
 validate_cypher_prompt = ChatPromptTemplate.from_messages(
     [
+
         (
             "system",
             validate_cypher_system,

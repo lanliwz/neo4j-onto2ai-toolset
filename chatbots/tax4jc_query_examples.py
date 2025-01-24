@@ -19,5 +19,5 @@ examples = [
 
 
 example_selector = SemanticSimilarityExampleSelector.from_examples(
-    examples, OpenAIEmbeddings(), Chroma, k=1, input_keys=["question"]
+    examples, OpenAIEmbeddings(), Chroma, k=4, input_keys=["question"]
 )

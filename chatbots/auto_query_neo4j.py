@@ -20,7 +20,7 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0)
 chain = GraphCypherQAChain.from_llm(
     graph=graph, llm=llm, verbose=True, allow_dangerous_requests=True
 )
-response = chain.invoke({"query": "total account balance for account 556886 in year 2023?"})
+response = chain.invoke({"query": "what are the total account payments in the year 2024, by account?"})
 print(response)
 # enhanced_graph = Neo4jGraph(enhanced_schema=True)
 # print(enhanced_graph.schema)
