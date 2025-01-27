@@ -34,6 +34,13 @@ def generate_cypher4taxbill(file,llm):
     (:TaxStatement)-[:HAS_PAYMENT]->(:Payment)
     (:Property)-[:HAS_TAX_STATEMENT]->(:TaxStatement)
     (:Owner)-[:OWNS]->(:Property)
+    (:Levy) has properties 
+        "uuid"	["String"]	mandatory, 
+        "description"	["String"] mandatory, 
+        "tax_amount_with_exemptions"	["Double"] mandatory,
+        "tax_amount_without_exemptions"	["Double"]	optional;
+    (:TaxStatement) has properties
+        "year"	["String"]	mandatory
     
     Cypher Syntax Examples:
     CREATE CONSTRAINT IF NOT EXISTS FOR ... REQUIRE ... IS UNIQUE;
@@ -44,7 +51,8 @@ def generate_cypher4taxbill(file,llm):
     
     Instruction: Extract node and relationship from Content.
     Generate id for each Levy node using tax year, property address and Levy description, hash the value, WITH *, apoc.util.md5([data.year, data.address, levy_data.description]) AS levy_uuid
-    ALWAYS add WITH between MERGE and UNWIND.
+    ALWAYS add WITH
+     between MERGE and UNWIND.
     No ";" before WITH statement.
     Do not re-use the same variable.
     Never use CALL statement for apoc.util.md5.

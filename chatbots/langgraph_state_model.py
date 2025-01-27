@@ -1,9 +1,9 @@
-from langchain.prompts import example_selector
+
 from langchain_chroma import Chroma
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableSerializable
+
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from neo4j.exceptions import CypherSyntaxError
@@ -286,3 +286,48 @@ def validate_cypher(state: OverallState, graph:Neo4jGraph, llm: ChatOpenAI) -> O
         "cypher_errors": errors,
         "steps": ["validate_cypher"],
     }
+
+
+def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
+    """
+    Executes the given Cypher statement.
+    """
+    no_results = "I couldn't find any relevant information in the database"
+    records = graph.query(state.get("cypher_statement"))
+    # logging.info(state.get("cypher_statement"))
+    return {
+        "database_records": records if records else no_results,
+        "next_action": "end",
+        "steps": ["execute_cypher"],
+    }
+
+
+def generate_final_answer_g(state: OverallState,llm: ChatOpenAI) -> OutputState:
+    """
+    Decides if the question is related to movies.
+    """
+    generate_final_prompt = ChatPromptTemplate.from_messages([
+        (
+            "system",
+            "You are a helpful assistant",
+        ),
+        (
+            "human",
+            (
+                """Use the following results retrieved from a database to provide
+                    a succinct, definitive answer to the user's question.
+
+                    Respond as if you are answering the question directly.
+
+                    Results: {results}
+                    Question: {question}"""
+            ),
+        ),
+    ])
+
+    generate_final_chain = generate_final_prompt | llm | StrOutputParser()
+
+    final_answer = generate_final_chain.invoke(
+        {"question": state.get("question"), "results": state.get("database_records")}
+    )
+    return {"answer": final_answer, "steps": ["generate_final_answer"]}
