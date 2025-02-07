@@ -1,9 +1,7 @@
-from agents.tax62n_db_connect import llm, graph
-from chatbots.langgraph_state_model import *
+from tax62_chatbot.tax62n_connect import llm, graph
+from ai_graph_flow.langgraph_flow_model import *
 from langgraph.graph import END, START, StateGraph
-from agents.tax62n_query_examples import examples
-
-from functools import partial
+from tax62_chatbot.tax62n_query_examples import examples
 
 langgraph = StateGraph(OverallState, input=InputState, output=OutputState)
 

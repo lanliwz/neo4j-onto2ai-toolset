@@ -61,6 +61,14 @@ class ValidateCypherOutput(BaseModel):
         description="A list of property-based filters applied in the Cypher statement."
     )
 
+def more_question(state: OverallState) -> OutputState:
+    """
+    Decides if more question need to ask
+    """
+    next_question = "get next question from keyboard input"
+    return {"question": next_question, "steps": ["more_question"]}
+
+
 def generate_cypher(state: OverallState,graph: Neo4jGraph, llm: ChatOpenAI,examples: []) -> OverallState:
     """
     Generates a cypher statement based on the provided schema and user input

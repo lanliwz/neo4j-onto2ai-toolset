@@ -24,7 +24,7 @@ Note: Do not include any explanations or apologies in your responses.
 """
 
 gen_realworld_relationship_template = """
-Task: generate Cypher statement to add additional relationship and owl__Class.
+Task: generate Cypher statements to add additional relationship and owl__Class, output each statement as one element of an array.
 Instruction: The node in the schema is a owl__Class with rdfs_label, 
 and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
 new relationship and generate Cypher statement to create the relationship.
@@ -33,7 +33,6 @@ No change to exist node. To reference existing node, the node type is :owl__Clas
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
 no new owl__ObjectProperty created.
-Add with statement between Merge and Match.
 add defined variable to each WITH statement.
 add skos__definition to each node and relationship.
 create the node if not exist.

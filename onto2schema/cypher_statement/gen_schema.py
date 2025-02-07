@@ -224,6 +224,13 @@ WITH a, b, type(r) AS relType, r.uri AS relProps, COLLECT(r) AS rels
 WHERE SIZE(rels) > 1
 FOREACH (r IN rels[1..] | DELETE r)
 '''
+
+del_dup_class = '''
+MATCH (a:owl__Class) 
+with a.uri as clsuri, collect(a) as dupclass 
+WHERE size(dupclass) > 1 
+FOREACH (dup in dupclass[1..] | DETACH DELETE dup)
+'''
 # convert xsd datatypes
 xsd_datatypes = '''
 MATCH (n:Resource)
