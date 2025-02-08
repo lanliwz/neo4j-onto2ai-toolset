@@ -23,7 +23,7 @@ def gen_prompt2enhance_schema(start_node:str, db):
         schema = start_node
         final_template = PromptTemplate.from_template(crt_realworld_relationship_template)
     else:
-        final_template = PromptTemplate.from_template(gen_realworld_relationship_template)
+        final_template = PromptTemplate.from_template(enh_realworld_relationship_template)
 
 
     return final_template.invoke(schema)
