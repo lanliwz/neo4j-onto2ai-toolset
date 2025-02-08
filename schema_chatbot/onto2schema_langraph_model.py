@@ -1,3 +1,4 @@
+from holoviews import output
 from langchain_chroma import Chroma
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector
 from langchain_core.output_parsers import StrOutputParser
@@ -12,7 +13,7 @@ from typing import Annotated, List, Literal, Optional
 from operator import add
 from langchain_neo4j.chains.graph_qa.cypher_utils import CypherQueryCorrector, Schema
 
-from onto2schema.neo4j_utility import SemanticGraphDB
+from onto2schema.neo4j_utility import SemanticGraphDB, get_schema
 from prompts.onto2schema_prompt import gen_prompt2enhance_schema
 from schema_chatbot.onto2schema_connect import *
 
@@ -21,8 +22,10 @@ import json
 class InputState(TypedDict):
     question: str
     start_node: str
+    init: str = "init"
 
 class OverallState(TypedDict):
+    to_do_action: str
     start_node: str
     question: str
     next_action: str
@@ -68,9 +71,59 @@ def more_question(state: OverallState) -> OutputState:
     """
     Decides if more question need to ask
     """
-    next_question = "get next question from keyboard input"
-    start_node_name = "person"
-    return {"question": next_question, "start_node": start_node_name,"steps": ["more_question"]}
+    class Decision(BaseModel):
+        decision: Literal["continue", "end"] = Field(
+            description="Decision on whether the question is related to ontology or schema etc"
+        )
+        start_node: str = Field(
+            description="class label or node label"
+        )
+        action: Literal["review", "enhance"] = Field(
+            description="whether the question is related to review or enhance schema etc"
+        )
+
+    guard_of_entrance = """
+    As an intelligent assistant, your primary objective is to decide whether a given question is related to review or enhance schema. 
+    If the question is related, and at least one class name or node label provided in the question, output the class label or  node label. Otherwise, output "end".
+    To make this decision, assess the content of the question and determine if it refers to either get or enhance ontology/schema and identify the key class label or node label. Provide only the specified output: class label in lower case or "end".
+    """
+    guard_of_entrance_prompt = ChatPromptTemplate.from_messages(    [
+            (
+                "system",
+                guard_of_entrance,
+            ),
+            (
+                "human",
+                ("{question}"),
+            ),
+        ]
+    )
+    db_records = ""
+    guard_of_entrance_chain = guard_of_entrance_prompt | llm.with_structured_output(Decision)
+    question=input("what is your question?")
+    output = guard_of_entrance_chain.invoke({"question": question})
+    if output.decision=='end':
+        db_records = "unrelated question, end the conversation!"
+
+    print(output)
+
+    return {
+        "next_action": output.decision,
+        "start_node": output.start_node,
+        "to_do_action": output.action,
+        "database_records": db_records,
+        "steps": ["more_question"],
+    }
+
+def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
+    original_schema_prompt = get_schema(start_node=state.get("start_node"), db=db)
+    print(original_schema_prompt)
+    return {
+        "database_records": original_schema_prompt,
+        "steps": ["get_schema"]
+    }
+
+
 
 
 def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:

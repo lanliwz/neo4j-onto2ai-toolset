@@ -41,3 +41,17 @@ match only with rdfs__label.
 Schema: {schema}
 Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
 """
+
+crt_realworld_relationship_template = """
+Task: generate Cypher statements to add relationship and owl__Class, output each statement as one element of an array.
+Instruction: The node in the schema is a owl__Class with rdfs_label, 
+and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
+new relationship and generate Cypher statement to create the node and relationship.
+The new node or relationship should have uri with domain http://mydomain/ontology. 
+rdfs__label always be lower case, with space between words.
+relationship type is camel case with first character lower case.
+add skos__definition to each node and relationship.
+match only with rdfs__label.
+Schema: {schema}
+Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
+"""
