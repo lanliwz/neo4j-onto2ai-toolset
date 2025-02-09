@@ -31,6 +31,12 @@ class SemanticGraphDB:
             result = session.execute_read(self._get_dataset,query_node2node_relationship(label))
             return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
 
+    def get_node_dataproperty(self, label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset, query_dataproperty(label))
+            return [f"(:{record['start_node']}) is a node, it has data property {record['relationship']} with data type {record['end_node']}" for record in
+                    result]
+
     def get_start_nodes(self,label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset,query_start_nodes(label))
@@ -124,6 +130,7 @@ def rdf_to_neo4j_graph(db : SemanticGraphDB):
 
 def get_schema(start_node:str,db : SemanticGraphDB):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
+              + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
               + "\n".join(db.get_end_nodes(start_node)) + '\n'
               + "\n".join(db.get_start_nodes(start_node)) + '\n'
               + "\n".join(db.get_relationships(start_node)) + '\n'
