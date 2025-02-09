@@ -19,6 +19,12 @@ def query_to_enhance_schema(state: OverallState):
     return generate_cypher(state=state,db=db,llm=llm)
 lg.add_node(query_to_enhance_schema)
 
+
+# extract exist schema and enhance it
+def gen_pydantic_model(state: OverallState):
+    return generate_pydantic_class(state=state,db=db,llm=llm)
+lg.add_node(gen_pydantic_model)
+
 # add enhanced entity and relationship to current schema
 def run_query(state: OverallState):
     execute_graph_query(state,graphdb)
@@ -35,13 +41,15 @@ lg.add_node(review_current_schema)
 # edges
 def if_related_condition(
     state: OverallState,
-) -> Literal[END, "query_to_enhance_schema","review_current_schema"]:
+) -> Literal[END, "query_to_enhance_schema","review_current_schema","gen_pydantic_model"]:
     if state.get("next_action") == "end":
         return END
-    elif state.get("next_action") == "continue"  and state.get("to_do_action") == "enhance":
+    elif state.get("next_action") == "schema"  and state.get("to_do_action") == "enhance":
         return "query_to_enhance_schema"
-    elif state.get("next_action") == "continue" and state.get("to_do_action") == "review":
+    elif state.get("next_action") == "schema" and state.get("to_do_action") == "review":
         return "review_current_schema"
+    elif state.get("next_action") == "pydantic-model":
+        return "gen_pydantic_model"
 
 
 lg.add_edge(START,"more_question")
@@ -51,6 +59,7 @@ lg.add_edge("query_to_enhance_schema","run_query")
 lg.add_edge("run_query","del_dups")
 lg.add_edge("del_dups","more_question")
 lg.add_edge("review_current_schema","more_question")
+lg.add_edge("gen_pydantic_model","more_question")
 # lg.add_conditional_edges("more_question",if_related_condition)
 lg = lg.compile()
 
