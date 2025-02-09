@@ -27,13 +27,12 @@ enh_realworld_relationship_template = """
 Task: generate Cypher statements to add additional relationship and owl__Class, output each statement as one element of an array.
 Instruction: The node in the schema is a owl__Class with rdfs_label, 
 and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
-new relationship and generate Cypher statement to create the relationship.
+new relationship and generate Cypher statement to create the relationship, if possible, add relationship property owl__minQualifiedCardinality..
 The new node or relationship should have uri with domain http://mydomain/ontology.
 No change to exist node. To reference existing node, the node type is :owl__Class, the property rdfs__label is the one defined in annotation properties. 
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
 no new owl__ObjectProperty created.
-add defined variable to each WITH statement.
 add skos__definition to each node and relationship.
 create the node if not exist.
 instead of merge node, check if exists, create the node only not exists, then match again.
@@ -47,10 +46,10 @@ Task: generate Cypher statements to add relationship and owl__Class, output each
 Instruction: The node in the schema is a owl__Class with rdfs_label, 
 and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
 generate Cypher statement to merge the node.
-match the nodes and generate Cypher statement to create relationship.
+match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
 The new node or relationship should have uri with domain http://mydomain/ontology. 
 rdfs__label always be lower case, with space between words.
-relationship type is camel case with first character lower case, class is camel case with first character upper case.
+relationship type is camel case with first character lower case.
 add skos__definition to each node and relationship.
 match only with rdfs__label.
 Schema: {schema}

@@ -16,7 +16,7 @@ def gen_pydantic_class(start_node:str,db: SemanticGraphDB):
     final_template = PromptTemplate.from_template(gen_pydantic_class_template)
     return final_template.invoke(schema)
 
-def gen_prompt2enhance_schema(start_node:str, db):
+def gen_prompt4schema(start_node:str, db):
     schema = get_schema(start_node=start_node, db=db)
 
     if len(schema.strip()) == 0 or schema == None:

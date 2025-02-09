@@ -14,7 +14,7 @@ from operator import add
 from langchain_neo4j.chains.graph_qa.cypher_utils import CypherQueryCorrector, Schema
 
 from onto2schema.neo4j_utility import SemanticGraphDB, get_schema
-from prompts.onto2schema_prompt import gen_prompt2enhance_schema
+from prompts.onto2schema_prompt import gen_prompt4schema
 from schema_chatbot.onto2schema_connect import *
 
 import json
@@ -130,7 +130,7 @@ def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -
     """
     Generates a cypher statement based on the provided schema and user input
     """
-    original_schema_prompt = gen_prompt2enhance_schema(start_node=state.get("start_node"),db=db)
+    original_schema_prompt = gen_prompt4schema(start_node=state.get("start_node"), db=db)
 
     text2cypher_prompt = ChatPromptTemplate.from_messages(
         [
