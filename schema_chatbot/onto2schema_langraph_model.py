@@ -72,7 +72,7 @@ def more_question(state: OverallState) -> OutputState:
     Decides if more question need to ask
     """
     class Decision(BaseModel):
-        decision: Literal["schema","pydantic-model","continue", "end"] = Field(
+        decision: Literal["schema","pydantic-model","relation-model", "end"] = Field(
             description="Decision on whether the question is related to ontology or schema etc"
         )
         start_node: str = Field(
@@ -87,7 +87,8 @@ def more_question(state: OverallState) -> OutputState:
     If the question is related, and at least one class name or node label provided in the question as schema, output the class label or node label in lower case as start_node.
     To make this decision, assess the content of the question.
     If it refers to get ontology/schema, output decision=schema.
-    If it refers to generate pydantic, output decision=pydantic-model.  
+    If it refers to generate pydantic model, output decision=pydantic-model.  
+    If it refers to generate relation model, output decision=relation-model.  
     Otherwise, output decision=end
     """
     guard_of_entrance_prompt = ChatPromptTemplate.from_messages(    [
@@ -126,6 +127,33 @@ def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
         "steps": ["get_schema"]
     }
 
+def generate_relational_db_ddl(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
+    original_schema = get_schema(start_node=state.get("start_node"), db=db)
+    text2prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                (
+                    "Given an input, generate oracle database DDL, ignore annotation properties. No pre-amble."
+                    "Do not wrap the response in any backticks or anything else. Respond with code only!"
+                ),
+            ),
+            (
+                "human",
+                (
+                    """{schema}"""
+                ),
+            ),
+        ]
+    )
+    text_chain = text2prompt | llm | StrOutputParser()
+    generated_ddl = text_chain.invoke(
+        {
+            "schema": original_schema
+        }
+    )
+    print(generated_ddl)
+    return {"cypher_statement": generated_ddl, "steps": ["generate_relational_db_ddl"]}
 
 def generate_pydantic_class(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
     original_schema_prompt = gen_pydantic_class(start_node=state.get("start_node"), db=db)
