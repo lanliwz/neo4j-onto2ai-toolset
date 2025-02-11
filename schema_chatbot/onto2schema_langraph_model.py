@@ -135,6 +135,7 @@ def generate_relational_db_ddl(state: OverallState, db: SemanticGraphDB, llm: Ch
                 "system",
                 (
                     "Given an input, generate oracle database DDL, ignore annotation properties. No pre-amble."
+                    "For simple node and one to one relationship, add column to the table instead of creating another table"
                     "Do not wrap the response in any backticks or anything else. Respond with code only!"
                 ),
             ),
@@ -219,12 +220,16 @@ def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -
 
 
 def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
+    # import ast
     """
     Executes the given Cypher statement.
     """
     no_results = "I couldn't find any relevant information in the database"
     stmt_str = state.get("cypher_statement")
+    # print(stmt_str)
     statements = json.loads(stmt_str)
+        # [eval(expr) for expr in ast.literal_eval(stmt_str)]
+        # json.loads(stmt_str))
     records = []
     for stmt in statements:
 

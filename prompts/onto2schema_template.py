@@ -24,7 +24,7 @@ Note: Do not include any explanations or apologies in your responses.
 """
 
 enh_realworld_relationship_template = """
-Task: generate Cypher statements to add additional relationship and owl__Class, output each statement as one element of an array.
+Task: generate Cypher statements to add additional relationship and owl__Class, output each statement as single line element of an array.
 Instruction: The node in the schema is a owl__Class with rdfs_label, 
 and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
 new relationship and generate Cypher statement to create the relationship, if possible, add relationship property owl__minQualifiedCardinality..

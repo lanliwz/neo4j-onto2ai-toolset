@@ -113,5 +113,3 @@ def query_dataproperty(label=None):
     query += start_nodes_dataproperty_return
     return query
 
-# print(query_relationships('person'))
-print(query_dataproperty('person'))

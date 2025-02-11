@@ -5,7 +5,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
 import os
 
-vector_db = 'rdf'
+vector_db = 'rdfmodel'
 # The Neo4jVector Module will connect to Neo4j and create a vector index if needed.
 
 def load_textfile_embeddings(file_path):
@@ -76,11 +76,11 @@ def load_from_graph_embeddings(index_name:str, node_label:str, properties:[str],
     )
 # file_path = "../resource/62N-2022-2-23-TaxBillView.pdf"
 # store = load_pdffile_embeddings(file_path,'pdf','tax_index')
-retrieval_query = """
-RETURN node.text AS text, score, {start_index:node.start_index} AS metadata
-"""
-store = get_embedding_store('tax_index',retrieval_query,'pdf')
-print(store.similarity_search("how much paid?"))
+# retrieval_query = """
+# RETURN node.text AS text, score, {start_index:node.start_index} AS metadata
+# """
+# store = get_embedding_store('tax_index',retrieval_query,'pdf')
+# print(store.similarity_search("how much paid?"))
 
 
 # store = load_from_graph_embeddings("transaction_index",'JerseyCityTaxBilling',['Description'])
@@ -91,11 +91,12 @@ print(store.similarity_search("how much paid?"))
 #
 # print(store.similarity_search("MONTGORY"))
 
-# store = load_from_graph_embeddings("class_index",'owl__Class',['rdfs__label','skos__definition'])
+# 1. build the embeddings
+# store = load_from_graph_embeddings("owl__Class_index",'owl__Class',['rdfs__label','skos__definition'],vector_db=vector_db)
+# 2. do the similarity search
+retrieval_query = """
+RETURN node.rdfs__label AS text, score, {owl__Class: node.rdfs__label} AS metadata
+"""
+store = get_embedding_store("owl__Class_index", retrieval_query,"rdfmodel")
 
-# retrieval_query = """
-# RETURN node.rdfs__label AS text, score, {owl__Class: node.rdfs__label} AS metadata
-# """
-# store = get_embeddings("owl__Class_index", retrieval_query,"rdf")
-#
-# print(store.similarity_search("party in the contract"))
+print(store.similarity_search("tax account"))
