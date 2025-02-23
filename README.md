@@ -112,6 +112,10 @@ Guidelines for Designing a Graph Database with Ontology:
 - Example: Encrypt sensitive attributes like paymentInfo on Order nodes.
 
 ## Settings
+### use pipenv instead of pip to keep the pipfile updated with proper version
+```
+pipenv install 
+```
 ### Google Cloud
 ```commandline
 gcloud init
