@@ -1,10 +1,16 @@
 import logging
+import os
+from dotenv import load_dotenv
 
-logging.getLogger("neo4j").setLevel(logging.ERROR)
+load_dotenv()
+MY_LOG_LEVEL = os.getenv('MY_LOG_LEVEL')
+NEO4J_LOG_LEVEL = os.getenv('NEO4J_LOG_LEVEL')
+
+logging.getLogger("neo4j").setLevel(NEO4J_LOG_LEVEL)
 
 logger = logging.getLogger("neo4j-onto2ai-toolset")  # Use project name as the root logger
 # default log level as INFO
-logger.setLevel(logging.INFO)
+logger.setLevel(MY_LOG_LEVEL)
 
 # Create a console handler
 console_handler = logging.StreamHandler()

@@ -10,7 +10,6 @@ from typing_extensions import TypedDict
 from onto2schema.neo4j_utility import SemanticGraphDB, get_schema
 from prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from schema_chatbot.onto2schema_connect import *
-
 from logger_config import logger as mylogger
 
 
