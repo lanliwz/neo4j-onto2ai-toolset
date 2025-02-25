@@ -1,23 +1,20 @@
-from holoviews import output
-from langchain_chroma import Chroma
-from langchain_core.example_selectors import SemanticSimilarityExampleSelector
+import json
+from operator import add
+from typing import Annotated, List, Literal, Optional
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-
-from langchain_neo4j import Neo4jGraph
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from neo4j.exceptions import CypherSyntaxError
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
-from typing import Annotated, List, Literal, Optional
-from operator import add
-from langchain_neo4j.chains.graph_qa.cypher_utils import CypherQueryCorrector, Schema
 
 from onto2schema.neo4j_utility import SemanticGraphDB, get_schema
 from prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from schema_chatbot.onto2schema_connect import *
 
-import json
+from logger_config import logger as mylogger
+
+
+
 
 class InputState(TypedDict):
     question: str
@@ -109,7 +106,7 @@ def more_question(state: OverallState) -> OutputState:
     if output.decision=='end':
         db_records = "unrelated question, end the conversation!"
 
-    print(output)
+    mylogger.info(output)
 
     return {
         "next_action": output.decision,
@@ -121,7 +118,7 @@ def more_question(state: OverallState) -> OutputState:
 
 def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
     original_schema_prompt = get_schema(start_node=state.get("start_node"), db=db)
-    print(original_schema_prompt)
+    mylogger.info(original_schema_prompt)
     return {
         "database_records": original_schema_prompt,
         "steps": ["get_schema"]
@@ -153,7 +150,7 @@ def generate_relational_db_ddl(state: OverallState, db: SemanticGraphDB, llm: Ch
             "schema": original_schema
         }
     )
-    print(generated_ddl)
+    mylogger.info(generated_ddl)
     return {"cypher_statement": generated_ddl, "steps": ["generate_relational_db_ddl"]}
 
 def generate_pydantic_class(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
@@ -181,7 +178,7 @@ def generate_pydantic_class(state: OverallState, db: SemanticGraphDB, llm: ChatO
             "schema": original_schema_prompt.to_string()
         }
     )
-    print(generated_clz)
+    mylogger.info(generated_clz)
     return {"cypher_statement": generated_clz, "steps": ["generate_pydantic_class"]}
 
 def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
@@ -226,7 +223,7 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
     """
     no_results = "I couldn't find any relevant information in the database"
     stmt_str = state.get("cypher_statement")
-    # print(stmt_str)
+    # mylogger.info(stmt_str)
     statements = json.loads(stmt_str)
         # [eval(expr) for expr in ast.literal_eval(stmt_str)]
         # json.loads(stmt_str))
@@ -235,9 +232,9 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
 
         try:
             records.append(graph.query(stmt))
-            print(f'executed - {stmt}')
+            mylogger.info(f'executed - {stmt}')
         except Exception as e:
-            print(e)
+            mylogger.info(e)
             records.append(e)
     return {
         "database_records": records if records else no_results,
@@ -257,9 +254,9 @@ def del_dup_cls_rels(state: OverallState, graph: Neo4jGraph) -> OverallState:
 
         try:
             records.append(graph.query(stmt))
-            print(f'executed - {stmt}')
+            mylogger.info(f'executed - {stmt}')
         except Exception as e:
-            print(e)
+            mylogger.info(e)
             records.append(e)
     return {
         "database_records": records if records else no_results,
