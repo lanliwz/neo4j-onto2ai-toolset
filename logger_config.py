@@ -1,5 +1,7 @@
 import logging
 
+logging.getLogger("neo4j").setLevel(logging.ERROR)
+
 logger = logging.getLogger("neo4j-onto2ai-toolset")  # Use project name as the root logger
 # default log level as INFO
 logger.setLevel(logging.INFO)
@@ -15,4 +17,4 @@ console_handler.setFormatter(formatter)
 # Add the handler
 logger.addHandler(console_handler)
 
-logger.info("Logging is set up neo4j-onto2ai-toolset")
+# logger.info("Logging is set up neo4j-onto2ai-toolset")

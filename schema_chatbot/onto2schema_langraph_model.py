@@ -223,10 +223,8 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
     """
     no_results = "I couldn't find any relevant information in the database"
     stmt_str = state.get("cypher_statement")
-    # mylogger.info(stmt_str)
+    mylogger.debug(stmt_str)
     statements = json.loads(stmt_str)
-        # [eval(expr) for expr in ast.literal_eval(stmt_str)]
-        # json.loads(stmt_str))
     records = []
     for stmt in statements:
 
@@ -234,7 +232,7 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
             records.append(graph.query(stmt))
             mylogger.info(f'executed - {stmt}')
         except Exception as e:
-            mylogger.info(e)
+            mylogger.error(e)
             records.append(e)
     return {
         "database_records": records if records else no_results,
@@ -256,7 +254,7 @@ def del_dup_cls_rels(state: OverallState, graph: Neo4jGraph) -> OverallState:
             records.append(graph.query(stmt))
             mylogger.info(f'executed - {stmt}')
         except Exception as e:
-            mylogger.info(e)
+            mylogger.error(e)
             records.append(e)
     return {
         "database_records": records if records else no_results,

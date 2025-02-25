@@ -1,11 +1,5 @@
 import json
-import logging
 from logger_config import logger as mylogger
-
-# Suppress Neo4j warnings
-logging.getLogger("neo4j").setLevel(logging.ERROR)
-
-
 
 from langgraph.graph import END, START, StateGraph
 from onto2schema_connect import *
