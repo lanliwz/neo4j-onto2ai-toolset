@@ -1,6 +1,7 @@
 import os
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI
+from neo4j_onto2ai_toolset.logger_config import *
 
 # llm = ChatOpenAI(model="gpt-o3-mini", temperature=0)
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
@@ -24,3 +25,4 @@ auth_data = {
     'user': username,
     'pwd': password
     }
+
