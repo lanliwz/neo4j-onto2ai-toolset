@@ -8,9 +8,9 @@ from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema
-from prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
+from neo4j_onto2ai_toolset.prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import *
-from logger_config import logger as mylogger
+from neo4j_onto2ai_toolset.logger_config import logger as mylogger
 
 
 
@@ -240,7 +240,7 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
     }
 
 def del_dup_cls_rels(state: OverallState, graph: Neo4jGraph) -> OverallState:
-    from onto2schema.cypher_statement.gen_schema import del_dup_rels,del_dup_class
+    from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels,del_dup_class
     """
     Executes the given Cypher statements.
     """

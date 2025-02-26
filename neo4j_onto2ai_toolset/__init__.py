@@ -2,6 +2,7 @@
 # This file makes the directory a package
 
 from .schema_chatbot import chatbot
+from . import logger_config
 
 
 

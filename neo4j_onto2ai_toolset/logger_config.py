@@ -6,9 +6,11 @@ load_dotenv()
 MY_LOG_LEVEL = os.getenv('MY_LOG_LEVEL')
 NEO4J_LOG_LEVEL = os.getenv('NEO4J_LOG_LEVEL')
 
-logging.getLogger("neo4j").setLevel(NEO4J_LOG_LEVEL)
+neo4j_logger = logging.getLogger("neo4j")
 
-logger = logging.getLogger("neo4j-onto2ai-toolset")  # Use project name as the root logger
+neo4j_logger.setLevel(NEO4J_LOG_LEVEL)
+
+logger = logging.getLogger("onto2ai-toolset")  # Use project name as the root logger
 # default log level as INFO
 logger.setLevel(MY_LOG_LEVEL)
 
