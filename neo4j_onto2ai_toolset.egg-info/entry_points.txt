@@ -1,0 +1,2 @@
+[console_scripts]
+neo4j-chatbot = neo4j_onto2ai_toolset.schema_chatbot.chatbot:main
