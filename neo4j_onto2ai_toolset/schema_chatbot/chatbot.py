@@ -2,6 +2,8 @@ import json
 from logger_config import logger as mylogger
 
 from langgraph.graph import END, START, StateGraph
+
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
 from onto2schema_connect import *
 from onto2schema_langraph_model import *
 

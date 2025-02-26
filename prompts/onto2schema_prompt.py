@@ -1,6 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 from prompts.onto2schema_template import *
-from onto2schema.neo4j_utility import *
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import *
 
 def question2llm(question:str, schema:str, example_question = "", example_answer = ""):
     schema_final_prompt = (PromptTemplate.from_template(schema_template)
