@@ -33,7 +33,7 @@ No change to exist node. To reference existing node, the node type is :owl__Clas
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
 no new owl__ObjectProperty created.
-add skos__definition to each node and relationship.
+For each node and relationship, generate a skos__definition, no single quote like "earth's surface" inside the skos__definition.
 create the node if not exist.
 instead of merge node, check if exists, create the node only not exists, then match again.
 match only with rdfs__label.
@@ -50,7 +50,7 @@ match the nodes and generate Cypher statement to create relationship, if possibl
 The new node or relationship should have uri with domain http://mydomain/ontology. 
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
-add skos__definition to each node and relationship.
+For each node and relationship, generate a skos__definition, no single quote like "earth's surface" inside the skos__definition.
 match only with rdfs__label.
 Schema: {schema}
 Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
