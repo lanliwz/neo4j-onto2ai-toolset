@@ -10,7 +10,7 @@ from neo4j_onto2ai_toolset.onto2schema.neo4j_connect import (
     neo4j_db_name)
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
-from onto2schema_langraph_model import (
+from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
     OverallState,
     InputState,
     OutputState,
@@ -85,7 +85,7 @@ lg.add_edge("gen_relation_model","more_question")
 lg = lg.compile()
 
 # print(lg.invoke({"question": "enhance the schema of person based on the schema provide"}).get('database_records'))
-lg.invoke({"init":"start the process"})
+# lg.invoke({"init":"start the process"})
 # text = gen_prompt2enhance_schema("language",db)
 # # text="\nTask: generate Cypher statement to add additional relationship and owl__Class.\nInstruction: The node in the schema is a owl__Class with rdfs_label, \nand the annotation properties are metadata for both node and relationship. Use real world knowledge to infer \nnew relationship and generate Cypher statement to create the relationship.\nThe new node or relationship should have uri with domain http://mydomain/ontology.\nNo change to exist node. To reference existing node, the node type is :owl__Class, the property rdfs__label is the one defined in annotation properties. \nrdfs__label always be lower case, with space between words.\nrelationship type is camel case with first character lower case.\nno new owl__ObjectProperty created.\nAdd with statement between Merge and Match.\nadd defined variable to each WITH statement.\nadd skos__definition to each node and relationship.\ncreate the node if not exist.\ninstead of merge node, check if exists, create the node only not exists, then match again.\nmatch only with rdfs__label.\nSchema: (:Party)-[:isAPartyTo]->(:Undefined)\n(:Undefined) is a node, annotation properties {'rdfs__label': 'undefined'}\n(:Party) is a node, annotation properties {'rdfs__label': 'party', 'skos__definition': 'person or organization', 'uri': 'https://www.omg.org/spec/Commons/PartiesAndSituations/Party'}\n[:isAPartyTo] is a relationship, annotation properties  {'rdfs__label': 'is a party to', 'skos__definition': 'identifies an agreement, contract, policy, regulation, situation, or other arrangement that a party is associated with', 'uri': 'https://www.omg.org/spec/Commons/PartiesAndSituations/isAPartyTo'}\n\nNote: Add many relationships you can find, do not include any explanations or apologies in your responses.\n"
 # print(text.to_string())
