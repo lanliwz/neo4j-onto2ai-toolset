@@ -250,3 +250,13 @@ rm_redounded_label='''
 match (n:owl__Class|owl__ObjectProperty|owl__DatatypeProperty|owl__AnnotationProperty|owl__FunctionalProperty|owl__TransitiveProperty)
 remove n:Resource
 '''
+
+crt_sameAs_rel= """
+MATCH (a:owl__Class) 
+WITH a.rdfs__label AS clsuri, COLLECT(a) AS dupclass 
+WHERE SIZE(dupclass) > 1 
+UNWIND dupclass AS dup
+WITH dupclass[0] AS base, dup 
+WHERE dup <> base
+MERGE (dup)-[:sameAs]->(base);
+"""

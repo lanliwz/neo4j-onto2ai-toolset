@@ -186,6 +186,8 @@ def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -
     """
     original_schema_prompt = gen_prompt4schema(start_node=state.get("start_node"), db=db)
 
+    logger.info(original_schema_prompt.to_string())
+
     text2cypher_prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -193,6 +195,9 @@ def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -
                 (
                     "Given an input, convert it to a Cypher query. No pre-amble."
                     "Do not wrap the response in any backticks or anything else. Respond with a Cypher statement only!"
+                    "When merge a node, using rdfs__label as merge property"
+                    "ON CREATE SET a.uri='some uri'"
+                    "ON MATCH SET a.uri=COALESCE(a.uri,'some uri')"
                 ),
             ),
             (
