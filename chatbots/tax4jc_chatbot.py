@@ -1,6 +1,6 @@
 from chatbots.cypher_syntax_corrector import correct_cypher
 from chatbots.cypher_runner import execute_cypher
-from chatbots.cypher_exception_handler import validate_cypher
+from chatbots.cypher_exception_handler import validate_cypher as my_validate_cypher
 from chatbots.cypher_krag_utl import *
 from langgraph.graph import END, START, StateGraph
 
@@ -8,7 +8,7 @@ from langgraph.graph import END, START, StateGraph
 langgraph = StateGraph(OverallState, input=InputState, output=OutputState)
 langgraph.add_node(guardrails)
 langgraph.add_node(generate_cypher)
-langgraph.add_node(validate_cypher)
+langgraph.add_node(my_validate_cypher)
 langgraph.add_node(correct_cypher)
 langgraph.add_node(execute_cypher)
 langgraph.add_node(generate_final_answer)
