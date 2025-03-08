@@ -74,8 +74,11 @@ def more_question(state: OverallState) -> OutputState:
         start_node: str = Field(
             description="class label or node label"
         )
-        action: Literal["review", "enhance"] = Field(
-            description="whether the question is related to review or enhance schema etc"
+        action: Literal["review", "enhance","create"] = Field(
+            description="whether the question is related to review, enhance or create schema etc"
+        )
+        based_on: str = Field(
+            description="based on what to create the schema?"
         )
 
     guard_of_entrance = """
@@ -111,6 +114,7 @@ def more_question(state: OverallState) -> OutputState:
         "next_action": output.decision,
         "start_node": output.start_node,
         "to_do_action": output.action,
+        "based_on": output.based_on,
         "database_records": db_records,
         "steps": ["more_question"],
     }
@@ -179,6 +183,53 @@ def generate_pydantic_class(state: OverallState, db: SemanticGraphDB, llm: ChatO
     )
     mylogger.info(generated_clz)
     return {"cypher_statement": generated_clz, "steps": ["generate_pydantic_class"]}
+
+def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
+    """
+    Generates a cypher statement based on the provided schema and user input
+    """
+    text2cypher_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                (
+                    """
+                    Given an input, convert it to a Cypher query. No pre-amble.
+                    Do not wrap the response in any backticks or anything else. Respond with a Cypher statement only!
+                    """
+                ),
+            ),
+            (
+                "human",
+                (
+                    """
+                    Task: generate Cypher statements to add relationship, owl__Class, class hierarchy as owl__subClassOf, output each statement as one element of an array.
+                    Instruction: The node in the schema is a owl__Class with rdfs_label, 
+                    and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
+                    generate Cypher statement to merge the node.
+                    match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
+                    The new node or relationship should have uri with domain http://mydomain/ontology. 
+                    rdfs__label always be lower case, with space between words.
+                    relationship type is camel case with first character lower case.
+                    For each node and relationship, generate a skos__definition, which should not contain single quote character.
+                    match only with rdfs__label.
+                    {schema}
+                    Schema: get schema information from https://gojs.net/latest/api/symbols/Node.html
+                    Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
+                    """
+                ),
+            ),
+        ]
+    )
+    mylogger.info(text2cypher_prompt)
+    text2cypher_chain = text2cypher_prompt | llm | StrOutputParser()
+    generated_cypher = text2cypher_chain.invoke(
+        {
+            "schema": state.get('based_on')
+        }
+    )
+
+    return {"cypher_statement": generated_cypher, "steps": ["create_schema"]}
 
 def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
     """

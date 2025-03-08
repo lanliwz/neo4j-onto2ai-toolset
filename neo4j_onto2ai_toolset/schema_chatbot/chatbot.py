@@ -19,7 +19,9 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
     generate_pydantic_class,
     generate_relational_db_ddl,
     execute_graph_query,
-    del_dup_cls_rels, review_schema)
+    del_dup_cls_rels,
+    review_schema,
+    create_schema)
 
 
 lg = StateGraph(OverallState, input=InputState, output=OutputState)
@@ -27,6 +29,11 @@ lg = StateGraph(OverallState, input=InputState, output=OutputState)
 db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
 # ask question
 lg.add_node(more_question)
+
+# create schema
+def cypher_to_create_schema(state: OverallState):
+    return create_schema(state=state,llm=llm)
+lg.add_node(cypher_to_create_schema)
 
 # extract exist schema and enhance it
 def query_to_enhance_schema(state: OverallState):
@@ -59,13 +66,21 @@ lg.add_node(review_current_schema)
 # edges
 def if_related_condition(
     state: OverallState,
-) -> Literal[END, "query_to_enhance_schema","review_current_schema","gen_pydantic_model","gen_relation_model"]:
+) -> Literal[
+    END,
+    "query_to_enhance_schema",
+    "review_current_schema",
+    "gen_pydantic_model",
+    "gen_relation_model",
+    "cypher_to_create_schema"]:
     if state.get("next_action") == "end":
         return END
     elif state.get("next_action") == "schema"  and state.get("to_do_action") == "enhance":
         return "query_to_enhance_schema"
     elif state.get("next_action") == "schema" and state.get("to_do_action") == "review":
         return "review_current_schema"
+    elif state.get("next_action") == "schema"  and state.get("to_do_action") == "create":
+        return "cypher_to_create_schema"
     elif state.get("next_action") == "pydantic-model":
         return "gen_pydantic_model"
     elif state.get("next_action") == "relation-model":
@@ -75,6 +90,7 @@ def if_related_condition(
 lg.add_edge(START,"more_question")
 # lg.add_edge("more_question","query_to_enhance_schema")
 lg.add_conditional_edges("more_question",if_related_condition)
+lg.add_edge("cypher_to_create_schema","run_query")
 lg.add_edge("query_to_enhance_schema","run_query")
 lg.add_edge("run_query","del_dups")
 lg.add_edge("del_dups","more_question")

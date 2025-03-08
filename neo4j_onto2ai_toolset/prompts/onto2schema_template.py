@@ -33,7 +33,7 @@ No change to exist node. To reference existing node, the node type is :owl__Clas
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
 no new owl__ObjectProperty created.
-For each node and relationship, generate a skos__definition, no single quote like "'s" inside the skos__definition.
+For each node and relationship, generate a skos__definition, which should not contain single quote character.
 create the node if not exist.
 instead of merge node, check if exists, create the node only not exists, then match again.
 match only with rdfs__label.
@@ -50,8 +50,48 @@ match the nodes and generate Cypher statement to create relationship, if possibl
 The new node or relationship should have uri with domain http://mydomain/ontology. 
 rdfs__label always be lower case, with space between words.
 relationship type is camel case with first character lower case.
-For each node and relationship, generate a skos__definition, no single quote like "'s" inside the skos__definition.
+For each node and relationship, generate a skos__definition, which should not contain single quote character.
 match only with rdfs__label.
 Schema: {schema}
+Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
+"""
+
+crt_schema_template = """
+Task: generate Cypher statements to create relationship, node as owl__Class, class hierarchy as owl__subClassOf, output each statement as single line element of an array.
+Instruction: The node in the schema is a owl__Class with rdfs_label, 
+and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
+new relationship and generate Cypher statement to create the relationship, if possible, add relationship property owl__minQualifiedCardinality..
+The new node or relationship should have uri with domain http://mydomain/ontology.
+No change to exist node. To reference existing node, the node type is :owl__Class, the property rdfs__label is the one defined in annotation properties. 
+rdfs__label always be lower case, with space between words.
+relationship type is camel case with first character lower case.
+no new owl__ObjectProperty created.
+For each node and relationship, generate a skos__definition, which should not contain single quote character.
+create the node if not exist.
+instead of merge node, check if exists, create the node only not exists, then match again.
+match only with rdfs__label.
+
+
+Schema: {schema}
+(:GraphObject) is a node
+(:Part) is a node,  
+(:Node) is a node, A Node is a Part that may connect to other nodes with Links, or that may be a member of a Group.
+[:link] is a relationship
+(:Node)-[:link]->(:Node)
+(:Shape) is a node
+(:TextBlock) is a node
+(:Node)-[:contain]->[:Shape]
+(:Node)-[:contain]->[:TextBlock]
+(:Shape)-[:bind]->(:ModelData)
+(:TextBlock)-[:bind]->(:ModelData)
+
+
+Hierarchy: {hierarchy}
+(:Panel) is sub class of (:GraphObject)
+(:Shape) is sub class of (:GraphObject)
+(:TextBlock) is sub class of (:GraphObject)
+(:Picture) is sub class of (:GraphObject)
+(:Placeholder) is sub class of (:GraphObject)
+
 Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
 """
