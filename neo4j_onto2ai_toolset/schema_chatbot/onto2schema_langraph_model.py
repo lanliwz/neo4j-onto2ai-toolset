@@ -24,6 +24,7 @@ class OverallState(TypedDict):
     to_do_action: str
     start_node: str
     question: str
+    based_on: str
     next_action: str
     cypher_statement: str
     cypher_errors: List[str]
@@ -68,7 +69,7 @@ def more_question(state: OverallState) -> OutputState:
     Decides if more question need to ask
     """
     class Decision(BaseModel):
-        decision: Literal["schema","pydantic-model","relation-model", "end"] = Field(
+        decision: Literal["schema","pydantic-model","relation-model", "based_on","end"] = Field(
             description="Decision on whether the question is related to ontology or schema etc"
         )
         start_node: str = Field(
@@ -78,7 +79,7 @@ def more_question(state: OverallState) -> OutputState:
             description="whether the question is related to review, enhance or create schema etc"
         )
         based_on: str = Field(
-            description="based on what to create the schema?"
+            description="The detail information in the question, for example, the part of sentences after 'base on'?"
         )
 
     guard_of_entrance = """
@@ -213,8 +214,7 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
                     relationship type is camel case with first character lower case.
                     For each node and relationship, generate a skos__definition, which should not contain single quote character.
                     match only with rdfs__label.
-                    {schema}
-                    Schema: get schema information from https://gojs.net/latest/api/symbols/Node.html
+                    Get schema info from {schema}
                     Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
                     """
                 ),
@@ -223,6 +223,7 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
     )
     mylogger.info(text2cypher_prompt)
     text2cypher_chain = text2cypher_prompt | llm | StrOutputParser()
+    logger.debug(state.get('based_on'))
     generated_cypher = text2cypher_chain.invoke(
         {
             "schema": state.get('based_on')
