@@ -2,6 +2,7 @@ LICENSE
 README.md
 setup.py
 neo4j_onto2ai_toolset/__init__.py
+neo4j_onto2ai_toolset/display_dataflow.py
 neo4j_onto2ai_toolset/logger_config.py
 neo4j_onto2ai_toolset.egg-info/PKG-INFO
 neo4j_onto2ai_toolset.egg-info/SOURCES.txt

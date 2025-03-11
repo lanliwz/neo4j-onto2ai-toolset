@@ -24,6 +24,7 @@ class OverallState(TypedDict):
     to_do_action: str
     start_node: str
     question: str
+    domain: str
     based_on: str
     next_action: str
     cypher_statement: str
@@ -69,7 +70,7 @@ def more_question(state: OverallState) -> OutputState:
     Decides if more question need to ask
     """
     class Decision(BaseModel):
-        decision: Literal["schema","pydantic-model","relation-model", "based_on","end"] = Field(
+        decision: Literal["schema","pydantic-model","relation-model", "based_on","domain","end"] = Field(
             description="Decision on whether the question is related to ontology or schema etc"
         )
         start_node: str = Field(
@@ -79,7 +80,10 @@ def more_question(state: OverallState) -> OutputState:
             description="whether the question is related to review, enhance or create schema etc"
         )
         based_on: str = Field(
-            description="The detail information in the question, for example, the part of sentences after 'base on'?"
+            description="The link in the question or the description after 'base on'?"
+        )
+        domain: str = Field(
+            description="extract domain from the link or the url provided in the question"
         )
 
     guard_of_entrance = """
@@ -116,6 +120,7 @@ def more_question(state: OverallState) -> OutputState:
         "start_node": output.start_node,
         "to_do_action": output.action,
         "based_on": output.based_on,
+        "domain": output.domain or "http://mydomain/ontology",
         "database_records": db_records,
         "steps": ["more_question"],
     }
@@ -212,7 +217,7 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
                     and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
                     generate Cypher statement to merge the node.
                     match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
-                    The new node or relationship should have uri with domain http://mydomain/ontology. 
+                    The new node or relationship should have uri with domain {domain}. 
                     rdfs__label always be lower case, with space between words.
                     relationship type is camel case with first character lower case.
                     For each node and relationship, generate a skos__definition, which should not contain single quote character.
@@ -232,7 +237,8 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
 
     generated_cypher = text2cypher_chain.invoke(
         {
-            "schema": state.get('based_on')
+            "schema": state.get('based_on'),
+            "domain": state.get('domain')
         }
     )
 

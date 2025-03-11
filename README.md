@@ -135,6 +135,6 @@ python setup.py sdist bdist_wheel
 ```
 
 ```commandline
-pip install /path/to/neo4j-onto2ai-toolset/dist/neo4j-onto2ai-toolset-0.1.0-py3-none-any.whl
+pip install /path/to/neo4j-onto2ai-toolset/dist/neo4j-onto2ai-toolset-0.2.0-py3-none-any.whl
 ```
 

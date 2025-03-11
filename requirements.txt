@@ -13,3 +13,4 @@ langgraph-checkpoint-sqlite==2.0.1
 langgraph-sdk==0.1.47
 langserve==0.3.0
 langsmith==0.2.3
+neo4j==5.28.1
