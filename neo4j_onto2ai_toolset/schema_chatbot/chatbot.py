@@ -3,11 +3,13 @@ from typing import Literal
 
 from langgraph.graph import END, START, StateGraph
 
-from neo4j_onto2ai_toolset.onto2schema.neo4j_connect import (
+from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_bolt_url,
     username,
     password,
     neo4j_db_name)
+
+
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (

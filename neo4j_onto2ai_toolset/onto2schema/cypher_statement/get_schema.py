@@ -1,3 +1,8 @@
+schema_node_base = '''
+MATCH (n:owl__Class)
+WHERE 1=1
+'''
+
 schema_base = '''
 MATCH (n:owl__Class)-[r]->(m:rdfs__Datatype|owl__Class)
 WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith','owl__equivalentClass']
@@ -59,7 +64,7 @@ def query_schema(label=None):
 
 def query_start_nodes(label=None):
     # Base query
-    query = schema_base_1
+    query = schema_node_base
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"

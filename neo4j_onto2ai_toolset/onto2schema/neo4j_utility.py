@@ -43,7 +43,9 @@ class SemanticGraphDB:
 
     def get_start_nodes(self,label=None):
         with self._driver.session() as session:
+            mylogger.debug(query_start_nodes(label))
             result = session.execute_read(self._get_dataset,query_start_nodes(label))
+            mylogger.debug(result)
             return [f"(:{record['start_node']}) is a node, annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['start_node'] is not None]
@@ -138,6 +140,13 @@ def get_schema(start_node:str,db : SemanticGraphDB):
               + "\n".join(db.get_end_nodes(start_node)) + '\n'
               + "\n".join(db.get_start_nodes(start_node)) + '\n'
               + "\n".join(db.get_relationships(start_node)) + '\n'
+              )
+
+    return schema
+
+def get_node4schema(start_node:str,db : SemanticGraphDB):
+    schema = (
+              "\n".join(db.get_start_nodes(start_node)) + '\n'
               )
 
     return schema
