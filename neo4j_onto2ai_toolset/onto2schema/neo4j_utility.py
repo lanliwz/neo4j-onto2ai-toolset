@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.get_schema import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
+from neo4j_onto2ai_toolset.logger_config import logger as mylogger
 
 
 # The SematicGraphDB class is used to interact with a Neo4j database.
@@ -28,7 +29,10 @@ class SemanticGraphDB:
     #
     def get_node2node_relationship(self,label=None):
         with self._driver.session() as session:
-            result = session.execute_read(self._get_dataset,query_node2node_relationship(label))
+            query = query_node2node_relationship(label)
+            mylogger.debug(query)
+            result = session.execute_read(self._get_dataset,query)
+            mylogger.debug(result)
             return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
 
     def get_node_dataproperty(self, label=None):

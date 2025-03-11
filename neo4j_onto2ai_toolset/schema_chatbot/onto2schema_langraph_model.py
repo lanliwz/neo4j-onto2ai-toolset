@@ -121,6 +121,7 @@ def more_question(state: OverallState) -> OutputState:
     }
 
 def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
+    mylogger.debug("review schema - " + state.get("start_node"))
     original_schema_prompt = get_schema(start_node=state.get("start_node"), db=db)
     mylogger.info(original_schema_prompt)
     return {
@@ -189,6 +190,8 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
     """
     Generates a cypher statement based on the provided schema and user input
     """
+    # Check if 'based_on' exists, if not, do nothing
+
     text2cypher_prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -223,7 +226,10 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
     )
     mylogger.info(text2cypher_prompt)
     text2cypher_chain = text2cypher_prompt | llm | StrOutputParser()
-    logger.debug(state.get('based_on'))
+
+    if not state.get('based_on'):
+        return {"cypher_statement": '[]', "steps": ["create_schema"]}
+
     generated_cypher = text2cypher_chain.invoke(
         {
             "schema": state.get('based_on')
