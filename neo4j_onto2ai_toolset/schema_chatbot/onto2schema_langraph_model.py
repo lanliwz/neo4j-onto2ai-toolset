@@ -212,17 +212,17 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
                 "human",
                 (
                     """
-                    Task: generate Cypher statements to add relationship, owl__Class, class hierarchy as owl__subClassOf, output each statement as one element of an array.
-                    Instruction: The node in the schema is a owl__Class with rdfs_label, 
-                    and the annotation properties are metadata for both node and relationship. Use real world knowledge to infer 
-                    generate Cypher statement to merge the node.
-                    match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
-                    The new node or relationship should have uri with domain {domain}. 
+                    Task: generate Cypher statements to add node and relationship, output each statement as one element of an array.
+                    Instruction: The node in the schema is a owl__Class with rdfs_label, and the annotation properties are metadata for both node and relationship. 
+                    Merge the node in case of the node already exists.
+                    Match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
+                    The new node or relationship should have uri with http protocol and domain {domain}.                    
                     rdfs__label always be lower case, with space between words.
                     relationship type is camel case with first character lower case.
                     For each node and relationship, generate a skos__definition, which should not contain single quote character.
                     match only with rdfs__label.
                     Get schema info from {schema}
+                    If {schema} is a url, add annotation property gojs_documentLink to the node.
                     Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
                     """
                 ),
