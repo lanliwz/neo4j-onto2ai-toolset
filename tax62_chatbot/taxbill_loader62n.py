@@ -1,6 +1,6 @@
-from onto2schema.neo4j_connect import *
+from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import *
 from ai_tools.pdf2graph import generate_cypher4taxbill
-from onto2schema.neo4j_utility import SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
 from langchain_openai import ChatOpenAI
 
 neo4j_db_name = 'tax62n'

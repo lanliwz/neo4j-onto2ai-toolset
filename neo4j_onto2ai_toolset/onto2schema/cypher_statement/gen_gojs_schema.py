@@ -181,3 +181,96 @@ FOREACH (prop IN [
   MERGE (n)-[:gojs__dataProperty]->(p)
 )
 """
+crt_theme_dark="""
+//To create a (:Theme {name: 'dark'}) node and link it to separate nodes 
+//representing colors, fonts, numbers, and margins using camel case relationships
+MERGE (t:Theme {name: 'dark'})
+
+FOREACH (prop IN [
+  {key: 'text', value: '#f5f5f5'},
+  {key: 'comment', value: '#facc15'},
+  {key: 'link', value: '#f5f5f5'},
+  {key: 'group', value: '#a3a3a388'},
+  {key: 'outline', value: '#a3a3a3'},
+  {key: 'selection', value: '#38bdf8'},
+  {key: 'div', value: '#171717'},
+  {key: 'gridMinor', value: '#262626'},
+  {key: 'gridMajor', value: '#404040'},
+  {key: 'overviewBox', value: '#e879f9'},
+  {key: 'tempLink', value: '#60a5fa'},
+  {key: 'tempPort', value: '#e879f9'},
+  {key: 'adornmentFill', value: '#38bdf8'},
+  {key: 'adornmentStroke', value: '#2563eb'},
+  {key: 'dragSelect', value: '#e879f9'}
+] |
+  MERGE (c:Color {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasColor]->(c)
+)
+
+FOREACH (prop IN [
+  {key: 'normal', value: '10pt sans-serif'},
+  {key: 'bold', value: 'bold 12pt sans-serif'}
+] |
+  MERGE (f:Font {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasFont]->(f)
+)
+
+FOREACH (prop IN [
+  {key: 'group', value: 1},
+  {key: 'selection', value: 3}
+] |
+  MERGE (n:NumberProperty {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasNumber]->(n)
+)
+
+MERGE (m:Margin {name: 'group', value: 5})
+MERGE (t)-[:hasMargin]->(m)
+"""
+crt_theme_light="""
+//To create a (:Theme {name: 'light'}) node and link it to separate nodes 
+//representing colors, fonts, numbers, and margins using camel case relationships
+MERGE (t:Theme {name: 'light'})
+
+FOREACH (prop IN [
+  {key: 'text', value: '#0a0a0a'},
+  {key: 'comment', value: '#ca8a04'},
+  {key: 'link', value: '#0a0a0a'},
+  {key: 'group', value: '#a3a3a344'},
+  {key: 'outline', value: '#a3a3a3'},
+  {key: 'selection', value: '#0ea5e9'},
+  {key: 'div', value: '#fff'},
+  {key: 'gridMinor', value: '#e5e5e5'},
+  {key: 'gridMajor', value: '#a3a3a3'},
+  {key: 'overviewBox', value: '#c026d3'},
+  {key: 'tempLink', value: '#2563eb'},
+  {key: 'tempPort', value: '#c026d3'},
+  {key: 'adornmentFill', value: '#0ea5e9'},
+  {key: 'adornmentStroke', value: '#1e40af'},
+  {key: 'dragSelect', value: '#c026d3'}
+] |
+  MERGE (c:Color {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasColor]->(c)
+)
+
+FOREACH (prop IN [
+  {key: 'normal', value: '10pt sans-serif'},
+  {key: 'bold', value: 'bold 12pt sans-serif'}
+] |
+  MERGE (f:Font {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasFont]->(f)
+)
+
+FOREACH (prop IN [
+  {key: 'group', value: 1},
+  {key: 'selection', value: 3}
+] |
+  MERGE (n:NumberProperty {name: prop.key, value: prop.value})
+  MERGE (t)-[:hasNumber]->(n)
+)
+
+MERGE (m:Margin {name: 'group', value: 5})
+MERGE (t)-[:hasMargin]->(m)
+
+MERGE (a:Arrowhead {name: 'toArrow', value: 'Standard'})
+MERGE (t)-[:hasArrowhead]->(a)
+"""
