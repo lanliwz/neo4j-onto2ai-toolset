@@ -1,5 +1,11 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Dict, Any
+
+from models.gojs_er_theme_manager import *
+from models.gogs_er_node_template import NodeTemplate
+from models.gojs_er_item_template import ItemTemplate
+from models.gojs_er_link_template import LinkTemplate
+from models.gojs_er_data_model import *
 
 
 class ForceDirectedLayout(BaseModel):
@@ -48,4 +54,69 @@ class DiagramConfig(BaseModel):
   'themeManager.changesDivBackground': {str(self.themeManager_changesDivBackground).lower()},
   'themeManager.currentTheme': {current_theme_js}
 }});"""
+
+class GraphLinksModelConfig(BaseModel):
+    copiesArrays: bool = True
+    copiesArrayObjects: bool = True
+    nodeDataArray: List[Dict[str, Any]] = Field(default_factory=list)
+    linkDataArray: List[Dict[str, Any]] = Field(default_factory=list)
+
+    def to_javascript(self) -> str:
+        return "\n".join([
+            "myDiagram.model = new go.GraphLinksModel({ // return",
+            f"  copiesArrays: {str(self.copiesArrays).lower()}, // return",
+            f"  copiesArrayObjects: {str(self.copiesArrayObjects).lower()}, // return",
+            f"  nodeDataArray: nodeDataArray, // return",
+            f"  linkDataArray: linkDataArray // return",
+            "}); // return"
+        ])
+
+def init():
+    themes = DiagramThemes(
+        themes=[
+            Theme(
+                name='light',
+                colors=ThemeColors(
+                    primary="#c0d4a1",
+                    green="#4b429e",
+                    blue="#3999bf",
+                    purple="#7f36b0",
+                    red="#c41000"
+                )
+            ),
+            Theme(
+                name='dark',
+                colors=ThemeColors(
+                    primary="#4a4a4a",
+                    green="#429e6f",
+                    blue="#3f9fc6",
+                    purple="#9951c9",
+                    red="#ff4d3d"
+                )
+            ),
+        ]
+    )
+    item_template = ItemTemplate()
+    link_template = LinkTemplate()
+    node_template = NodeTemplate()
+    go_links_model = GraphLinksModelConfig()
+    config = DiagramConfig(
+        layout=ForceDirectedLayout(isInitial=False),
+        themeManager_themeMap=[
+            ThemeMapEntry(key="light", value="Modern"),
+            ThemeMapEntry(key="dark", value="ModernDark")
+        ],
+        themeManager_changesDivBackground=True
+    )
+    return ("function init() {" + '\n'
+            + config.to_javascript() + '\n'
+            + themes.to_javascript() + '\n'
+            + item_template.to_javascript() + '\n'
+            + node_template.to_javascript() + '\n'
+            + link_template.to_javascript() + '\n'
+            + go_links_model.to_javascript() + '\n};'
+            )
+
+
+
 

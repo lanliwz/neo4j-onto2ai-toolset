@@ -47,7 +47,7 @@ class Link(BaseModel):
             'toText': self.toText
         }
 
-class DiagramModel(BaseModel):
+class ModelDataArray(BaseModel):
     nodeDataArray: List[Node]
     linkDataArray: List[Link]
 

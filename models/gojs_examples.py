@@ -36,7 +36,7 @@ themes = DiagramThemes(
 
 
 # Example instantiation using provided data:
-diagram_model = DiagramModel(
+diagram_model = ModelDataArray(
     nodeDataArray=[
         Node(
             key='Products',
@@ -126,8 +126,12 @@ config = DiagramConfig(
     themeManager_changesDivBackground=True
 )
 
-print(config.to_javascript())
-print(themes.to_javascript())
-print(item_template.to_javascript())
-print(node_template.to_javascript())
-print(link_template.to_javascript())
+# print(config.to_javascript())
+# print(themes.to_javascript())
+# print(item_template.to_javascript())
+# print(node_template.to_javascript())
+# print(link_template.to_javascript())
+#
+#
+# print(diagram_model.to_javascript())
+print(init())
