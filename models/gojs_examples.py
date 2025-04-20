@@ -1,42 +1,12 @@
 from gojs_er_theme_manager import *
 from models.gogs_er_node_template import NodeTemplate
 from models.gojs_er_init import *
-from models.gojs_er_item_template import ItemTemplate
-from models.gojs_er_link_template import LinkTemplate
 from models.gojs_er_data_model import *
 
-# Example usage:
-themes = DiagramThemes(
-    themes=[
-        Theme(
-            name='light',
-            colors=ThemeColors(
-                primary="#c0d4a1",
-                green="#4b429e",
-                blue="#3999bf",
-                purple="#7f36b0",
-                red="#c41000"
-            )
-        ),
-        Theme(
-            name='dark',
-            colors=ThemeColors(
-                primary="#4a4a4a",
-                green="#429e6f",
-                blue="#3f9fc6",
-                purple="#9951c9",
-                red="#ff4d3d"
-            )
-        ),
-    ]
-)
-
-# Generate JavaScript for all themes
-# print(themes.to_javascript())
 
 
 # Example instantiation using provided data:
-diagram_model = ModelDataArray(
+model_data_array = ModelDataArray(
     nodeDataArray=[
         Node(
             key='Products',
@@ -101,37 +71,5 @@ diagram_model = ModelDataArray(
 )
 
 # Generate JavaScript snippet exactly as provided:
-# print(diagram_model.to_javascript())
-
-# Example usage:
-item_template = ItemTemplate()
-
-# print(item_template.to_javascript())
-
-# Example Usage:
-link_template = LinkTemplate()
-
-# print(link_template.to_javascript())
-
-# Example usage:
-node_template = NodeTemplate()
-# print(node_template.to_javascript())
-
-config = DiagramConfig(
-    layout=ForceDirectedLayout(isInitial=False),
-    themeManager_themeMap=[
-        ThemeMapEntry(key="light", value="Modern"),
-        ThemeMapEntry(key="dark", value="ModernDark")
-    ],
-    themeManager_changesDivBackground=True
-)
-
-# print(config.to_javascript())
-# print(themes.to_javascript())
-# print(item_template.to_javascript())
-# print(node_template.to_javascript())
-# print(link_template.to_javascript())
-#
-#
-# print(diagram_model.to_javascript())
+print(model_data_array.to_javascript())
 print(init())

@@ -7,13 +7,28 @@ class NodeItem(BaseModel):
     figure: str
     color: str
 
-    def to_js(self):
-        return {
-            'name': self.name,
-            'iskey': self.iskey,
-            'figure': self.figure,
-            'color': self.color
-        }
+    def to_js(self) -> str:
+        def format_value(value):
+            if isinstance(value, str):
+                return f'"{value}"'
+            elif isinstance(value, bool):
+                return 'true' if value else 'false'
+            else:
+                return str(value)
+
+        return (
+            '{ '
+            f'name: {format_value(self.name)}, '
+            f'iskey: {format_value(self.iskey)}, '
+            f'figure: {format_value(self.figure)}, '
+            f'color: {format_value(self.color)} '
+            '}'
+        )
+
+def node_items_to_js_array(items: List[NodeItem]) -> str:
+    js_objects = [item.to_js() for item in items]
+    return '[\n  ' + ',\n  '.join(js_objects) + '\n]'
+
 
 class Node(BaseModel):
     key: str
@@ -25,10 +40,11 @@ class Node(BaseModel):
         js_node = {
             'key': self.key,
             'location': f"new go.Point({self.location[0]}, {self.location[1]})",
-            'items': [item.to_js() for item in self.items],
+            'items': node_items_to_js_array(self.items),
         }
         if self.inheritedItems:
-            js_node['inheritedItems'] = [item.to_js() for item in self.inheritedItems]
+            inh_items : List[NodeItem] = self.inheritedItems
+            js_node['inheritedItems'] = node_items_to_js_array(inh_items)
         else:
             js_node['inheritedItems'] = []
         return js_node
@@ -69,13 +85,12 @@ class ModelDataArray(BaseModel):
             for link in self.linkDataArray
         ])
 
-        js_code = f"""const nodeDataArray = [
+        js_code = f"""nodeDataArray = [
   {node_array_js}
 ];
 
-const linkDataArray = [
+linkDataArray = [
   {link_array_js}
 ];"""
 
         return js_code
-
