@@ -1,5 +1,6 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
+
 
 class NodeItem(BaseModel):
     name: str
@@ -29,17 +30,22 @@ def node_items_to_js_array(items: List[NodeItem]) -> str:
     js_objects = [item.to_js() for item in items]
     return '[\n  ' + ',\n  '.join(js_objects) + '\n]'
 
+class Location(BaseModel):
+    b: float  # assuming numeric, use `int` if always integers
+    k: float
+    h: bool
 
 class Node(BaseModel):
     key: str
-    location: tuple[int, int]
+    # location: tuple[int, int]
+    location: Location
     items: List[NodeItem]
     inheritedItems: Optional[List[NodeItem]] = []
 
     def to_js(self):
         js_node = {
             'key': self.key,
-            'location': f"new go.Point({self.location[0]}, {self.location[1]})",
+            'location': f"new go.Point({self.location.b}, {self.location.k})",
             'items': node_items_to_js_array(self.items),
         }
         if self.inheritedItems:
@@ -50,10 +56,13 @@ class Node(BaseModel):
         return js_node
 
 class Link(BaseModel):
-    from_node: str
-    to_node: str
+    from_node: str = Field(..., alias="from")
+    to_node: str = Field(..., alias="to")
     text: Optional[str] = ''
     toText: Optional[str] = ''
+    model_config = {
+        "populate_by_name": True  # Needed if you're using from_node instead of 'from'
+    }
 
     def to_js(self):
         return {
@@ -94,3 +103,4 @@ linkDataArray = [
 ];"""
 
         return js_code
+
