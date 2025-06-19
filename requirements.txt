@@ -1,7 +1,9 @@
+# show current version of package, e.g
+# pip show langchain-community langchain langchain-cli langgraph
 langchain==0.3.19
 langchain-chroma==0.2.2
 langchain-cli==0.0.35
-langchain-community==0.3.19
+langchain-community==0.3.18
 langchain-core==0.3.37
 langchain-google-vertexai==2.0.13
 langchain-neo4j==0.2.0
