@@ -8,6 +8,6 @@ graph = Neo4jGraph(
     url=os.getenv("Neo4jFinDBUrl"),
     username=os.getenv("Neo4jFinDBUserName"),
     password=os.getenv("Neo4jFinDBPassword"),
-    database='tax62n',
+    database=os.getenv('NEO4J_TAX62N_DB_NAME'),
     enhanced_schema=True
 )

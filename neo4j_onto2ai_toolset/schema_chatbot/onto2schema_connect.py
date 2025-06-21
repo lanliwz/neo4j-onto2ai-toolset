@@ -2,9 +2,7 @@ import os
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI
 from neo4j_onto2ai_toolset.logger_config import *
-from dotenv import load_dotenv
 
-load_dotenv()
 
 # llm = ChatOpenAI(model="gpt-o3-mini", temperature=0)
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
@@ -13,7 +11,7 @@ neo4j_bolt_url = os.getenv("Neo4jFinDBUrl")
 username = os.getenv("Neo4jFinDBUserName")
 password = os.getenv("Neo4jFinDBPassword")
 neo4j_db_name = os.getenv('NEO4J_RDF_DB_NAME')
-print(neo4j_db_name)
+
 
 graphdb = Neo4jGraph(
     url=neo4j_bolt_url,

@@ -30,5 +30,7 @@ logger.addHandler(console_handler)
 
 logger.info("My Logger Level:"+MY_LOG_LEVEL)
 logger.info("Neo4j Logger Level:"+NEO4J_LOG_LEVEL)
+logger.info("Neo4j RDF DB Name:" + os.getenv('NEO4J_RDF_DB_NAME'))
+logger.info("Neo4j TAX DB Name:" + os.getenv('NEO4J_TAX62N_DB_NAME'))
 
 # logger.info("Logging is set up neo4j-onto2ai-toolset")
