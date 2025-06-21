@@ -4,7 +4,7 @@ langchain==0.3.19
 langchain-chroma==0.2.2
 langchain-cli==0.0.35
 langchain-community==0.3.18
-langchain-core==0.3.37
+langchain-core==0.3.65
 langchain-google-vertexai==2.0.13
 langchain-neo4j==0.2.0
 langchain-openai==0.3.6
