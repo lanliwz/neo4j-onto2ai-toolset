@@ -1,7 +1,7 @@
 gen_data_property_template="""
 get accessors as property name and infer the type based on the link {document_url},
 then generate Cypher statements to add relationship [:gojs__dataProperty] between (:owl__Class) and (:gojs__DataProperty),
-The owl__Class can be identified by rdfs__label, alwasy lower case,
+The owl__Class can be identified by rdfs__label, always lower case,
 with syntax like:
 MATCH (g:owl__Class ...) 
 FOREACH ...  

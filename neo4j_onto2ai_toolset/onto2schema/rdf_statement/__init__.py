@@ -101,8 +101,10 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'fibo_be_corp_corp' : 'https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/',
             'fibo_be_le_cb' : 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/',
             'fibo_be_ge_ge' : 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/',
-            'fibo-fbc-pas-fpas': 'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/',
-            'fibo-fbc-dae-dbt':'https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/',
-            'fibo-fbc-fct-breg':'https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/',
-            'fibo-fbc-pas-caa':'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/',
-            'fibo-fbc-fi-fi':'https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/'}
+            'fibo_fbc_pas_fpas': 'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/',
+            'fibo_fbc_dae_dbt':'https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/',
+            'fibo_fbc_fct_breg':'https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/',
+            'fibo_fbc_pas_caa':'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/',
+            'fibo_fbc_fbc_fi_fi':'https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/',
+            'cmns_loc':'https://www.omg.org/spec/Commons/Locations/'
+            }

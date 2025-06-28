@@ -28,8 +28,9 @@ def gen_prompt4schema(start_node:str, db):
 
     return final_template.invoke(schema)
 
-# db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
-# print(gen_prompt2enhance_schema("party",db))
+
+
+
 
 
 
