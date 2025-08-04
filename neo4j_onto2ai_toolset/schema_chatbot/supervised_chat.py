@@ -1,11 +1,9 @@
-from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph
+from langchain.schema import AIMessage
 from langgraph_supervisor import create_supervisor
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import InMemorySaver
 
 from typing import TypedDict, List, Optional
-import os
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_bolt_url,
     username,
@@ -77,8 +75,7 @@ supervisor = create_supervisor(
     )
 )
 
-from langchain.schema import AIMessage
-from typing import List, Optional
+
 
 def get_last_ai_content(messages: List) -> Optional[str]:
     """
@@ -113,5 +110,5 @@ def start_cli_chat():
         print(get_last_ai_content(response["messages"]))
 
 
-
+# start the chat
 start_cli_chat()
