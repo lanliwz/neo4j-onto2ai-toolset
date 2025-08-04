@@ -1,4 +1,3 @@
-
 from langchain_chroma import Chroma
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector
 from langchain_core.output_parsers import StrOutputParser
@@ -14,11 +13,9 @@ from operator import add
 from langchain_neo4j.chains.graph_qa.cypher_utils import CypherQueryCorrector, Schema
 
 
-
-
-
 class InputState(TypedDict):
     question: str
+
 
 class OverallState(TypedDict):
     question: str
@@ -33,6 +30,7 @@ class OutputState(TypedDict):
     answer: str
     steps: List[str]
     cypher_statement: str
+
 
 class Property(BaseModel):
     """
@@ -61,6 +59,7 @@ class ValidateCypherOutput(BaseModel):
         description="A list of property-based filters applied in the Cypher statement."
     )
 
+
 def more_question(state: OverallState) -> OutputState:
     """
     Decides if more question need to ask
@@ -69,7 +68,7 @@ def more_question(state: OverallState) -> OutputState:
     return {"question": next_question, "steps": ["more_question"]}
 
 
-def generate_cypher(state: OverallState,graph: Neo4jGraph, llm: ChatOpenAI,examples: []) -> OverallState:
+def generate_cypher(state: OverallState, graph: Neo4jGraph, llm: ChatOpenAI, examples: []) -> OverallState:
     """
     Generates a cypher statement based on the provided schema and user input
     """
@@ -111,8 +110,8 @@ def generate_cypher(state: OverallState,graph: Neo4jGraph, llm: ChatOpenAI,examp
         [
             f"Question: {el['question']}{NL}Cypher:{el['query']}"
             for el in example_selector.select_examples(
-                {"question": state.get("question")}
-            )
+            {"question": state.get("question")}
+        )
         ]
     )
     generated_cypher = text2cypher_chain.invoke(
@@ -124,7 +123,8 @@ def generate_cypher(state: OverallState,graph: Neo4jGraph, llm: ChatOpenAI,examp
     )
     return {"cypher_statement": generated_cypher, "steps": ["generate_cypher"]}
 
-def correct_cypher_syntax(state: OverallState, graph:Neo4jGraph, llm: ChatOpenAI) -> OverallState:
+
+def correct_cypher_syntax(state: OverallState, graph: Neo4jGraph, llm: ChatOpenAI) -> OverallState:
     corrector_schema = [
         Schema(el["start"], el["type"], el["end"])
         for el in graph.structured_schema.get("relationships")
@@ -174,6 +174,7 @@ def correct_cypher_syntax(state: OverallState, graph:Neo4jGraph, llm: ChatOpenAI
         "steps": ["correct_cypher"],
     }
 
+
 def guard_of_taxsystem(state: InputState, llm: ChatOpenAI) -> OverallState:
     class GuardOfTaxSystemOutput(BaseModel):
         decision: Literal["continue", "end"] = Field(
@@ -210,7 +211,8 @@ def guard_of_taxsystem(state: InputState, llm: ChatOpenAI) -> OverallState:
         "steps": ["guardrail"],
     }
 
-def validate_cypher(state: OverallState, graph:Neo4jGraph, llm: ChatOpenAI) -> OverallState:
+
+def validate_cypher(state: OverallState, graph: Neo4jGraph, llm: ChatOpenAI) -> OverallState:
     """
     Validates the Cypher statements and maps any property values to the database.
     """
@@ -310,7 +312,7 @@ def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
     }
 
 
-def generate_final_answer_g(state: OverallState,llm: ChatOpenAI) -> OutputState:
+def generate_final_answer_g(state: OverallState, llm: ChatOpenAI) -> OutputState:
     """
     Decides if the question is related to movies.
     """
