@@ -16,30 +16,8 @@ from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
 
 db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
-# checkpointer = InMemorySaver()
+checkpointer = InMemorySaver()
 
-
-# # --- Define State Type ---
-# class ChatState(TypedDict):
-#     user_input: Optional[str]
-#     history: List[str]
-#     steps: List[str]
-#
-# # --- Define chat handler ---
-# def handle_user_input(state: ChatState) -> ChatState:
-#     state["history"].append(f"User: {state['user_input']}")
-#     state["steps"].append("input_handled")
-#     return state
-#
-# def end_chat(state: ChatState) -> ChatState:
-#     state["steps"].append("exit")
-#     return state
-#
-# # --- Define routing logic ---
-# def router(state: ChatState) -> str:
-#     if state["user_input"].strip().lower() == "exit":
-#         return "end"
-#     return "input_handler"
 
 # Tools
 def get_stored_model(key_concept: str) -> str:
@@ -99,40 +77,25 @@ supervisor = create_supervisor(
     )
 )
 
-# supervisor_wf = supervisor.compile()
+from langchain.schema import AIMessage
+from typing import List, Optional
 
+def get_last_ai_content(messages: List) -> Optional[str]:
+    """
+    Returns the content of the last non-empty AIMessage from a LangChain messages list.
+    Tries index -1 first, then scans backward as fallback.
+    """
+    # Try index -1 first
+    last = messages[-1]
+    if isinstance(last, AIMessage) and last.content.strip():
+        return last.content.strip()
 
+    # Fallback: scan in reverse
+    for msg in reversed(messages):
+        if isinstance(msg, AIMessage) and msg.content.strip():
+            return msg.content.strip()
 
-
-#### test block
-# app = supervisor.compile()
-# result = app.invoke({"messages": [{"role": "user",
-#             # "content": "find person model and check any duplication?"
-#             "content": "find person model and then gnerate python schema"
-#         }]})
-# print(result)
-
-# def supervisor_node(state: ChatState) -> ChatState:
-#     print(state)
-#     user_input = state["user_input"]
-#     # result = supervisor_wf.invoke(f"""{{"messages": [{{"role": "user","content": "{user_input}"}}]}}""")
-#     result = supervisor_wf.invoke(state)
-#     state["history"].append(f"supervisor: {result}")
-#     state["steps"].append("chat")
-#     return state
-
-# --- Build LangGraph ---
-# graph = StateGraph(ChatState)
-#
-# graph.add_node("chat", supervisor_node)
-# graph.add_node("end", end_chat)
-# graph.add_node("input_handler", handle_user_input)
-#
-# graph.set_entry_point("input_handler")
-# graph.add_edge("input_handler", "chat")
-# graph.add_conditional_edges("chat", router)
-#
-# workflow = graph.compile()
+    return None  # No AIMessage found
 
 def start_cli_chat():
     app = supervisor.compile()
@@ -146,8 +109,9 @@ def start_cli_chat():
                     # "content": "find person model and check any duplication?"
                     "content": f"{user_input}"
                 }]}
-        result = app.invoke(state_of_input)
-        print(result["messages"])
+        response = app.invoke(state_of_input)
+        print(get_last_ai_content(response["messages"]))
+
 
 
 start_cli_chat()
