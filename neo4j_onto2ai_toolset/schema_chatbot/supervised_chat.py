@@ -1,7 +1,7 @@
 from langchain.schema import AIMessage
 from langgraph_supervisor import create_supervisor
 from typing import List, Optional
-from neo4j_onto2ai_toolset.langraph_agents.graph_model_agents import *
+from neo4j_onto2ai_toolset.langraph_agents.model_agents import *
 
 
 

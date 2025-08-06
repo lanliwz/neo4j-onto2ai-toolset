@@ -1,5 +1,5 @@
-import json
-
+from langchain_core.tools import tool
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_bolt_url,
@@ -12,18 +12,19 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphd
 
 db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
 
-# Tools
+@tool
 def retrieve_stored_model(key_concept: str) -> str:
     """Display the stored model related to the key concept"""
     resp = get_model_from_db(key_concept, db)
     return resp
-
+@tool
 def execute_cypher_statement(cypher_statement: str) -> str:
     """
     Executes the given Cypher statement.
     """
     result = graphdb.query(cypher_statement)
     return result
+
 
 # Agents
 model_qa_agent = create_react_agent(
