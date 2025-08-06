@@ -14,11 +14,8 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphd
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
     OverallState,
     generate_cypher,
-    generate_pydantic_class,
-    generate_relational_db_ddl,
     execute_graph_query,
     del_dup_cls_rels,
-    review_schema,
     create_schema)
 
 db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
@@ -33,15 +30,6 @@ def query_to_enhance_schema(state: OverallState):
 
 
 # node
-def gen_pydantic_model(state: OverallState):
-    return generate_pydantic_class(state=state,db=db,llm=llm)
-
-# node
-def gen_relation_model(state: OverallState):
-    return generate_relational_db_ddl(state=state,db=db,llm=llm)
-
-
-# node
 def run_query(state: OverallState):
     execute_graph_query(state=state,db=graphdb)
 
@@ -49,7 +37,5 @@ def run_query(state: OverallState):
 def del_dups(state: OverallState):
     del_dup_cls_rels(state=state,db=graphdb)
 
-# node
-def review_current_schema(state: OverallState) :
-    return review_schema(state=state, db=db)
+
 
