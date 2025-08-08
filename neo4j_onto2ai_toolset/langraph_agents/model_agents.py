@@ -1,5 +1,8 @@
+from langchain.agents import create_tool_calling_agent
+from langchain_core.runnables import Runnable
 from langchain_core.tools import tool
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
 from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_bolt_url,
@@ -26,6 +29,48 @@ def execute_cypher_statement(cypher_statement: str) -> str:
     return result
 
 
+# create_model_agent.invoke({"concept":state["concept"],
+#                            "namespace":state["namespace"],
+#                            "intermediate_steps": state["intermediate_steps"]})
+create_model_agent: Runnable = create_tool_calling_agent(
+    llm=llm,
+    tools=[],
+    prompt=ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            (
+                "You are to convert ontology schema information into Cypher queries for Neo4j, following specific formatting and metadata rules. "
+                "Your responses must strictly follow the requirements below."
+            ),
+        ),
+        (
+            "human",
+            (
+                "Context: Ontology-driven Cypher query generation for Neo4j graph database.\n"
+                "Objective: Given a concept (may be a URL or text) and a namespace, generate an array of Cypher statements to add or merge nodes (owl:Class) and relationships with properties, using the ontology conventions below.\n"
+                "Style: Output must be Cypher statements only, no explanations or wrappers, with each statement as an array element.\n"
+                "Audience: Technical users working with ontology-based Neo4j graphs.\n"
+                "Requirements:\n"
+                "- Each node is an owl:Class with rdfs__label (lowercase, space-separated).\n"
+                "- Add all annotation properties as metadata to both nodes and relationships.\n"
+                "- Merge nodes if already exist.\n"
+                "- Relationship type is camelCase, first letter lowercase; add owl__minQualifiedCardinality if possible.\n"
+                "- All nodes/relationships have uri with HTTP and the provided domain.\n"
+                "- Each node/relationship includes skos__definition (no single quotes).\n"
+                "- Match nodes only with rdfs__label.\n"
+                "- If schema is a URL, add gojs_documentLink to node.\n"
+                "- Find and add as many relationships as possible.\n"
+                "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses.\n"
+                "\n"
+                "Inputs:\n"
+                "namespace: {namespace}\n"
+                "concept: {concept}"
+            ),
+        ),
+    MessagesPlaceholder("agent_scratchpad"),
+])
+)
 # Agents
 model_qa_agent = create_react_agent(
     model=llm,

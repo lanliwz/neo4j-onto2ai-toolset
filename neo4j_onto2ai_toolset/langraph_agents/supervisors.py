@@ -14,3 +14,19 @@ manage_model_supervisor = create_supervisor(
     )
 )
 
+model2schema_supervisor = create_supervisor(
+    # Each message in messages should follow the Chat Message format:
+    # {
+    # "role": "user" | "assistant" | "system" | "tool",
+    # "content": str
+    # }
+    #
+    model=llm,
+    prompt=(
+    "You are a team supervisor managing all models."
+    "For question about model, extract key concept from the question first"
+    "If the quest is about validation of the model, then use model_qa_agent"
+    "If the quest is about generate relational database schema of the model, then use rdb_ddl_agent"
+    "If the quest is about generate python or pydantic class or schema of the model, then use pydantic_class_agent"
+    )
+)

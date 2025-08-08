@@ -51,7 +51,6 @@ def start_cli_chat():
             print("👋 Exiting chat.")
             break
         state_of_input = {"messages": [{"role": "user",
-                    # "content": "find person model and check any duplication?"
                     "content": f"{user_input}"
                 }]}
         response = app.invoke(state_of_input)
