@@ -28,7 +28,6 @@ def execute_cypher_statement(cypher_statement: str) -> str:
     result = graphdb.query(cypher_statement)
     return result
 
-
 # create_model_agent.invoke({"concept":state["concept"],
 #                            "namespace":state["namespace"],
 #                            "intermediate_steps": state["intermediate_steps"]})
