@@ -22,26 +22,26 @@ def retrieve_stored_model(key_concept: str) -> str:
     resp = get_model_from_db(key_concept, semanticdb)
     return resp
 
-@tool
-def execute_cypher_statement(cypher_statements: str) -> list[str]:
-    """
-    Executes the given Cypher statement.
-    """
-    statements = json.loads(cypher_statements)
-    results = list[str]
-    for stmt in statements:
-        try:
-            results.append(graphdb.query(stmt))
-        except Exception as e:
-            results.append(e)
-    return results
+# @tool
+# def execute_cypher_statement(cypher_statements: str) -> list[str]:
+#     """
+#     Executes the given Cypher statement.
+#     """
+#     statements = json.loads(cypher_statements)
+#     results = list[str]
+#     for stmt in statements:
+#         try:
+#             results.append(graphdb.query(stmt))
+#         except Exception as e:
+#             results.append(e)
+#     return results
 
 # create_model_agent.invoke({"concept":state["concept"],
 #                            "namespace":state["namespace"],
 #                            "intermediate_steps": state["intermediate_steps"]})
 create_model_agent: Runnable = create_tool_calling_agent(
     llm=llm,
-    tools=[execute_cypher_statement],
+    tools=[],
     prompt=ChatPromptTemplate.from_messages(
     [
         (
