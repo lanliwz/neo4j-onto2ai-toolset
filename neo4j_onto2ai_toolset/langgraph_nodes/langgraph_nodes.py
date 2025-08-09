@@ -1,138 +1,107 @@
-# LangGraph: build a minimal StateGraph and invoke it
-from typing import TypedDict, Any, List
-from langgraph.graph import StateGraph, END
-from neo4j_onto2ai_toolset.logger_config import logger as mylogger
-
-
+from typing import TypedDict, Any, List, Dict, Union
+from langgraph.graph import StateGraph, START, END
+from langchain_core.agents import AgentFinish
 from neo4j_onto2ai_toolset.langraph_agents.model_agents import create_model_agent, graphdb
 
-# ---- Define state ----
 class AgentState(TypedDict, total=False):
     input: str
     concept: str
     namespace: str
+    cypher_statements: List[str]
     intermediate_steps: List[Any]
     output: Any
 
-def execute_cypher_statement(statements: List[str]) -> List[str]:
-    """
-    Executes the given Cypher statements.
+def _extract_statements(raw_result: Union[Dict[str, Any], AgentFinish]) -> List[str]:
+    # 1) pull "output" or "cypher_statements" from dict/AgentFinish
+    if isinstance(raw_result, AgentFinish):
+        rv = raw_result.return_values or {}
+        stmts = rv.get("cypher_statements")
+        out = rv.get("output")
+    else:
+        stmts = raw_result.get("cypher_statements")
+        out = raw_result.get("output")
 
-    Parameters:
-        statements (List[str]): List of Cypher statement strings.
+    # Prefer explicit list
+    if isinstance(stmts, list):
+        return [str(s).strip() for s in stmts if str(s).strip()]
 
-    Returns:
-        List[str]: The stringified query results or error messages for each statement.
-    """
-    results: List[str] = []
-    for stmt in statements:
-        print(stmt)
-        try:
-            res = graphdb.query(stmt)  # assumes graphdb.query returns something serializable
-            results.append(str(res))
-        except Exception as e:
-            print(e)
-            results.append(f"Error: {str(e)}")
-    return results
+    if out is None:
+        return []
 
-def execute_cypher_node(state: AgentState) -> AgentState:
-    raw_result   = execute_cypher_statement(state["output"])
-    output_value = raw_result.get("output") if isinstance(raw_result, dict) else raw_result
-    return {
-        "input": state.get("input", ""),
-        "output": output_value,
-        "intermediate_steps": state.get("intermediate_steps", []),
-    }
+    # If it's already a list, coerce to strings
+    if isinstance(out, list):
+        return [str(s).strip() for s in out if str(s).strip()]
 
-from typing import Any, List, Dict, Union
-from langchain_core.agents import AgentFinish
-import json
+    # If it's a string, attempt to normalize special "[ ... , ... , ... ]" block
+    if isinstance(out, str):
+        s = out.strip()
+        # Case 1: proper semicolon-separated
+        if ";" in s and not s.startswith("["):
+            return [st.strip() for st in s.split(";") if st.strip()]
+        # Case 2: bracketed comma-separated block produced by the LLM
+        if s.startswith("[") and s.endswith("]"):
+            inner = s[1:-1].strip()
+            # split only on commas that start a new Cypher clause (MERGE/MATCH/CREATE/etc.)
+            # here we handle your exact pattern with MERGE boundaries
+            parts: List[str] = []
+            buf = []
+            for line in inner.splitlines():
+                if line.strip().startswith("MERGE ") and buf:
+                    parts.append("\n".join(buf).strip().rstrip(","))
+                    buf = [line]
+                else:
+                    buf.append(line)
+            if buf:
+                parts.append("\n".join(buf).strip().rstrip(","))
 
-def unwrap_agent_result(res: Any) -> Any:
-    """Return the 'output' (or raw return_values) if res is AgentFinish; else return res."""
-    if isinstance(res, AgentFinish):
-        # Most ReAct agents put the final text under return_values["output"]
-        print(res.return_values.get("output", res.return_values))
-        return res.return_values.get("output", res.return_values)
-    return res
+            # If we got the classic 3-part MERGE n / MERGE m / MERGE (n)-[...] pattern,
+            # fold them into ONE statement with WITH to carry variables.
+            if len(parts) >= 3 and parts[0].startswith("MERGE (n") and parts[1].startswith("MERGE (m") and parts[2].startswith("MERGE (n)-"):
+                combined = f"""{parts[0]}
+WITH n
+{parts[1]}
+WITH n, m
+{parts[2]}"""
+                return [combined.strip()]
+            # Otherwise return each as its own statement (they must be independently valid)
+            return [p for p in parts if p]
 
-def normalize_statements(payload: Union[str, List[str], Dict[str, Any]]) -> List[str]:
-    """
-    Convert various payload shapes to List[str] statements.
-    Accepts:
-      - JSON array string
-      - newline-separated string
-      - dict with 'statements' or 'output'
-      - already a list of strings
-    """
-    if isinstance(payload, list):
-        return [str(s).strip() for s in payload if str(s).strip()]
-
-    if isinstance(payload, dict):
-        if "statements" in payload and isinstance(payload["statements"], list):
-            return [str(s).strip() for s in payload["statements"] if str(s).strip()]
-        if "output" in payload:
-            return normalize_statements(payload["output"])
-
-    if isinstance(payload, str):
-        s = payload.strip()
-        # Try JSON first
-        try:
-            maybe = json.loads(s)
-            return normalize_statements(maybe)
-        except Exception:
-            # Fallback: split by lines or commas
-            if "\n" in s:
-                return [line.strip() for line in s.splitlines() if line.strip()]
-            if s.startswith("[") and s.endswith("]"):
-                # Not valid JSON? do a naive split
-                inner = s[1:-1]
-                return [part.strip().strip('"').strip("'") for part in inner.split(",") if part.strip()]
-            return [s] if s else []
+        # Fallback: single raw statement
+        return [s]
 
     # Last resort
-    return [str(payload)]
+    return [str(out)]
 
-# ---- Your node/tool call flow ----
-
-def create_model_node(state: dict) -> dict:
+def create_model_node(state: AgentState) -> AgentState:
+    steps: List[Any] = list(state.get("intermediate_steps", []))
     raw_result = create_model_agent.invoke({
         "concept": state["concept"],
         "namespace": state["namespace"],
-        "intermediate_steps": state.get("intermediate_steps", [])
+        "intermediate_steps": steps
     })
+    steps.append({"create_model_agent_result": str(raw_result)})
 
-    # 1) Unwrap AgentFinish -> dict/str
-    payload = unwrap_agent_result(raw_result)
+    statements = _extract_statements(raw_result)
 
-    # 2) Normalize to the tool’s expected argument shape
-    statements: List[str] = normalize_statements(payload)
+    exec_results: List[str] = []
+    for stmt in statements:
+        try:
+            res = graphdb.query(stmt)
+            exec_results.append(str(res))
+        except Exception as e:
+            exec_results.append(f"Error executing:\n{stmt}\n{e}")
 
-    # If your tool schema is: ExecuteCypherStatement(statements: List[str])
-    tool_input: Dict[str, Any] = {"statements": statements}
-
-    # EITHER: directly call the tool
-    # execute_cypher_statement.invoke(tool_input)
-
-    # OR: return state for a ToolNode to consume
     return {
-        "input": state.get("input", ""),
-        "output": statements,                 # keep the plain statements if you also want them in state
-        "tool_name": "execute_cypher_statement",
-        "tool_input": tool_input,             # <-- dict, not AgentFinish
-        "intermediate_steps": state.get("intermediate_steps", []),
-        "concept": state["concept"],
-        "namespace": state["namespace"],
+        "cypher_statements": statements,
+        "output": exec_results,
+        "intermediate_steps": steps,
     }
 
 # ---- Build the graph ----
 graph = StateGraph(AgentState)
 graph.add_node("create_model_node", create_model_node)
-graph.add_node("execute_cypher_node",execute_cypher_node)
-graph.add_edge("__start__", "create_model_node")
-graph.add_edge("create_model_node","execute_cypher_node")
-graph.add_edge("execute_cypher_node", END)
-
+graph.add_edge(START, "create_model_node")
+graph.add_edge("create_model_node", END)
 app = graph.compile()
 
 # ---- Invoke it ----
@@ -140,10 +109,9 @@ initial_state: AgentState = {
     "input": "Create/merge ontology-backed model node",
     "concept": "Cash Account",
     "namespace": "http://example.com/ontology/",
-    "intermediate_steps": [],  # ensure key exists to avoid KeyError in agents expecting it
+    "intermediate_steps": [],
 }
 
 result_state = app.invoke(initial_state)
-
-# ---- Use the result ----
-print("Final output:", result_state["output"])
+print("Executed statements:", result_state.get("cypher_statements"))
+print("Final output:", result_state.get("output"))
