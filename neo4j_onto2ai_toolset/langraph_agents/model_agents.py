@@ -2,6 +2,7 @@ from langchain.agents import create_tool_calling_agent
 from langchain_core.runnables import Runnable
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+import json
 
 from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
@@ -13,27 +14,34 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
 
-db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
+semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
 @tool
 def retrieve_stored_model(key_concept: str) -> str:
     """Display the stored model related to the key concept"""
-    resp = get_model_from_db(key_concept, db)
+    resp = get_model_from_db(key_concept, semanticdb)
     return resp
+
 @tool
-def execute_cypher_statement(cypher_statement: str) -> str:
+def execute_cypher_statement(cypher_statements: str) -> list[str]:
     """
     Executes the given Cypher statement.
     """
-    result = graphdb.query(cypher_statement)
-    return result
+    statements = json.loads(cypher_statements)
+    results = list[str]
+    for stmt in statements:
+        try:
+            results.append(graphdb.query(stmt))
+        except Exception as e:
+            results.append(e)
+    return results
 
 # create_model_agent.invoke({"concept":state["concept"],
 #                            "namespace":state["namespace"],
 #                            "intermediate_steps": state["intermediate_steps"]})
 create_model_agent: Runnable = create_tool_calling_agent(
     llm=llm,
-    tools=[],
+    tools=[execute_cypher_statement],
     prompt=ChatPromptTemplate.from_messages(
     [
         (

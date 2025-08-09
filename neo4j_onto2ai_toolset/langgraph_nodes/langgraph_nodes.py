@@ -1,41 +1,54 @@
-import logging
-from typing import Literal
+# LangGraph: build a minimal StateGraph and invoke it
+from typing import TypedDict, Any, List
+from langgraph.graph import StateGraph, END
 
-from langgraph.graph import END, START, StateGraph
-
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
-    neo4j_bolt_url,
-    username,
-    password,
-    neo4j_db_name)
-
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
-    OverallState,
-    generate_cypher,
-    execute_graph_query,
-    del_dup_cls_rels,
-    create_schema)
-
-db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
-
-# node
-def cypher_to_create_schema(state: OverallState):
-    return create_schema(state=state,llm=llm)
-
-# node
-def query_to_enhance_schema(state: OverallState):
-    return generate_cypher(state=state,db=db,llm=llm)
+from neo4j_onto2ai_toolset.langraph_agents.model_agents import create_model_agent
 
 
-# node
-def run_query(state: OverallState):
-    execute_graph_query(state=state,db=graphdb)
+# ---- Define state ----
+class AgentState(TypedDict, total=False):
+    input: str
+    concept: str
+    namespace: str
+    intermediate_steps: List[Any]
+    output: Any
 
-# node
-def del_dups(state: OverallState):
-    del_dup_cls_rels(state=state,db=graphdb)
+# ---- Assume you already have a runnable/agent ----
+# e.g., create_model_agent: RunnableLike that accepts a dict and returns a result
+# from langchain_core.runnables import Runnable
+# create_model_agent: Runnable = ...
 
+def create_model_node(state: AgentState) -> AgentState:
+    result = create_model_agent.invoke({
+        "concept": state["concept"],
+        "namespace": state["namespace"],
+        "intermediate_steps": state.get("intermediate_steps", [])
+    })
+    return {
+        "input": state.get("input", ""),
+        "output": result,
+        "intermediate_steps": state.get("intermediate_steps", []),
+        "concept": state["concept"],
+        "namespace": state["namespace"],
+    }
 
+# ---- Build the graph ----
+graph = StateGraph(AgentState)
+graph.add_node("create_model_node", create_model_node)
+graph.add_edge("__start__", "create_model_node")
+graph.add_edge("create_model_node", END)
 
+app = graph.compile()
+
+# ---- Invoke it ----
+initial_state: AgentState = {
+    "input": "Create/merge ontology-backed model node",
+    "concept": "Cash Account",
+    "namespace": "http://example.com/ontology/",
+    "intermediate_steps": [],  # ensure key exists to avoid KeyError in agents expecting it
+}
+
+result_state = app.invoke(initial_state)
+
+# ---- Use the result ----
+print("Final output:", result_state["output"])
