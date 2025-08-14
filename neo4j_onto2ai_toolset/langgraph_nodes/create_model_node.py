@@ -107,7 +107,7 @@ app = graph.compile()
 # ---- Invoke it ----
 initial_state: AgentState = {
     "input": "Create/merge ontology-backed model node",
-    "concept": "Cash Account",
+    "concept": "Check Account",
     "namespace": "http://example.com/ontology/",
     "intermediate_steps": [],
 }

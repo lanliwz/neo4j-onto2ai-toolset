@@ -3,26 +3,7 @@ from langgraph_supervisor import create_supervisor
 from typing import List, Optional
 from neo4j_onto2ai_toolset.langraph_agents.model_agents import *
 
-
-
-supervisor = create_supervisor(
-    # Each message in messages should follow the Chat Message format:
-    # {
-    # "role": "user" | "assistant" | "system" | "tool",
-    # "content": str
-    # }
-    #
-    agents=[model_qa_agent,rdb_ddl_agent,pydantic_class_agent],
-    model=llm,
-    prompt=(
-    "You are a team supervisor managing all models."
-    "For question about model, extract key concept from the question first"
-    "If the quest is about validation of the model, then use model_qa_agent"
-    "If the quest is about generate relational database schema of the model, then use rdb_ddl_agent"
-    "If the quest is about generate python or pydantic class or schema of the model, then use pydantic_class_agent"
-    )
-)
-
+from neo4j_onto2ai_toolset.langraph_agents.supervisors import *
 
 
 def get_last_ai_content(messages: List) -> Optional[str]:
@@ -43,7 +24,7 @@ def get_last_ai_content(messages: List) -> Optional[str]:
     return None  # No AIMessage found
 
 def start_cli_chat():
-    app = supervisor.compile()
+    app = model2schema_supervisor.compile()
     print("🤖 Chat started. Type `exit` to stop.")
     while True:
         user_input = input("🗨️  You: ")

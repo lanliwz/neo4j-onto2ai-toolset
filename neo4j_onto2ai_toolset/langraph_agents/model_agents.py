@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 from langchain.agents import create_tool_calling_agent
 from langchain_core.runnables import Runnable
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import json
 
+from langchain_neo4j import Neo4jGraph
 from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_bolt_url,
@@ -16,29 +19,19 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphd
 
 semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
+@dataclass
+class ContextSchema:
+    semantic_db: SemanticGraphDB
+    graph_db: Neo4jGraph
+    runtime_username: str
+
 @tool
 def retrieve_stored_model(key_concept: str) -> str:
     """Display the stored model related to the key concept"""
     resp = get_model_from_db(key_concept, semanticdb)
     return resp
 
-# @tool
-# def execute_cypher_statement(cypher_statements: str) -> list[str]:
-#     """
-#     Executes the given Cypher statement.
-#     """
-#     statements = json.loads(cypher_statements)
-#     results = list[str]
-#     for stmt in statements:
-#         try:
-#             results.append(graphdb.query(stmt))
-#         except Exception as e:
-#             results.append(e)
-#     return results
 
-# create_model_agent.invoke({"concept":state["concept"],
-#                            "namespace":state["namespace"],
-#                            "intermediate_steps": state["intermediate_steps"]})
 create_model_agent: Runnable = create_tool_calling_agent(
     llm=llm,
     tools=[],
@@ -79,6 +72,18 @@ create_model_agent: Runnable = create_tool_calling_agent(
 ])
 )
 # Agents
+model_review_agent = create_react_agent(
+    model=llm,
+    tools=[retrieve_stored_model],
+    name="model_review_agent",
+    prompt= (
+        "You are a model expert."
+        "re-format the model in plain english."
+    ),
+    context_schema=ContextSchema
+)
+
+# Agents
 model_qa_agent = create_react_agent(
     model=llm,
     tools=[retrieve_stored_model],
@@ -87,7 +92,8 @@ model_qa_agent = create_react_agent(
         "You are a model expert."
         "1. Find any duplicated concept and relationship for given model."
         "2. Generate cypher to delete duplicated items. one statement per line."
-    )
+    ),
+    context_schema=ContextSchema
 )
 
 rdb_ddl_agent = create_react_agent(
@@ -99,7 +105,8 @@ rdb_ddl_agent = create_react_agent(
         "Based on input model, generate oracle database DDL, ignore annotation properties. No pre-amble."
         "For simple node and one to one relationship, add column to the table instead of creating another table"
         "Do not wrap the response in any backticks or anything else. Respond with code only!"
-    )
+    ),
+    context_schema=ContextSchema
 )
 
 pydantic_class_agent = create_react_agent(
@@ -110,7 +117,8 @@ pydantic_class_agent = create_react_agent(
         "You are a model expert."
         "Based on input model, generate Pydantic classes. No pre-amble."
         "Do not wrap the response in any backticks or anything else. Respond with code only!"
-    )
+    ),
+    context_schema=ContextSchema
 )
 
 
