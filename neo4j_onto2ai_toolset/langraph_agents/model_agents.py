@@ -31,7 +31,11 @@ def retrieve_stored_model(key_concept: str) -> str:
     resp = get_model_from_db(key_concept, semanticdb)
     return resp
 
-
+@tool
+def display_model(content: str) -> str:
+    """Display the stored model related to the key concept"""
+    print(content)
+    return content
 create_model_agent: Runnable = create_tool_calling_agent(
     llm=llm,
     tools=[],
@@ -40,7 +44,7 @@ create_model_agent: Runnable = create_tool_calling_agent(
         (
             "system",
             (
-                "You are to convert ontology schema information into Cypher queries for Neo4j, following specific formatting and metadata rules. "
+                "You are to convert ontology schema information into Cypher queries for Neo4j, following specific formatting and metadata rules."
                 "Your responses must strictly follow the requirements below."
             ),
         ),
@@ -59,7 +63,6 @@ create_model_agent: Runnable = create_tool_calling_agent(
                 "- All nodes/relationships have uri with HTTP and the provided domain.\n"
                 "- Each node/relationship includes skos__definition (no single quotes).\n"
                 "- Match nodes only with rdfs__label.\n"
-                "- If schema is a URL, add gojs_documentLink to node.\n"
                 "- Find and add as many relationships as possible.\n"
                 "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses.\n"
                 "\n"
@@ -72,6 +75,35 @@ create_model_agent: Runnable = create_tool_calling_agent(
 ])
 )
 # Agents
+
+model_maintenance_agent = create_react_agent(
+    model=llm,
+    tools=[display_model],
+    name="model_maintenance_agent",
+    prompt=(
+        "Context: Ontology-driven Cypher query generation for Neo4j graph database.\n"
+        "Objective: From the input, extract the concept and the namespace, generate an array of Cypher statements to add or merge nodes (owl:Class) and relationships with properties, using the ontology conventions below.\n"
+        "Style: The Output of the LLM must be Cypher statements only, no explanations or wrappers, with each statement as an array element.\n"
+        "Audience: Technical users working with ontology-based Neo4j graphs.\n"
+        "Requirements:\n"
+        "- Each node is an owl:Class with rdfs__label (lowercase, space-separated).\n"
+        "- Add all annotation properties as metadata to both nodes and relationships.\n"
+        "- Merge nodes if already exist.\n"
+        "- Relationship type is camelCase, first letter lowercase; add owl__minQualifiedCardinality if possible.\n"
+        "- All nodes/relationships have uri with HTTP and the provided domain.\n"
+        "- Each node/relationship includes skos__definition (no single quotes).\n"
+        "- Match nodes only with rdfs__label.\n"
+        "- If schema is a URL, add gojs_documentLink to node.\n"
+        "- Find and add as many relationships as possible.\n"
+        "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses.\n"
+        "Tools: pass the output to display_model"
+    ),
+
+
+
+
+    context_schema=ContextSchema
+)
 model_review_agent = create_react_agent(
     model=llm,
     tools=[retrieve_stored_model],
@@ -122,4 +154,9 @@ pydantic_class_agent = create_react_agent(
 )
 
 
-
+# response = model_maintenance_agent.invoke(
+#     {
+#         "messages":"create check account model, with namespace myfin.com"
+#     }
+# )
+# print (response)
