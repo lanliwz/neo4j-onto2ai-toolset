@@ -36,44 +36,8 @@ def display_model(content: str) -> str:
     """Display the stored model related to the key concept"""
     print(content)
     return content
-create_model_agent: Runnable = create_tool_calling_agent(
-    llm=llm,
-    tools=[],
-    prompt=ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            (
-                "You are to convert ontology schema information into Cypher queries for Neo4j, following specific formatting and metadata rules."
-                "Your responses must strictly follow the requirements below."
-            ),
-        ),
-        (
-            "human",
-            (
-                "Context: Ontology-driven Cypher query generation for Neo4j graph database.\n"
-                "Objective: Given a concept (may be a URL or text) and a namespace, generate an array of Cypher statements to add or merge nodes (owl:Class) and relationships with properties, using the ontology conventions below.\n"
-                "Style: Output must be Cypher statements only, no explanations or wrappers, with each statement as an array element.\n"
-                "Audience: Technical users working with ontology-based Neo4j graphs.\n"
-                "Requirements:\n"
-                "- Each node is an owl:Class with rdfs__label (lowercase, space-separated).\n"
-                "- Add all annotation properties as metadata to both nodes and relationships.\n"
-                "- Merge nodes if already exist.\n"
-                "- Relationship type is camelCase, first letter lowercase; add owl__minQualifiedCardinality if possible.\n"
-                "- All nodes/relationships have uri with HTTP and the provided domain.\n"
-                "- Each node/relationship includes skos__definition (no single quotes).\n"
-                "- Match nodes only with rdfs__label.\n"
-                "- Find and add as many relationships as possible.\n"
-                "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses.\n"
-                "\n"
-                "Inputs:\n"
-                "namespace: {namespace}\n"
-                "concept: {concept}"
-            ),
-        ),
-    MessagesPlaceholder("agent_scratchpad"),
-])
-)
+
+
 # Agents
 
 modeler_agent = create_react_agent(
