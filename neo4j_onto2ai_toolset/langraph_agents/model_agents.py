@@ -76,7 +76,7 @@ create_model_agent: Runnable = create_tool_calling_agent(
 )
 # Agents
 
-model_maintenance_agent = create_react_agent(
+modeler_agent = create_react_agent(
     model=llm,
     tools=[display_model],
     name="model_maintenance_agent",

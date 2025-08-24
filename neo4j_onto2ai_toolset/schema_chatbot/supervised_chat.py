@@ -24,8 +24,7 @@ def get_last_ai_content(messages: List) -> Optional[str]:
     return None  # No AIMessage found
 
 def start_cli_chat():
-    app = model2schema_supervisor.compile()
-    # app = manage_model_supervisor.compile()
+    app = model_manager.compile()
     print("🤖 Chat started. Type `exit` to stop.")
     while True:
         user_input = input("🗨️  You: ")
