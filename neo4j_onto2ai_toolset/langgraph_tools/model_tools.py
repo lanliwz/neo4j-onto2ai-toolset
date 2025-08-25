@@ -1,3 +1,5 @@
+import json
+
 from langchain_core.tools import tool
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from langchain_neo4j import Neo4jGraph
@@ -10,6 +12,14 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
     neo4j_db_name)
 
 semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
+
+graphdb = Neo4jGraph(
+    url=neo4j_bolt_url,
+    username=username,
+    password=password,
+    database=neo4j_db_name,
+    enhanced_schema=True
+)
 
 @dataclass
 class ModelContextSchema:
@@ -31,6 +41,12 @@ def display_model(content: str) -> str:
 
 @tool
 def create_model(content: str) -> str:
-    """Display the stored model related to the key concept"""
-    print(content)
-    return content
+    """Insert model node and relationship into model store"""
+    statements = json.loads(content)
+    records = []
+    for stmt in statements:
+        try:
+            records.append(graphdb.query(stmt))
+        except Exception as e:
+            records.append(e)
+    return str(records)

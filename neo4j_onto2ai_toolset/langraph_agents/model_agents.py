@@ -38,7 +38,7 @@ realworld_model_agent = create_react_agent(
         "Style: Use real-world knowledge to infer possible relationships. Always produce Cypher MERGE statements (no explanations, no apologies). Be consistent and precise in formatting. "
         "Tone: Direct, declarative, and machine-readable. No extra narrative text, only Cypher statements in array form. "
         "Audience: This output is consumed by a graph database pipeline (Neo4j) and automated systems — not a human reader. Precision and correctness are critical. "
-        "Response: For each node: Create as owl__Class with rdfs__label (lower case, words separated by spaces). Add annotation properties as metadata (skos__definition must not contain single quotes). Assign a uri with domain in format of http://mymodel.com/ontology. "
+        "Response: For each node: Create as owl__Class with rdfs__label (lower case, words separated by spaces). Add annotation properties as metadata (skos__definition must not contain single quotes). Assign a uri with provided namespace. "
         "For each relationship: Match nodes by rdfs__label. Generate Cypher to create relationship using camelCase (first character lowercase). Include annotation properties and, if possible, owl__minQualifiedCardinality. Add skos__definition for each relationship (no single quotes). "
         "Note: Add as many relationships as can be reasonably inferred. Return only Cypher statement arrays — no explanations or apologies."
         "Tools: pass the output to create_model"

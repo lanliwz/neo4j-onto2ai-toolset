@@ -21,6 +21,6 @@ model_manager = create_supervisor(
         "- If the question is about generating a relational database schema → use rdb_ddl_agent. "
         "- If the question is about generating Python or Pydantic classes/schemas → use pydantic_class_agent. "
         # "- If the question is about creating a new model → use model_maintenance_agent."
-        "- If the question is about creating a new model, and domain or namespace is provided in the input, extract both model name and domain, then  → use realworld_model_agent."
+        "- If the question is about creating a new model → use realworld_model_agent."
     )
     )
