@@ -12,9 +12,9 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
 semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
 @dataclass
-class ContextSchema:
-    semantic_db: SemanticGraphDB
-    graph_db: Neo4jGraph
+class ModelContextSchema:
+    key_concept: str
+    uri_domain: str
     runtime_username: str
 
 @tool

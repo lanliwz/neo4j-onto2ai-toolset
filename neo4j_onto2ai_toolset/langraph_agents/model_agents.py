@@ -25,7 +25,7 @@ modeler_agent = create_react_agent(
         "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses."
         "Tools: pass the output to display_model"
     ),
-    context_schema=ContextSchema
+    context_schema=ModelContextSchema
 )
 
 realworld_model_agent = create_react_agent(
@@ -42,7 +42,8 @@ realworld_model_agent = create_react_agent(
         "For each relationship: Match nodes by rdfs__label. Generate Cypher to create relationship using camelCase (first character lowercase). Include annotation properties and, if possible, owl__minQualifiedCardinality. Add skos__definition for each relationship (no single quotes). "
         "Note: Add as many relationships as can be reasonably inferred. Return only Cypher statement arrays — no explanations or apologies."
         "Tools: pass the output to create_model"
-    )
+    ),
+    context_schema=ModelContextSchema
 )
 model_review_agent = create_react_agent(
     model=llm,
@@ -52,7 +53,7 @@ model_review_agent = create_react_agent(
         "You are a model expert."
         "re-format the model in plain english."
     ),
-    context_schema=ContextSchema
+    context_schema=ModelContextSchema
 )
 
 # Agents
@@ -65,7 +66,7 @@ model_qa_agent = create_react_agent(
         "1. Find any duplicated concept and relationship for given model."
         "2. Generate cypher to delete duplicated items. one statement per line."
     ),
-    context_schema=ContextSchema
+    context_schema=ModelContextSchema
 )
 
 rdb_ddl_agent = create_react_agent(
@@ -78,7 +79,7 @@ rdb_ddl_agent = create_react_agent(
         "For simple node and one to one relationship, add column to the table instead of creating another table"
         "Do not wrap the response in any backticks or anything else. Respond with code only!"
     ),
-    context_schema=ContextSchema
+    context_schema=ModelContextSchema
 )
 
 pydantic_class_agent = create_react_agent(
@@ -90,7 +91,7 @@ pydantic_class_agent = create_react_agent(
         "Based on input model, generate Pydantic classes. No pre-amble."
         "Do not wrap the response in any backticks or anything else. Respond with code only!"
     ),
-    context_schema=ContextSchema
+    context_schema=ModelContextSchema
 )
 
 
