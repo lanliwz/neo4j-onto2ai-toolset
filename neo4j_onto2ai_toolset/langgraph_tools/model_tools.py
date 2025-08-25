@@ -1,5 +1,5 @@
 import json
-
+from neo4j_onto2ai_toolset.logger_config import logger
 from langchain_core.tools import tool
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from langchain_neo4j import Neo4jGraph
@@ -47,6 +47,8 @@ def create_model(content: str) -> str:
     for stmt in statements:
         try:
             records.append(graphdb.query(stmt))
+            logger.info(f'executed - {stmt}')
         except Exception as e:
             records.append(e)
+            logger.error(f'error - {stmt}')
     return str(records)
