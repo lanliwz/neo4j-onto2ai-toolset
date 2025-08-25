@@ -1,72 +1,48 @@
-from dataclasses import dataclass
-
-from langchain.agents import create_tool_calling_agent
-from langchain_core.runnables import Runnable
-from langchain_core.tools import tool
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-import json
-
-from langchain_neo4j import Neo4jGraph
 from langgraph.prebuilt import create_react_agent
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
-    neo4j_bolt_url,
-    username,
-    password,
-    neo4j_db_name)
-
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
-
-semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
-
-@dataclass
-class ContextSchema:
-    semantic_db: SemanticGraphDB
-    graph_db: Neo4jGraph
-    runtime_username: str
-
-@tool
-def retrieve_stored_model(key_concept: str) -> str:
-    """Display the stored model related to the key concept"""
-    resp = get_model_from_db(key_concept, semanticdb)
-    return resp
-
-@tool
-def display_model(content: str) -> str:
-    """Display the stored model related to the key concept"""
-    print(content)
-    return content
-
+from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 
 # Agents
-
 modeler_agent = create_react_agent(
     model=llm,
     tools=[display_model],
     name="model_maintenance_agent",
     prompt=(
-        "Context: Ontology-driven Cypher query generation for Neo4j graph database.\n"
+        "Context: Ontology-driven Cypher query generation for Neo4j graph database."
         "Objective: From the input, extract the concept and the namespace, generate an array of Cypher statements to add or merge nodes (owl:Class) and relationships with properties, using the ontology conventions below.\n"
-        "Style: The Output of the LLM must be Cypher statements only, no explanations or wrappers, with each statement as an array element.\n"
-        "Audience: Technical users working with ontology-based Neo4j graphs.\n"
-        "Requirements:\n"
-        "- Each node is an owl:Class with rdfs__label (lowercase, space-separated).\n"
-        "- Add all annotation properties as metadata to both nodes and relationships.\n"
-        "- Merge nodes if already exist.\n"
-        "- Relationship type is camelCase, first letter lowercase; add owl__minQualifiedCardinality if possible.\n"
-        "- All nodes/relationships have uri with HTTP and the provided domain.\n"
-        "- Each node/relationship includes skos__definition (no single quotes).\n"
-        "- Match nodes only with rdfs__label.\n"
-        "- If schema is a URL, add gojs_documentLink to node.\n"
-        "- Find and add as many relationships as possible.\n"
-        "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses.\n"
+        "Style: The Output of the LLM must be Cypher statements only, no explanations or wrappers, with each statement as an array element."
+        "Audience: Technical users working with ontology-based Neo4j graphs."
+        "Requirements:"
+        "- Each node is an owl:Class with rdfs__label (lowercase, space-separated)."
+        "- Add all annotation properties as metadata to both nodes and relationships."
+        "- Merge nodes if already exist."
+        "- Relationship type is camelCase, first letter lowercase; add owl__minQualifiedCardinality if possible."
+        "- All nodes/relationships have uri with HTTP and the provided domain."
+        "- Each node/relationship includes skos__definition (no single quotes)."
+        "- Match nodes only with rdfs__label."
+        "- If schema is a URL, add gojs_documentLink to node."
+        "- Find and add as many relationships as possible."
+        "- Absolutely do not include any explanations, apologies, preamble, or backticks in your responses."
         "Tools: pass the output to display_model"
     ),
-
-
-
-
     context_schema=ContextSchema
+)
+
+realworld_model_agent = create_react_agent(
+    model=llm,
+    tools=[create_model],
+    name="realworld_model_agent",
+    prompt=(
+        "Context: You are an ontology-to-Cypher generation agent. You transform model definitions into Cypher MERGE statements for owl__Class nodes and relationships, enriched with semantic metadata. "
+        "Objective: Generate Cypher statements to add nodes (owl__Class) and relationships. Output each Cypher statement as a single element in an array. The goal is to build a semantically rich graph model aligned with the given model. "
+        "Style: Use real-world knowledge to infer possible relationships. Always produce Cypher MERGE statements (no explanations, no apologies). Be consistent and precise in formatting. "
+        "Tone: Direct, declarative, and machine-readable. No extra narrative text, only Cypher statements in array form. "
+        "Audience: This output is consumed by a graph database pipeline (Neo4j) and automated systems — not a human reader. Precision and correctness are critical. "
+        "Response: For each node: Create as owl__Class with rdfs__label (lower case, words separated by spaces). Add annotation properties as metadata (skos__definition must not contain single quotes). Assign a uri with domain in format of http://mymodel.com/ontology. "
+        "For each relationship: Match nodes by rdfs__label. Generate Cypher to create relationship using camelCase (first character lowercase). Include annotation properties and, if possible, owl__minQualifiedCardinality. Add skos__definition for each relationship (no single quotes). "
+        "Note: Add as many relationships as can be reasonably inferred. Return only Cypher statement arrays — no explanations or apologies."
+        "Tools: pass the output to create_model"
+    )
 )
 model_review_agent = create_react_agent(
     model=llm,
@@ -118,9 +94,9 @@ pydantic_class_agent = create_react_agent(
 )
 
 
-# response = model_maintenance_agent.invoke(
+# response = realworld_model_agent.invoke(
 #     {
-#         "messages":"create check account model, with namespace myfin.com"
+#         "messages":"create human model, with namespace myfin.com"
 #     }
 # )
 # print (response)

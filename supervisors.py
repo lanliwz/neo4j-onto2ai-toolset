@@ -10,7 +10,7 @@ model_manager = create_supervisor(
     # "content": str
     # }
     #
-    agents=[model_qa_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, modeler_agent],
+    agents=[model_qa_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, modeler_agent, realworld_model_agent],
     model=llm,
     prompt=(
         "You are a user working with stored models to produce schemas for applications. "
@@ -20,6 +20,7 @@ model_manager = create_supervisor(
         "- If the question is about validating a model → use model_qa_agent. "
         "- If the question is about generating a relational database schema → use rdb_ddl_agent. "
         "- If the question is about generating Python or Pydantic classes/schemas → use pydantic_class_agent. "
-        "- If the question is about creating a new model → use model_maintenance_agent."
+        # "- If the question is about creating a new model → use model_maintenance_agent."
+        "- If the question is about creating a new model → use realworld_model_agent."
     )
     )

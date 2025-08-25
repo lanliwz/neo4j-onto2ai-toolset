@@ -1,9 +1,7 @@
 from langchain.schema import AIMessage
-from langgraph_supervisor import create_supervisor
 from typing import List, Optional
-from neo4j_onto2ai_toolset.langraph_agents.model_agents import *
 
-from neo4j_onto2ai_toolset.langraph_agents.supervisors import *
+from supervisors import *
 
 
 def get_last_ai_content(messages: List) -> Optional[str]:
