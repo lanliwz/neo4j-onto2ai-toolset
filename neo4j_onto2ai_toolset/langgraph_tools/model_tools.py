@@ -28,20 +28,23 @@ class ModelContextSchema:
     runtime_username: str
 
 @tool
-def retrieve_stored_model(key_concept: str) -> str:
-    """Display the stored model related to the key concept"""
+def retrieve_model(key_concept: str) -> str:
+    """retrieve the stored model"""
     resp = get_model_from_db(key_concept, semanticdb)
     return resp
 
 @tool
 def display_model(content: str) -> str:
-    """Display the stored model related to the key concept"""
+    """display model content"""
     print(content)
     return content
 
 @tool
-def create_model(content: str) -> str:
-    """Insert model node and relationship into model store"""
+def modify_model(content: str) -> str:
+    """
+    Insert/update/delete model node and relationship in model store
+    content should be in format of json array, wrap as a string
+    """
     statements = json.loads(content)
     records = []
     for stmt in statements:

@@ -28,12 +28,12 @@ modeler_agent = create_react_agent(
     context_schema=ModelContextSchema
 )
 
-realworld_model_agent = create_react_agent(
+modify_model_agent = create_react_agent(
     model=llm,
-    tools=[create_model],
-    name="realworld_model_agent",
+    tools=[retrieve_model,modify_model],
+    name="modify_model_agent",
     prompt=(
-        "Context: You are an ontology-to-Cypher generation agent. You transform model definitions into Cypher MERGE statements for owl__Class nodes and relationships, enriched with semantic metadata. "
+        "Context: You are an ontology-to-Cypher generation agent. If you are asked to enhance model, you need to execute retrieve_model first. You transform model definitions into Cypher MERGE statements for owl__Class nodes and relationships, enriched with semantic metadata. "
         "Objective: Generate Cypher statements to add nodes (owl__Class) and relationships. Output each Cypher statement as a single element in an array. The goal is to build a semantically rich graph model aligned with the given model. "
         "Style: Use real-world knowledge to infer possible relationships. Always produce Cypher MERGE statements (no explanations, no apologies). Be consistent and precise in formatting. "
         "Tone: Direct, declarative, and machine-readable. No extra narrative text, only Cypher statements in array form. "
@@ -47,7 +47,7 @@ realworld_model_agent = create_react_agent(
 )
 model_review_agent = create_react_agent(
     model=llm,
-    tools=[retrieve_stored_model],
+    tools=[retrieve_model],
     name="model_review_agent",
     prompt= (
         "You are a model expert."
@@ -59,7 +59,7 @@ model_review_agent = create_react_agent(
 # Agents
 model_qa_agent = create_react_agent(
     model=llm,
-    tools=[retrieve_stored_model],
+    tools=[retrieve_model],
     name="model_qa_agent",
     prompt= (
         "You are a model expert."
@@ -71,7 +71,7 @@ model_qa_agent = create_react_agent(
 
 rdb_ddl_agent = create_react_agent(
     model=llm,
-    tools=[retrieve_stored_model],
+    tools=[retrieve_model],
     name="rdb_ddl_agent",
     prompt= (
         "You are a model expert."
@@ -84,7 +84,7 @@ rdb_ddl_agent = create_react_agent(
 
 pydantic_class_agent = create_react_agent(
     model=llm,
-    tools=[retrieve_stored_model],
+    tools=[retrieve_model],
     name="pydantic_class_agent",
     prompt= (
         "You are a model expert."
