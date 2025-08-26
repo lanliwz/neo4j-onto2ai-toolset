@@ -57,14 +57,16 @@ model_review_agent = create_react_agent(
 )
 
 # Agents
-model_qa_agent = create_react_agent(
+validate_model_agent = create_react_agent(
     model=llm,
     tools=[retrieve_model],
-    name="model_qa_agent",
+    name="validate_model_agent",
     prompt= (
         "You are a model expert."
-        "1. Find any duplicated concept and relationship for given model."
-        "2. Generate cypher to delete duplicated items. one statement per line."
+        "1. Find any duplicated node and relationship for given model. All nodes are type of owl__Class"
+        "2. Generate cypher to delete duplicated items. "
+        "3. for example: if the duplicated node is :Human, then generated cypher is MATCH (h:owl__Class) WHERE h.rdfs__label = 'human' WITH h ORDER BY id(h) DETACH DELETE h"
+
     ),
     context_schema=ModelContextSchema
 )
