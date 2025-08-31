@@ -37,4 +37,5 @@ def start_cli_chat():
 
 
 # start the chat
+# create a new human model with namespace my-friend.com
 start_cli_chat()

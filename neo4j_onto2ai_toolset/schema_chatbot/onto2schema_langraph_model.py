@@ -9,7 +9,7 @@ from typing_extensions import TypedDict
 
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema
 from neo4j_onto2ai_toolset.prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import *
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import *
 from neo4j_onto2ai_toolset.logger_config import logger as mylogger
 
 

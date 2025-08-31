@@ -7,7 +7,7 @@ from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import clean_up_neo4j_graph
 from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import *
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import *
 
 
 

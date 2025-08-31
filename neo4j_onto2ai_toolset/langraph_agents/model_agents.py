@@ -1,5 +1,5 @@
 from langgraph.prebuilt import create_react_agent
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import llm, graphdb
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import llm, graphdb
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 
 # Agents

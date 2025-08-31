@@ -5,7 +5,7 @@ from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get
 from langchain_neo4j import Neo4jGraph
 from dataclasses import dataclass
 
-from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_connect import (
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import (
     neo4j_bolt_url,
     username,
     password,
