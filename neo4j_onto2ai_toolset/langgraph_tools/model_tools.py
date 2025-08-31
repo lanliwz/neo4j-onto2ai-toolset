@@ -31,12 +31,14 @@ class ModelContextSchema:
 def retrieve_model(key_concept: str) -> str:
     """retrieve the stored model"""
     resp = get_model_from_db(key_concept, semanticdb)
+    logger.info(f'retrieve_model tool is used.')
     return resp
 
 @tool
 def display_model(content: str) -> str:
     """display model content"""
     print(content)
+    logger.info(f'display_model tool is used.')
     return content
 
 @tool
@@ -54,4 +56,5 @@ def modify_model(content: str) -> str:
         except Exception as e:
             records.append(e)
             logger.error(f'error - {stmt}')
+    logger.info(f'modify_model tool is used.')
     return str(records)
