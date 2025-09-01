@@ -33,5 +33,6 @@ logger.info("Neo4j Logger Level:"+NEO4J_LOG_LEVEL)
 logger.info("Neo4j RDF DB Name:" + os.getenv('NEO4J_RDF_DB_NAME'))
 logger.info("Neo4j TAX DB Name:" + os.getenv('NEO4J_TAX62N_DB_NAME'))
 logger.info("LLM Model:" + os.getenv('GPT_MODEL_NAME'))
+logger.info("LLM Model:" + os.getenv('GPT_REASONING_EFFORT'))
 
 # logger.info("Logging is set up neo4j-onto2ai-toolset")

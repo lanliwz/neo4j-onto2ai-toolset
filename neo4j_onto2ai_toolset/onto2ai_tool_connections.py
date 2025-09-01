@@ -6,7 +6,8 @@ from neo4j_onto2ai_toolset.onto2ai_logger_config import *
 
 # llm = ChatOpenAI(model="gpt-o3-mini", temperature=0)
 GPT_MODEL_NAME = os.getenv("GPT_MODEL_NAME")
-llm = ChatOpenAI(model=GPT_MODEL_NAME,reasoning_effort="medium")
+GPT_REASONING_EFFORT = os.getenv("GPT_REASONING_EFFORT")
+llm = ChatOpenAI(model=GPT_MODEL_NAME,reasoning_effort=GPT_REASONING_EFFORT)
 
 neo4j_bolt_url = os.getenv("Neo4jFinDBUrl")
 username = os.getenv("Neo4jFinDBUserName")

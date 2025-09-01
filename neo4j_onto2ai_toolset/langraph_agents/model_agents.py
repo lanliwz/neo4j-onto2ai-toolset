@@ -1,31 +1,14 @@
 from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.onto2ai_tool_connections import llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
+from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt
 
 # Agents
 create_model_agent = create_react_agent(
     model=llm,
     tools=[modify_model],
     name="create_model_agent",
-    prompt=(
-        "Context: Ontology-driven Cypher query generation for Neo4j.\n"
-        "Objective: From the input, extract the concept and namespace, infer related concepts and relationships, "
-        "and return a JSON array of Cypher statements.\n"
-        "Output Style: Cypher statements only. No explanations, comments, wrappers, backticks, or preamble. "
-        "Each statement must be a string element in the array.\n"
-        "Audience: Technical users working with ontology-based Neo4j graphs.\n"
-        "Constraints:\n"
-        "- Each node must be an :owl__Class with rdfs__label in lowercase words (space-separated).\n"
-        "- Add all annotation properties as metadata to nodes and relationships.\n"
-        "- Always use MERGE on uri as the unique identifier (never CREATE).\n"
-        "- Relationship types must be camelCase, starting lowercase; include owl__minQualifiedCardinality if available.\n"
-        "- All nodes and relationships must have a uri with HTTP and the provided domain.\n"
-        "- Each node/relationship must include skos__definition (no single quotes allowed).\n"
-        "- Always MATCH or MERGE nodes/relationships by uri.\n"
-        "- Include as many valid relationships as possible.\n"
-        "- Output must be strictly the JSON array of Cypher statements, nothing else.\n"
-        "Execution: Pass the output directly to create_model_agent.\n"
-    ),
+    prompt=create_model_prompt,
     context_schema=ModelContextSchema
 )
 

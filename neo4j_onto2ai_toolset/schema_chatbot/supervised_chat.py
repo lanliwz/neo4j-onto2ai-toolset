@@ -31,9 +31,11 @@ def start_cli_chat():
         if user_input.strip().lower() in {"exit", "quit"}:
             print("👋 Exiting chat.")
             break
-        state_of_input = {"messages": [{"role": "user",
-                    "content": f"{user_input}"
-                }]}
+        state_of_input = {"messages": [{
+            "role": "user",
+            "content": f"{user_input}"
+            }]}
+        print(state_of_input)
         response = app.invoke(state_of_input,
                               context=context)
         print(get_last_ai_content(response["messages"]))
