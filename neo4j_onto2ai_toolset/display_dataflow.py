@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import io
 from neo4j_onto2ai_toolset.schema_chatbot.chatbot import lg as mygraph
-from neo4j_onto2ai_toolset.logger_config import logger as mylogger
+from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
 
 def display():

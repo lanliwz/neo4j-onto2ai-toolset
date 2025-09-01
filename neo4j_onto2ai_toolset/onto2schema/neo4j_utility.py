@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.get_schema import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
-from neo4j_onto2ai_toolset.logger_config import logger as mylogger
+from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
 
 # The SematicGraphDB class is used to interact with a Neo4j database.

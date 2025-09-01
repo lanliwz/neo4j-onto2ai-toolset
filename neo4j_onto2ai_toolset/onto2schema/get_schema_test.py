@@ -1,5 +1,5 @@
-from neo4j_utility import SemanticGraphDB, get_schema,get_node4schema
-from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import *
+from neo4j_utility import SemanticGraphDB, get_schema
+from neo4j_onto2ai_toolset.onto2ai_tool_connections import *
 
 db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
 

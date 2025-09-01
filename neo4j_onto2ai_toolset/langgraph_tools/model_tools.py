@@ -1,11 +1,14 @@
 import json
-from neo4j_onto2ai_toolset.logger_config import logger
+
+from langgraph.runtime import get_runtime
+
+from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from langchain_core.tools import tool
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from langchain_neo4j import Neo4jGraph
 from dataclasses import dataclass
 
-from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import (
+from neo4j_onto2ai_toolset.onto2ai_tool_connections import (
     neo4j_bolt_url,
     username,
     password,
@@ -21,17 +24,23 @@ graphdb = Neo4jGraph(
     enhanced_schema=True
 )
 
+# Namespace: upe (short for UpUpEdu) → compact and unique to your org.
+# Base: http://upupedu.com/ontology#
 @dataclass
 class ModelContextSchema:
-    key_concept: str
-    uri_domain: str
-    runtime_username: str
+    userid: str
+    uri_domain: str = "http://upupedu.com/ontology"
+    namespace: str = "upe"
+
+
+
 
 @tool
 def retrieve_model(key_concept: str) -> str:
     """retrieve the stored model"""
+    context = get_runtime(ModelContextSchema)
     resp = get_model_from_db(key_concept, semanticdb)
-    logger.info(f'retrieve_model tool is used.')
+    logger.info(f'retrieve_model tool is used. context - {context}')
     return resp
 
 @tool

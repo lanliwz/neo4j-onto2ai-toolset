@@ -1,4 +1,4 @@
-from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import *
+from neo4j_onto2ai_toolset.onto2ai_tool_connections import *
 from ai_tools.pdf2graph import generate_cypher4taxbill
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
 from langchain_openai import ChatOpenAI

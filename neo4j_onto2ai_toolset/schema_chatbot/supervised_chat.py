@@ -2,6 +2,7 @@ from langchain.schema import AIMessage
 from typing import List, Optional
 
 from neo4j_onto2ai_toolset.langgraph_supervisors.supervisors import *
+from langgraph.runtime import get_runtime
 
 
 def get_last_ai_content(messages: List) -> Optional[str]:
@@ -23,6 +24,7 @@ def get_last_ai_content(messages: List) -> Optional[str]:
 
 def start_cli_chat():
     app = model_manager.compile()
+    context = ModelContextSchema(userid='weizhang')
     print("🤖 Chat started. Type `exit` to stop.")
     while True:
         user_input = input("🗨️  You: ")
@@ -32,7 +34,8 @@ def start_cli_chat():
         state_of_input = {"messages": [{"role": "user",
                     "content": f"{user_input}"
                 }]}
-        response = app.invoke(state_of_input)
+        response = app.invoke(state_of_input,
+                              context=context)
         print(get_last_ai_content(response["messages"]))
 
 

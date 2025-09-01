@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, START, END
 from langchain_core.agents import AgentFinish
-from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_tool_connections import llm, graphdb
+from neo4j_onto2ai_toolset.onto2ai_tool_connections import llm, graphdb
 
 class AgentState(TypedDict, total=False):
     input: str
