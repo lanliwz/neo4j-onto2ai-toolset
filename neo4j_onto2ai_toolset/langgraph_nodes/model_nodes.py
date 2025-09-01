@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, START, END
 from langchain_core.agents import AgentFinish
-from neo4j_onto2ai_toolset.onto2ai_tool_connections import llm, graphdb
+from neo4j_onto2ai_toolset.onto2ai_tool_config import llm, graphdb
 
 class AgentState(TypedDict, total=False):
     input: str
@@ -141,20 +141,20 @@ def create_model_node(state: AgentState) -> AgentState:
     }
 
 # ---- Build the graph ----
-graph = StateGraph(AgentState)
-graph.add_node("create_model_node", create_model_node)
-graph.add_edge(START, "create_model_node")
-graph.add_edge("create_model_node", END)
-app = graph.compile()
-
-# ---- Invoke it ----
-initial_state: AgentState = {
-    "input": "Create/merge ontology-backed model node",
-    "concept": "Check Account",
-    "namespace": "http://example.com/ontology/",
-    "intermediate_steps": [],
-}
-
-result_state = app.invoke(initial_state)
-print("Executed statements:", result_state.get("cypher_statements"))
-print("Final output:", result_state.get("output"))
+# graph = StateGraph(AgentState)
+# graph.add_node("create_model_node", create_model_node)
+# graph.add_edge(START, "create_model_node")
+# graph.add_edge("create_model_node", END)
+# app = graph.compile()
+#
+# # ---- Invoke it ----
+# initial_state: AgentState = {
+#     "input": "Create/merge ontology-backed model node",
+#     "concept": "Check Account",
+#     "namespace": "http://example.com/ontology/",
+#     "intermediate_steps": [],
+# }
+#
+# result_state = app.invoke(initial_state)
+# print("Executed statements:", result_state.get("cypher_statements"))
+# print("Final output:", result_state.get("output"))

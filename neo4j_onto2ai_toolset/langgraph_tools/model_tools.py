@@ -10,7 +10,7 @@ from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get
 from langchain_neo4j import Neo4jGraph
 from dataclasses import dataclass
 
-from neo4j_onto2ai_toolset.onto2ai_tool_connections import (
+from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     neo4j_bolt_url,
     username,
     password,
@@ -30,7 +30,7 @@ graphdb = Neo4jGraph(
 # Base: http://upupedu.com/ontology#
 @dataclass
 class ModelContextSchema():
-    userid: str
+    userid: str = "weizhang"
     uri_domain: str = "http://upupedu.com/ontology"
     namespace: str = "upe"
 

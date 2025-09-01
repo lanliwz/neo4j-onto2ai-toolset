@@ -1,5 +1,5 @@
 from langgraph.prebuilt import create_react_agent
-from neo4j_onto2ai_toolset.onto2ai_tool_connections import llm
+from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt
 
