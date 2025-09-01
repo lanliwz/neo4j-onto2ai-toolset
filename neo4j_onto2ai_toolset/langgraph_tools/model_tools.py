@@ -39,15 +39,16 @@ class ModelContextSchema:
 def retrieve_model(key_concept: str) -> str:
     """retrieve the stored model"""
     context = get_runtime(ModelContextSchema)
+    logger.debug(f'retrieve_model tool is used. context - {context}')
     resp = get_model_from_db(key_concept, semanticdb)
-    logger.info(f'retrieve_model tool is used. context - {context}')
     return resp
 
 @tool
 def display_model(content: str) -> str:
     """display model content"""
-    print(content)
-    logger.info(f'display_model tool is used.')
+    context = get_runtime(ModelContextSchema)
+    logger.debug(f'display_model tool is used. context - {context}')
+    logger.info(content)
     return content
 
 @tool
@@ -56,6 +57,8 @@ def modify_model(content: str) -> str:
     Insert/update/delete model node and relationship in model store
     content should be in format of json array, wrap as a string
     """
+    context = get_runtime(ModelContextSchema)
+    logger.debug(f'modify_model tool is used. context - {context}')
     statements = json.loads(content)
     records = []
     for stmt in statements:
@@ -65,5 +68,5 @@ def modify_model(content: str) -> str:
         except Exception as e:
             records.append(e)
             logger.error(f'error - {stmt}')
-    logger.info(f'modify_model tool is used.')
+
     return str(records)
