@@ -2,9 +2,7 @@ import json
 
 from langgraph.runtime import get_runtime
 
-from langchain_core.messages import AnyMessage
-from langgraph.prebuilt.chat_agent_executor import AgentState
-from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
+from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from langchain_core.tools import tool
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
 from langchain_neo4j import Neo4jGraph
@@ -14,25 +12,18 @@ from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     neo4j_bolt_url,
     username,
     password,
-    neo4j_db_name)
+    neo4j_db_name,
+    graphdb,
+    semanticdb)
 
-semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
-
-graphdb = Neo4jGraph(
-    url=neo4j_bolt_url,
-    username=username,
-    password=password,
-    database=neo4j_db_name,
-    enhanced_schema=True
-)
 
 # Namespace: upe (short for UpUpEdu) → compact and unique to your org.
 # Base: http://upupedu.com/ontology#
 @dataclass
 class ModelContextSchema():
-    userid: str = "weizhang"
-    uri_domain: str = "http://upupedu.com/ontology"
-    namespace: str = "upe"
+    userid: str = ONTOLOGY_AUTHOR
+    uri_domain: str = ONTOLOGY_DOMAIN
+    namespace: str = ONTOLOGY_NAMESPACE
 
 
 

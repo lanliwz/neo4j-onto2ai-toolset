@@ -1,14 +1,12 @@
 from langchain_core.messages import AnyMessage
 from langgraph.runtime import get_runtime
-
 from neo4j_onto2ai_toolset.langgraph_nodes.model_nodes import AgentState
-from neo4j_onto2ai_toolset.langgraph_tools.model_tools import ModelContextSchema
+from neo4j_onto2ai_toolset.onto2ai_tool_config import ONTOLOGY_DOMAIN
 
 def create_model_prompt(
     state: AgentState
 ) -> list[AnyMessage]:
-        context = ModelContextSchema(userid='weizhang')
-        uri_domain = context.uri_domain
+        uri_domain = ONTOLOGY_DOMAIN
         prompt = (
         "Context: Ontology-driven Cypher query generation for Neo4j.\n"
         "Objective: From the input, extract the concept, infer related concepts and relationships, "
