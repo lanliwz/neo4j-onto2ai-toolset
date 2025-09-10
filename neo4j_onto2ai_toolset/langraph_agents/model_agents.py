@@ -3,8 +3,17 @@ from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt, enhance_model_prompt, \
     validate_and_clean_model_prompt
+from neo4j_onto2ai_toolset.langgraph_prompts.crt_entitlement_schema_prompts import create_entitlement_model_prompt
 
 # Agents
+create_entitlement_model_agent = create_react_agent(
+    model=llm,
+    tools=[modify_model],
+    name="create_entitlement_model_agent",
+    prompt=create_entitlement_model_prompt,
+    context_schema=ModelContextSchema
+)
+
 create_model_agent = create_react_agent(
     model=llm,
     tools=[modify_model],

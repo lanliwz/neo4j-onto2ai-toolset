@@ -9,11 +9,12 @@ model_manager = create_supervisor(
     # "content": str
     # }
     #
-    agents=[validate_model_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, create_model_agent, modify_model_agent],
+    agents=[validate_model_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, create_model_agent, modify_model_agent, create_entitlement_model_agent],
     model=llm,
     prompt=(
-        "You are a user working with stored models to produce schemas for applications. "
-        "Your first step is always to extract the key concept from the question. "
+        "You are a user working with stored models to produce schemas for applications. \n"
+        "If the question is create entitlement model → use create_entitlement_model_agent. \n"
+        "Otherwise, extract the key concept from the question. \n"
         "Then, route the request to the correct agent: "
         "- If the question is about reviewing or showing a model → use model_review_agent. "
         "- If the question is about validating a model → use validate_model_agent. "
