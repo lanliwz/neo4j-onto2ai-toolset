@@ -4,14 +4,18 @@ from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt, enhance_model_prompt, \
     validate_and_clean_model_prompt
 from neo4j_onto2ai_toolset.langgraph_prompts.crt_entitlement_schema_prompts import create_entitlement_model_prompt
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import interrupt
 
+checkpointer = InMemorySaver()
 # Agents
 create_entitlement_model_agent = create_react_agent(
     model=llm,
     tools=[modify_model],
     name="create_entitlement_model_agent",
     prompt=create_entitlement_model_prompt,
-    context_schema=ModelContextSchema
+    context_schema=ModelContextSchema,
+    checkpointer = checkpointer
 )
 
 create_model_agent = create_react_agent(
@@ -19,7 +23,8 @@ create_model_agent = create_react_agent(
     tools=[modify_model],
     name="create_model_agent",
     prompt=create_model_prompt,
-    context_schema=ModelContextSchema
+    context_schema=ModelContextSchema,
+    checkpointer = checkpointer
 )
 
 modify_model_agent = create_react_agent(
@@ -27,7 +32,8 @@ modify_model_agent = create_react_agent(
     tools=[retrieve_model,modify_model],
     name="modify_model_agent",
     prompt=enhance_model_prompt,
-    context_schema=ModelContextSchema
+    context_schema=ModelContextSchema,
+    checkpointer = checkpointer
 )
 model_review_agent = create_react_agent(
     model=llm,

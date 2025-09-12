@@ -1,3 +1,5 @@
+import uuid
+from langgraph.types import Command
 from langchain.schema import AIMessage
 from typing import List, Optional
 
@@ -21,9 +23,10 @@ def get_last_ai_content(messages: List) -> Optional[str]:
             return msg.content.strip()
 
     return None  # No AIMessage found
-
+config = {"configurable": {"thread_id": "checkpoint-thread-1"}}
 def start_cli_chat():
-    app = model_manager.compile()
+    checkpointer=InMemorySaver()
+    app = model_manager.compile(checkpointer=checkpointer)
     context = ModelContextSchema(userid='weizhang')
     print("🤖 Chat started. Type `exit` to stop.")
     while True:
@@ -37,7 +40,9 @@ def start_cli_chat():
             }]}
         print(state_of_input)
         response = app.invoke(state_of_input,
-                              context=context)
+                              context=context, config = config)
+        print(response['__interrupt__'])
+        response = app.invoke(Command(resume={"type":"accept"}),config=config)
         print(get_last_ai_content(response["messages"]))
 
 

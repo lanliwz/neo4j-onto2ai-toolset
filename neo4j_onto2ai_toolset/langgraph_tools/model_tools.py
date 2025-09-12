@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     graphdb,
     semanticdb)
-
+from langgraph.types import interrupt
 
 # Namespace: upe (short for UpUpEdu) → compact and unique to your org.
 # Base: http://upupedu.com/ontology#
@@ -45,8 +45,23 @@ def modify_model(content: str) -> str:
     """
     context = get_runtime(ModelContextSchema)
     logger.debug(f'modify_model tool is used. context - {context}')
+    logger.debug(f'content - {content}')
+    response = interrupt(
+        f"Trying to call `modify_model` with args {{'content': {content}}}. "
+        "Please approve or suggest edits."
+    )
+    if response["type"] == "accept":
+        pass
+    elif response["type"] == "edit":
+        pass
+    else:
+        raise ValueError(f"Unknown response type: {response['type']}")
+
+
     statements = json.loads(content)
     records = []
+
+
     for stmt in statements:
         try:
             records.append(graphdb.query(stmt))
