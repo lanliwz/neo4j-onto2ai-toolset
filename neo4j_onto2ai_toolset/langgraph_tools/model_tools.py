@@ -43,31 +43,32 @@ def modify_model(content: str) -> str:
     Insert/update/delete model node and relationship in model store
     content should be in format of json array, wrap as a string
     """
-    context = get_runtime(ModelContextSchema)
-    logger.debug(f'modify_model tool is used. context - {context}')
-    logger.debug(f'content - {content}')
+    logger.debug('modify_model tool is used.')
+    # context = get_runtime(ModelContextSchema)
     response = interrupt(
-        f"Trying to call `modify_model` with args {{'content': {content}}}. "
-        "Please approve or suggest edits."
+        f"This tool will update your stored model by executing statements {content}. "
+        """Please accept - Command(resume={"type":"accept"}) or edits - Command(resume={"type":"edits","content":"new content"})"""
     )
-    if response["type"] == "accept":
-        pass
-    elif response["type"] == "edit":
-        pass
-    else:
-        raise ValueError(f"Unknown response type: {response['type']}")
-
-
-    statements = json.loads(content)
     records = []
-
-
-    for stmt in statements:
+    if response["type"] == "accept":
+        logger.debug(f'content - {content}')
+        statements = json.loads(content)
+        for stmt in statements:
+            try:
+                records.append(graphdb.query(stmt))
+                logger.debug(f'executed - {stmt}')
+            except Exception as e:
+                records.append(e)
+                logger.error(f'error - {stmt}')
+    elif response["type"] == "edit":
+        logger.debug(f'new content - {response}')
+        stmt = response["new_content"]
         try:
             records.append(graphdb.query(stmt))
             logger.debug(f'executed - {stmt}')
         except Exception as e:
             records.append(e)
             logger.error(f'error - {stmt}')
-
+    else:
+        raise ValueError(f"Unknown response type: {response['type']}")
     return str(records)
