@@ -42,6 +42,7 @@ def modify_model(content: str) -> str:
     """
     Insert/update/delete model node and relationship in model store
     content should be in format of json array, wrap as a string
+    This tool allows human in the loop, you can accept, reject or edit the ongoing changes
     """
     logger.debug('modify_model tool is used.')
     # context = get_runtime(ModelContextSchema)
