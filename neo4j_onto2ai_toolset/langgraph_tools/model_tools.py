@@ -51,7 +51,7 @@ def modify_model(content: str) -> str:
     )
     records = []
     if response["type"] == "accept":
-        logger.debug(f'content - {content}')
+        logger.debug(f'accept change - {content}')
         statements = json.loads(content)
         for stmt in statements:
             try:
@@ -60,6 +60,11 @@ def modify_model(content: str) -> str:
             except Exception as e:
                 records.append(e)
                 logger.error(f'error - {stmt}')
+    elif response["type"] == "reject":
+        logger.debug(f'reject the change - {content}')
+        statements = json.loads(content)
+        records.append(f'reject the change - {content}')
+
     elif response["type"] == "edit":
         logger.debug(f'new content - {response}')
         stmt = response["new_content"]
