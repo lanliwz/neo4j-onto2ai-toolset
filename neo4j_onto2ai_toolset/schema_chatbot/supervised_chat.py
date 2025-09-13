@@ -48,7 +48,7 @@ def start_cli_chat():
             print(get_last_ai_content(response["messages"]))
         else:
             new_content = input("please provide new statement array in format of [statement]")
-            response = app.invoke(Command(resume={"type": "edit","new_content":[f"{new_content}"]}), config=config)
+            response = app.invoke(Command(resume={"type": "edit","new_content":f"\"{new_content}\""}), config=config)
             print(get_last_ai_content(response["messages"]))
 
 
