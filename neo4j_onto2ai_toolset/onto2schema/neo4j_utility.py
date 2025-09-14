@@ -142,6 +142,7 @@ def get_schema(start_node:str,db : SemanticGraphDB):
               + "\n".join(db.get_relationships(start_node)) + '\n'
               )
 
+    mylogger.debug(schema)
     return schema
 
 def get_node4schema(start_node:str,db : SemanticGraphDB):

@@ -2,7 +2,7 @@ from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt, enhance_model_prompt, \
-    validate_and_clean_model_prompt
+    validate_and_clean_model_prompt, retrieval_main_concept_prompt
 from neo4j_onto2ai_toolset.langgraph_prompts.crt_entitlement_schema_prompts import create_entitlement_model_prompt
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import interrupt
@@ -39,9 +39,16 @@ model_review_agent = create_react_agent(
     model=llm,
     tools=[retrieve_model],
     name="model_review_agent",
-    prompt= (
-        "You are a model expert."
-        "re-format the model in plain english."
+    prompt=(
+        "You are a model retrieval expert.\n"
+        "Task:\n"
+        "1. From the user’s question, extract the key concept.\n"
+        f"2. Use this concept to call the tool {retrieve_model.name}.\n"
+        "3. Return the tool output exactly as it is, without adding, re-formatting, or explaining.\n\n"
+        "Constraints:\n"
+        "- Only extract the main concept from the user's question, ignore the word like show, display, review, me or model.\n"
+        "- Do not summarize or rephrase the tool output.\n"
+        "- If no model is found, explain what concept you extracted and why retrieval failed.\n"
     ),
     context_schema=ModelContextSchema
 )

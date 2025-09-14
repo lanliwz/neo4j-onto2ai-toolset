@@ -41,18 +41,24 @@ def start_cli_chat():
         print(state_of_input)
         response = app.invoke(state_of_input,
                               context=context, config = config)
-        print(response['__interrupt__'])
-        user_action =  input("do you accept the change? please type either accept, reject or edit")
-        if user_action.strip().lower() in {"accept", "approve","ok","yes","y"}:
-            response = app.invoke(Command(resume={"type":"accept"}),config=config)
-            print(get_last_ai_content(response["messages"]))
-        elif user_action.strip().lower() in {"reject", "disapprove", "no", "n"}:
+        try:
+            print(response['__interrupt__'])
+            user_action =  input("do you accept the change? please type either accept, reject or edit")
+            if user_action.strip().lower() in {"accept", "approve","ok","yes","y"}:
+                response = app.invoke(Command(resume={"type":"accept"}),config=config)
+                print(get_last_ai_content(response["messages"]))
+            elif user_action.strip().lower() in {"reject", "disapprove", "no", "n"}:
                 response = app.invoke(Command(resume={"type": "reject"}), config=config)
                 print(get_last_ai_content(response["messages"]))
-        else:
-            new_content = input("please provide new statement array in format of [statement]")
-            response = app.invoke(Command(resume={"type": "edit","new_content":f"\"{new_content}\""}), config=config)
-            print(get_last_ai_content(response["messages"]))
+            else:
+                new_content = input("please provide new statement array in format of [statement]")
+                response = app.invoke(Command(resume={"type": "edit","new_content":f"\"{new_content}\""}), config=config)
+
+        except Exception:
+            pass
+        print(get_last_ai_content(response["messages"]))
+
+
 
 
 # start the chat

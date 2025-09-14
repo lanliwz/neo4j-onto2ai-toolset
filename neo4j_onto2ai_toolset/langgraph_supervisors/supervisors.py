@@ -12,15 +12,18 @@ model_manager = create_supervisor(
     agents=[validate_model_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, create_model_agent, modify_model_agent, create_entitlement_model_agent],
     model=llm,
     prompt=(
-        "You are a user working with stored models to produce schemas for applications. \n"
-        "If the question is create entitlement model → use create_entitlement_model_agent. \n"
-        "Otherwise, extract the key concept from the question. \n"
-        "Then, route the request to the correct agent: "
-        "- If the question is about reviewing or showing a model → use model_review_agent. "
-        "- If the question is about validating a model → use validate_model_agent. "
-        "- If the question is about generating a relational database schema → use rdb_ddl_agent. "
-        "- If the question is about generating Python or Pydantic classes/schemas → use pydantic_class_agent. "
-        "- If the question is about enhance a model → use modify_model_agent."
-        "- If the question is about creating a new model → use create_model_agent."
+        "You are a supervisor responsible for routing the user's inquiry to the correct agent.\n"
+        "Task:\n"
+        f"- If the question is about 'create entitlement model' → use {create_entitlement_model_agent.name}.\n"
+        f"- If the question is about reviewing or showing a model → use {model_review_agent.name}.\n"
+        f"- If the question is about validating a model → use {validate_model_agent.name}.\n"
+        f"- If the question is about generating a relational database schema → use {rdb_ddl_agent.name}.\n"
+        f"- If the question is about generating Python or Pydantic classes/schemas → use {pydantic_class_agent.name}.\n"
+        f"- If the question is about enhancing a model → use {modify_model_agent.name}.\n"
+        f"- If the question is about creating a new model → use {create_model_agent.name}.\n\n"
+        "Constraints:\n"
+        "- Always pick the most specific matching agent.\n"
+        "- Return the selected agent's tool output exactly as it is.\n"
+        "- Do not add explanations, summaries, or reformatting.\n"
     )
     )
