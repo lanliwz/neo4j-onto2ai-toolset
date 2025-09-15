@@ -2,7 +2,7 @@ from langgraph.prebuilt import create_react_agent
 from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt, enhance_model_prompt, \
-    validate_and_clean_model_prompt, retrieval_main_concept_prompt
+    validate_and_clean_model_prompt
 from neo4j_onto2ai_toolset.langgraph_prompts.crt_entitlement_schema_prompts import create_entitlement_model_prompt
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import interrupt
