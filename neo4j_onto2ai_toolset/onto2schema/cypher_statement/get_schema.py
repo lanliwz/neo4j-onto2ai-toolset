@@ -1,18 +1,19 @@
-schema_node_base = '''
+schema_base_class = '''
 MATCH (n:owl__Class)
 WHERE 1=1
 '''
 
-schema_base = '''
+schema_base_class2any = '''
 MATCH (n:owl__Class)-[r]->(m:rdfs__Datatype|owl__Class)
 WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith','owl__equivalentClass']
 '''
 
-schema_base_1 = '''
+
+schema_base_cls2cls = '''
 MATCH (n:owl__Class)-[r]->(m:owl__Class)
 WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith','owl__equivalentClass']
 '''
-schema_base_2 = '''
+schema_base_cls2datatype = '''
 MATCH (n:owl__Class)-[r]->(m:rdfs__Datatype)
 WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith','owl__equivalentClass']
 '''
@@ -51,7 +52,7 @@ apoc.map.removeKeys(properties(m), ['embedding']) as annotation_properties
 
 def query_schema(label=None):
     # Base query
-    query = schema_base_1
+    query = schema_base_cls2cls
     # Parameters dictionary
 
     # Modify query if label is provided
@@ -64,7 +65,7 @@ def query_schema(label=None):
 
 def query_start_nodes(label=None):
     # Base query
-    query = schema_node_base
+    query = schema_base_class
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"
@@ -76,7 +77,7 @@ def query_start_nodes(label=None):
 
 def query_end_nodes(label=None):
     # Base query
-    query = schema_base_1
+    query = schema_base_cls2cls
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"
@@ -86,8 +87,8 @@ def query_end_nodes(label=None):
     query += end_nodes_return
     return query
 
-def query_node2node_relationship(label=None):
-    query = schema_base_1
+def query_cls2cls_relationship(label=None):
+    query = schema_base_cls2cls
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"
@@ -97,7 +98,7 @@ def query_node2node_relationship(label=None):
     query += node2node_relationship_return
     return query
 def query_relationships(label=None):
-    query = schema_base_1
+    query = schema_base_cls2cls
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"
@@ -108,7 +109,7 @@ def query_relationships(label=None):
     return query
 
 def query_dataproperty(label=None):
-    query = schema_base_2
+    query = schema_base_cls2datatype
     # Modify query if label is provided
     if label is not None:
         query += f"AND n.rdfs__label = '{label}'"

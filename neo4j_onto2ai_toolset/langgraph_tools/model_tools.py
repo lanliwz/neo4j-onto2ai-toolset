@@ -28,6 +28,13 @@ def retrieve_model(key_concept: str) -> str:
     logger.debug(f'retrieve_model tool is used. context - {context}')
     resp = get_model_from_db(key_concept, semanticdb)
     return resp
+@tool
+def retrieve_all_model() -> str:
+    """retrieve the stored model"""
+    context = get_runtime(ModelContextSchema)
+    logger.debug(f'retrieve_all_model tool is used. context - {context}')
+    resp = get_model_from_db(semanticdb)
+    return resp
 
 @tool
 def display_model(content: str) -> str:

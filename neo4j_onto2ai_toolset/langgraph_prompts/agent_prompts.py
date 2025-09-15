@@ -73,16 +73,7 @@ def validate_and_clean_model_prompt(
         logger.debug(f"validate_and_clean_model_prompt - {prompt}")
         return [{"role": "system", "content": prompt}] + state["messages"]
 
-retrieval_main_concept_prompt=(
-        "You are a model retrieval expert.\n"
-        "Task:\n"
-        "1. From the user’s question, extract the key concept.\n"
-        "2. Use this concept to call the tool `retrieve_model`.\n"
-        "3. Once the model is retrieved, no further reasoning, just output the result as it is.\n"
-        "Constraints:\n"
-        "- Only extract the main concept from the user's question, ignore the word like show, display, review, me or model.\n"
-        "- If no model is found, explain what concept you extracted and why retrieval failed.\n"
-    )
+
 # quick test
 # state_of_input = {"messages": [{
 #             "role": "user",

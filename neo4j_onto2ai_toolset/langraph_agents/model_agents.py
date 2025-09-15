@@ -40,10 +40,28 @@ model_review_agent = create_react_agent(
     tools=[retrieve_model],
     name="model_review_agent",
     prompt=(
-        "You are a model retrieval expert.\n"
+        "You are a Cypher expert and an ontologist.\n"
         "Task:\n"
         "1. From the user’s question, extract the key concept.\n"
         f"2. Use this concept to call the tool {retrieve_model.name}.\n"
+        "3. Return the tool output exactly as it is, without adding, re-formatting, or explaining.\n\n"
+        "Constraints:\n"
+        "- Only extract the main concept from the user's question, ignore the word like show, display, review, me or model.\n"
+        "- Do not summarize or rephrase the tool output.\n"
+        "- If no model is found, explain what concept you extracted and why retrieval failed.\n"
+    ),
+    context_schema=ModelContextSchema
+)
+
+model_review_all_agent = create_react_agent(
+    model=llm,
+    tools=[retrieve_all_model],
+    name="model_review_all_agent",
+    prompt=(
+        "You are a Cypher expert and an ontologist.\n"
+        "Task:\n"
+        "1. From the user’s question, extract the key concept.\n"
+        f"2. Use this concept to call the tool {retrieve_all_model.name}.\n"
         "3. Return the tool output exactly as it is, without adding, re-formatting, or explaining.\n\n"
         "Constraints:\n"
         "- Only extract the main concept from the user's question, ignore the word like show, display, review, me or model.\n"

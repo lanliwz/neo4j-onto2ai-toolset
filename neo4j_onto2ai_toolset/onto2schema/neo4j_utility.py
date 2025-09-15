@@ -29,7 +29,7 @@ class SemanticGraphDB:
     #
     def get_node2node_relationship(self,label=None):
         with self._driver.session() as session:
-            query = query_node2node_relationship(label)
+            query = query_cls2cls_relationship(label)
             mylogger.debug(query)
             result = session.execute_read(self._get_dataset,query)
             mylogger.debug(result)
@@ -145,9 +145,25 @@ def get_schema(start_node:str,db : SemanticGraphDB):
     mylogger.debug(schema)
     return schema
 
+def get_full_schema(db : SemanticGraphDB):
+    nodes = "\n".join(db.get_start_nodes())
+    relationships = "\n".join(db.get_relationships())
+    node2node_rels = "\n".join(db.get_node2node_relationship())
+    node_dataprops = "\n".join(db.get_node_dataproperty())
+    schema = (
+        f"All nodes: \n{nodes} \n"
+        f"All relationships: \n{relationships} \n"
+        f"All node to node relationships: \n{node2node_rels} \n"
+        f"All data properties: \n{node_dataprops} \n"
+
+    )
+    mylogger.debug(schema)
+    return schema
+
 def get_node4schema(start_node:str,db : SemanticGraphDB):
     schema = (
               "\n".join(db.get_start_nodes(start_node)) + '\n'
               )
 
     return schema
+
