@@ -38,7 +38,7 @@ class SemanticGraphDB:
     def get_node_dataproperty(self, label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset, query_dataproperty(label))
-            return [f"(:{record['start_node']}) is a node, it has data property {record['relationship']} with data type {record['end_node']}" for record in
+            return [f"(:{record['start_node']}) has data property {record['relationship']} with data type {record['end_node']}" for record in
                     result]
 
     def get_start_nodes(self,label=None):
@@ -154,7 +154,7 @@ def get_full_schema(db : SemanticGraphDB):
         f"All nodes: \n{nodes} \n"
         f"All relationships: \n{relationships} \n"
         f"All node to node relationships: \n{node2node_rels} \n"
-        f"All data properties: \n{node_dataprops} \n"
+        f"All nodes' data property: \n{node_dataprops} \n"
 
     )
     mylogger.debug(schema)
