@@ -53,10 +53,10 @@ model_review_agent = create_react_agent(
     context_schema=ModelContextSchema
 )
 
-model_review_all_agent = create_react_agent(
+model_view_all_agent = create_react_agent(
     model=llm,
     tools=[retrieve_all_model],
-    name="model_review_all_agent",
+    name="model_view_all_agent",
     prompt=(
         "You are a Cypher expert and an ontologist.\n"
         "Task:\n"

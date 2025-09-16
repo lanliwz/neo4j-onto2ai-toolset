@@ -2,7 +2,8 @@ import json
 from langgraph.runtime import get_runtime
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from langchain_core.tools import tool
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db, \
+    get_full_schema
 from dataclasses import dataclass
 
 from neo4j_onto2ai_toolset.onto2ai_tool_config import (
@@ -33,7 +34,7 @@ def retrieve_all_model() -> str:
     """retrieve the stored model"""
     context = get_runtime(ModelContextSchema)
     logger.debug(f'retrieve_all_model tool is used. context - {context}')
-    resp = get_model_from_db(semanticdb)
+    resp = get_full_schema(semanticdb)
     return resp
 
 @tool
