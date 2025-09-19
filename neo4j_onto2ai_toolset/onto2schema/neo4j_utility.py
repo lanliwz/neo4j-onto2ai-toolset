@@ -1,5 +1,5 @@
 from neo4j import GraphDatabase
-from neo4j_onto2ai_toolset.onto2schema.cypher_statement.get_schema import *
+from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 

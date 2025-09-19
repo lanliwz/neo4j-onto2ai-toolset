@@ -1,11 +1,11 @@
-SCHEMA_NODES = """
+NEO4j_SCHEMA_NODE_LABELS = """
 match (n) 
 unwind labels(n) as node 
 unwind keys(n) as property 
 return distinct node, collect(distinct property) as properties 
 order by node
 """
-SCHEMA_RELATIONSHIPS = """
+NEO4J_SCHEMA_RELATIONSHIP_TYPES = """
 MATCH (a)-[r]->(b) 
 unwind  labels(a) AS start_label
 unwind  labels(b) AS end_label
@@ -13,6 +13,20 @@ with start_label,type(r) AS relationship,end_label, keys(r) as property
 return distinct start_label,relationship, end_label, collect(distinct property) as properties
 ORDER BY start_label,relationship, end_label
 """
+
+NEO4J_LABEL_PROPERTY = """
+MATCH (n)
+UNWIND labels(n) AS label
+RETURN label, COLLECT(DISTINCT keys(n)) AS propertyKeySets
+"""
+
+NEO4J_RELATIONSHIP_TYPE_PROPERTY = """
+MATCH ()-[r]->()
+UNWIND keys(r) AS key
+RETURN type(r) AS relType, COLLECT(DISTINCT key) AS propertyKeys
+ORDER BY relType
+"""
+
 
 schema_base_class = '''
 MATCH (n:owl__Class)
