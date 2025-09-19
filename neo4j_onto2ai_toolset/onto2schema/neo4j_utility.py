@@ -38,29 +38,29 @@ class SemanticGraphDB:
     def get_node_dataproperty(self, label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset, query_dataproperty(label))
-            return [f"(:{record['start_node']}) has data property {record['relationship']} with data type {record['end_node']}" for record in
+            return [f"(:{record['start_node']}) nodes have data property {record['relationship']}" for record in
                     result]
 
-    def get_start_nodes(self,label=None):
+    def get_nodes(self, label=None):
         with self._driver.session() as session:
             mylogger.debug(query_start_nodes(label))
             result = session.execute_read(self._get_dataset,query_start_nodes(label))
             mylogger.debug(result)
-            return [f"(:{record['start_node']}) is a node, annotation properties {record['annotation_properties']}"
+            return [f"(:{record['start_node']}) nodes have annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['start_node'] is not None]
 
     def get_end_nodes(self,label=None):
         with self._driver.session() as session:
             result = session.execute_read(self._get_dataset, query_end_nodes(label))
-            return [f"(:{record['end_node']}) is a node, annotation properties {record['annotation_properties']}"
+            return [f"(:{record['end_node']}) nodes have annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['end_node'] is not None]
 
     def get_relationships(self,label=None):
         with (self._driver.session() as session):
             result = session.execute_read(self._get_dataset, query_relationships(label))
-            return [f"[:{record['relationship']}] is a relationship, annotation properties  {record['annotation_properties']}" for record in result]
+            return [f"[:{record['relationship']}] relationship has annotation properties  {record['annotation_properties']}" for record in result]
 
     @staticmethod
     def _get_dataset(tx,query):
@@ -138,7 +138,7 @@ def get_schema(start_node:str,db : SemanticGraphDB):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
               + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
               + "\n".join(db.get_end_nodes(start_node)) + '\n'
-              + "\n".join(db.get_start_nodes(start_node)) + '\n'
+              + "\n".join(db.get_nodes(start_node)) + '\n'
               + "\n".join(db.get_relationships(start_node)) + '\n'
               )
 
@@ -146,15 +146,15 @@ def get_schema(start_node:str,db : SemanticGraphDB):
     return schema
 
 def get_full_schema(db : SemanticGraphDB):
-    nodes = "\n".join(db.get_start_nodes())
+    nodes = "\n".join(db.get_nodes())
     relationships = "\n".join(db.get_relationships())
     node2node_rels = "\n".join(db.get_node2node_relationship())
     node_dataprops = "\n".join(db.get_node_dataproperty())
     schema = (
-        f"All nodes: \n{nodes} \n"
-        f"All relationships: \n{relationships} \n"
-        f"All node to node relationships: \n{node2node_rels} \n"
-        f"All nodes' data property: \n{node_dataprops} \n"
+        f"Node Labels: \n{nodes} \n"
+        f"Relationships: \n{node2node_rels} \n"
+        f"Relationship types: \n{relationships} \n"
+        f"Node Properties: \n{node_dataprops} \n"
 
     )
     mylogger.debug(schema)
@@ -162,7 +162,7 @@ def get_full_schema(db : SemanticGraphDB):
 
 def get_node4schema(start_node:str,db : SemanticGraphDB):
     schema = (
-              "\n".join(db.get_start_nodes(start_node)) + '\n'
+              "\n".join(db.get_nodes(start_node)) + '\n'
               )
 
     return schema

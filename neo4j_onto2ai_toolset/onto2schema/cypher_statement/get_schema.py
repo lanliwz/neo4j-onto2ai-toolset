@@ -1,3 +1,19 @@
+SCHEMA_NODES = """
+match (n) 
+unwind labels(n) as node 
+unwind keys(n) as property 
+return distinct node, collect(distinct property) as properties 
+order by node
+"""
+SCHEMA_RELATIONSHIPS = """
+MATCH (a)-[r]->(b) 
+unwind  labels(a) AS start_label
+unwind  labels(b) AS end_label
+with start_label,type(r) AS relationship,end_label, keys(r) as property
+return distinct start_label,relationship, end_label, collect(distinct property) as properties
+ORDER BY start_label,relationship, end_label
+"""
+
 schema_base_class = '''
 MATCH (n:owl__Class)
 WHERE 1=1
