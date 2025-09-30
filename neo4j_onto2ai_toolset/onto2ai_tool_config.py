@@ -28,7 +28,7 @@ auth_data = {
 semanticdb = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
 
 # LLM Model Config
-llm = ChatOpenAI(model=GPT_MODEL_NAME,reasoning_effort=GPT_REASONING_EFFORT)
+llm = ChatOpenAI(model=GPT_MODEL_NAME)
 
 # Graph Database Config
 graphdb = Neo4jGraph(
