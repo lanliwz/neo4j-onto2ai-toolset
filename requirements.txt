@@ -2,6 +2,8 @@
 # pip show langchain-community langchain langchain-cli langgraph
 langgraph>=0.3.27
 langgraph-prebuilt>=0.0.8
-langchain>=0.3.7
+langchain>=0.3.27
 langchain-core>=0.3.15
 neo4j==5.28.1
+langchain-community>=0.3.27
+langchain-cli>=0.0.35
