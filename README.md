@@ -85,13 +85,18 @@ export GOOGLE_PROJECT_ID="PROJECT-ID"
 ## Retrival Augmented Generation with Knowledge Graph
 ![img.png](resource/images/qa_workflow.png)
 
+## Setup
+```bash
+pip install .
+```
 ## Distribution
-```commandline
+```bash
 python setup.py sdist bdist_wheel
 ```
 
-```commandline
-pip install /path/to/neo4j-onto2ai-toolset/dist/neo4j-onto2ai-toolset-0.2.0-py3-none-any.whl
+```bash
+pip install dist/neo4j_onto2ai_toolset-0.2.0-py3-none-any.whl
+pip uninstall dist/neo4j_onto2ai_toolset-0.2.0-py3-none-any.whl
 ```
 
 ### MCP - Model Context Protocol
