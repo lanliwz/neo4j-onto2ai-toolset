@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="neo4j-onto2ai-toolset",
-    version="0.2.0",
+    version="0.3.0",
     packages=find_packages(),
     install_requires=[
         "neo4j",
