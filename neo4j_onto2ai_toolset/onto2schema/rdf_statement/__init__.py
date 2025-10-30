@@ -106,5 +106,6 @@ prefixes = {'owl': 'http://www.w3.org/2002/07/owl#',
             'fibo_fbc_fct_breg':'https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/',
             'fibo_fbc_pas_caa':'https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/',
             'fibo_fbc_fbc_fi_fi':'https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/',
-            'cmns_loc':'https://www.omg.org/spec/Commons/Locations/'
+            'cmns_loc':'https://www.omg.org/spec/Commons/Locations/',
+            'cmns_regag':'https://www.omg.org/spec/Commons/RegulatoryAgencies/',
             }
