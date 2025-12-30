@@ -1,9 +1,12 @@
+# Cypher query to delete all nodes and relationships in the database
 del_all_node =  '''
 MATCH (n) DETACH DELETE n
 '''
+# Cypher query to delete all relationships but keep nodes
 del_all_relationship =  '''
 MATCH ()-[n]-() DETACH DELETE n
 '''
+# Create relationships from owl:Class with object property restrictions, copying cardinality from owl:Restriction (owl:onProperty + owl:Class)
 crt_rel__restrict_cardinality_1 = '''
 // relationship with cardinality 
 MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
@@ -20,6 +23,7 @@ MATCH (res)-[DEL1]-(),(onp)-[DEL2]-()
 DELETE DEL1,DEL2
 DELETE res,onp
 '''
+# Create relationships from owl:Class with datatype property restrictions, copying cardinality from owl:Restriction (owl:onProperty + owl:onDataRange)
 crt_rel__restrict_cardinality_2 = '''
 // relationship with cardinality 
 MATCH (n:owl__Class)-[sub:rdfs__subClassOf]-> (res:owl__Restriction)-[:owl__onDataRange]->(dtype:Resource) with n,res,dtype 
@@ -34,6 +38,7 @@ MATCH (res)-[DEL1]-(),(prop)-[DEL2]-()
 DELETE DEL1,DEL2
 DELETE res,prop
 '''
+# Create object property relationships inferred from owl:allValuesFrom restrictions and tag them with inferred_by='allValuesFrom'
 allValueFrom = '''
 //Create REL allValuesFrom
 MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
@@ -46,6 +51,7 @@ SET rel.inferred_by='allValuesFrom',rel.property_type='owl__ObjectProperty'
 WITH sub,some
 DELETE some
 '''
+# Tag existing relationships between classes as inferred_by='allValuesFrom' when supported by owl:allValuesFrom restrictions, then clean up restriction structure
 allValueFrom_01 = '''
 match (cls:owl__Class)-[link]->(cls1:owl__Class) 
 with cls,link,cls1 
@@ -54,6 +60,7 @@ SET link.inferred_by='allValuesFrom'
 DELETE sub,some
 DELETE restriction
 '''
+# Create object property relationships inferred from owl:someValuesFrom restrictions and tag them with inferred_by='someValuesFrom'
 someValueFrom = '''
 //Create REL someValuesFrom
 match (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)  
@@ -65,6 +72,7 @@ YIELD rel
 SET rel.inferred_by='someValuesFrom',rel.property_type='owl__ObjectProperty'
 DELETE some
 '''
+# Tag existing relationships between classes as inferred_by='someValuesFrom' when supported by owl:someValuesFrom restrictions, then clean up restriction structure
 someValueFrom_01 = '''
 match (cls:owl__Class)-[link]->(cls1:owl__Class) 
 with cls,link,cls1 
@@ -73,6 +81,7 @@ SET link.inferred_by='someValuesFrom'
 DELETE sub,some
 DELETE restriction
 '''
+# Materialize object property relationships using rdfs:domain and rdfs:range between owl:Class nodes (object properties)
 domain_range_1 = '''
 //CREATE REL domain-range 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 
@@ -82,6 +91,7 @@ YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='domain-range'
 DELETE d,r
 '''
+# Materialize datatype property relationships using rdfs:domain and rdfs:range between owl:Class and Resource nodes (datatype properties)
 domain_range_2 = '''
 //CREATE REL domain-range 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__DatatypeProperty)-[r:rdfs__range]->(c:Resource) 
@@ -91,6 +101,7 @@ YIELD rel
 SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='domain-range'
 DELETE d,r
 '''
+# Create relationships from domain classes to restriction target classes via owl:onProperty + rdfs:subClassOf (object properties)
 domain_onProperty = '''
 //CREATE REL domain-onProperty Restriction 
 match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
@@ -102,6 +113,7 @@ YIELD rel
 SET rel.property_type='owl__ObjectProperty',rel.inferred_by='domain'
 DELETE d
 '''
+# Create relationships from restriction source classes to range classes via owl:onProperty + rdfs:range (object properties)
 range_onProperty = '''
 //CREATE REL range-onProperty Restriction 
 match (n:owl__Class)<-[d:rdfs__range]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
@@ -113,6 +125,7 @@ YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
+# Handle datatype properties with a domain but no explicit range by creating an 'undefined' rdfs:Datatype node and re-wiring
 data_property_without_range = '''
 //  data property with domain without range
 MATCH (prop:owl__DatatypeProperty)-[:rdfs__domain]->(cls:owl__Class) 
@@ -129,6 +142,7 @@ MATCH (prop)-[r]-()
 DELETE r
 DELETE prop
 '''
+# Handle object properties with a domain but no explicit range by creating an 'undefined' owl:Class node and re-wiring
 object_property_without_range = '''
 //  object property with domain without range
 MATCH (prop:owl__ObjectProperty)-[:rdfs__domain]->(cls:owl__Class) 
@@ -145,6 +159,7 @@ MATCH (prop)-[r]-()
 DELETE r
 DELETE prop
 '''
+# Create relationships from classes to datatype nodes via owl:onDataRange restrictions and tag them with inferred_by='owl__onDataRange'
 range_onProperty_datarange = '''
 MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[d:owl__onDataRange]-(dtype) 
 with n,res,dtype,d 
@@ -155,6 +170,7 @@ YIELD rel
 SET rel.property_type=prop.rdfs__label, rel.inferred_by='owl__onDataRange'
 DELETE d
 '''
+# Create relationships from restriction source classes to range classes via owl:onProperty + rdfs:range (object properties, including subPropertyOf chains)
 range_onProperty_object = '''
 //CREATE REL range-onProperty Restriction 
 match (n:owl__Class)<-[d:rdfs__range]-(:owl__ObjectProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
@@ -166,6 +182,7 @@ YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
+# Create relationships from restriction source classes to range nodes via owl:onProperty + rdfs:range (datatype properties, including subPropertyOf chains)
 range_onProperty_datatype = '''
 //CREATE REL range-onProperty Restriction 
 match (n)<-[d:rdfs__range]-(:owl__DatatypeProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__DatatypeProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
@@ -177,6 +194,7 @@ YIELD rel
 SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='range'
 DELETE d
 '''
+# Collapse owl:unionOf lists of rdfs:Datatype into a unionOf array property on the equivalent datatype node
 union_of_datatype = '''
 MATCH (dt:rdfs__Datatype)-[ui:owl__unionOf]->(rs)
 MATCH path=(rs)-[:rdf__first|rdf__rest*1..]->(xsdtp:rdfs__Datatype)
@@ -186,7 +204,7 @@ with ddt, collect(xsdtp.rdfs__label) AS xsdtp_collection,eq,ui
 set ddt.owl__unionOf = xsdtp_collection
 DELETE eq,ui
 '''
-# WIP
+# Prototype: create relationships for owl:unionOf class expressions from subject class to each member class (first element)
 union_of_class = '''
 MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[f:rdf__first]->(obj) 
 with sub,obj,r,f
@@ -194,7 +212,7 @@ CALL apoc.create.relationship(sub, type(r), {}, obj) yield rel
 set rel.owl__objectProperty='rdf__unionOf'
 DELETE f
 '''
-
+# Create relationships for owl:unionOf class expressions from subject class to each member class and clean up intermediate union structure
 union_of_class_1 = '''
 // CREATE REL unionOf
 MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[:rdf__rest]-()-[f:rdf__first]->(obj)
@@ -204,7 +222,7 @@ set rel.owl__objectProperty='rdf__unionOf'
 DELETE f,midr,r
 DELETE mid1
 '''
-
+# Create 'oneOf' relationships from a class to each enumeration instance inferred from owl:oneOf + owl:equivalentClass
 oneOf = '''
 //Create REL oneOf
 MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
@@ -216,7 +234,7 @@ YIELD rel
 SET rel.inferred_by='oneOf'
 DELETE o1f
 '''
-# delete duplicated hasFactor
+# Remove duplicate relationships between the same pair of nodes by keeping only the first one (using uri as grouping key)
 del_dup_rels = '''
 MATCH (a)-[r]->(b)
 //WITH a, b, type(r) AS relType, properties(r) AS relProps, COLLECT(r) AS rels
@@ -224,14 +242,14 @@ WITH a, b, type(r) AS relType, r.uri AS relProps, COLLECT(r) AS rels
 WHERE SIZE(rels) > 1
 FOREACH (r IN rels[1..] | DELETE r)
 '''
-
+# Remove duplicate owl:Class nodes with the same uri, keeping a single representative and deleting the rest
 del_dup_class = '''
 MATCH (a:owl__Class) 
 with a.uri as clsuri, collect(a) as dupclass 
 WHERE size(dupclass) > 1 
 FOREACH (dup in dupclass[1..] | DETACH DELETE dup)
 '''
-# convert xsd datatypes
+# Normalize XSD datatype nodes: relabel Resources under the XMLSchema namespace as xsd__* and rdfs__Datatype
 xsd_datatypes = '''
 MATCH (n:Resource)
 WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
@@ -245,12 +263,12 @@ with n,extractedString
 SET n.rdfs__label = extractedString
 REMOVE n:Resource
 '''
-# remove Resource label for owl__Class
+# Remove redundant :Resource label from core OWL schema elements (Class, ObjectProperty, DatatypeProperty, etc.)
 rm_redounded_label='''
 match (n:owl__Class|owl__ObjectProperty|owl__DatatypeProperty|owl__AnnotationProperty|owl__FunctionalProperty|owl__TransitiveProperty)
 remove n:Resource
 '''
-
+# Create owl:sameAs-style relationships between duplicate owl:Class nodes sharing the same rdfs__label, linking dup to base
 crt_sameAs_rel= """
 MATCH (a:owl__Class) 
 WITH a.rdfs__label AS clsuri, COLLECT(a) AS dupclass 
