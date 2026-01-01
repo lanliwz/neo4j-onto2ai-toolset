@@ -1,5 +1,6 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 import urllib
+
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
@@ -10,7 +11,7 @@ from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 
 
-
+print("auth_data.database =", auth_data.get("database"))
 
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
@@ -73,8 +74,10 @@ format = "application/rdf+xml"
 # Create the RDF Graph, parse & ingest the data to Neo4j, and close the store(If the field batching is set to True in the Neo4jStoreConfig, remember to close the store to prevent the loss of any uncommitted records.)
 neo4j_aura = Graph(store=Neo4jStore(config=config))
 
+neo4j_model = get_neo4j_model_config()
+
 # clean up before loading
-db = SemanticGraphDB(neo4j_bolt_url ,username,password,neo4j_db_name)
+db = SemanticGraphDB(neo4j_model.url ,neo4j_model.username,neo4j_model.password,neo4j_model.database)
 
 clean_up_neo4j_graph(db)
 
