@@ -10,9 +10,6 @@ from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 
-
-print("auth_data.database =", auth_data.get("database"))
-
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
                           custom_prefixes=prefixes,
