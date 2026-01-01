@@ -1,5 +1,6 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 import urllib
+import logging
 
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
@@ -9,6 +10,8 @@ from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
+
+logger = logging.getLogger(__name__)
 
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
@@ -38,13 +41,13 @@ def load_ontology(graph: Graph, uri, format):
             for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
                 load_ontology(graph, imported_uri, format)
     except FileNotFoundError:
-        print(f"Error: The file at '{uri}' was not found.")
+        logger.error("Ontology file not found", extra={"uri": uri})
     except urllib.error.HTTPError as e:
-        print(f"HTTP error encountered: {e}")
+        logger.error("HTTP error while loading ontology", extra={"uri": uri, "error": str(e)})
     except BadSyntax as e:
-        print(f"Syntax error in the ontology file: {e}")
+        logger.error("Bad syntax in ontology file", extra={"uri": uri, "error": str(e)})
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logger.exception("Unexpected error while loading ontology", extra={"uri": uri})
 
 
 
@@ -109,6 +112,3 @@ neo4j_aura.close(True)
 rdf_to_neo4j_graph(db)
 
 db.close()
-
-
-
