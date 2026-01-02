@@ -10,6 +10,7 @@ from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
+from neo4j_onto2ai_toolset.onto2schema.prefixes import PREFIXES_CANON as prefixes
 
 logger = logging.getLogger(__name__)
 
