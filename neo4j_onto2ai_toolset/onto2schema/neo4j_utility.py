@@ -1,15 +1,17 @@
 from neo4j import GraphDatabase
+import time
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
-
-
+import logging
+mylogger = logging.getLogger("onto2ai-toolset")
 # The SematicGraphDB class is used to interact with a Neo4j database.
 # It provides methods to create nodes, relationships, and execute arbitrary Cypher queries.
 class SemanticGraphDB:
     # Initialize the FinGraphDB with the connection details to the Neo4j database.
     def __init__(self, uri, user, password, database_name):
         self._driver = GraphDatabase.driver(uri, auth=(user, password), database=database_name)
+        self._database_name = database_name
 
     # Close the connection to the Neo4j database.
     def close(self):
@@ -20,10 +22,54 @@ class SemanticGraphDB:
         with self._driver.session() as session:
             session.execute_write(self._create_node, label, properties)
 
-    # Execute an arbitrary Cypher query.
-    def execute_cypher(self, query):
-        with self._driver.session() as session:
-            session.execute_write(self._execute_cypher, query)
+    # Execute an arbitrary Cypher query with structured logging.
+    def execute_cypher(self, query, *, name: str | None = None):
+        """Execute a Cypher statement with structured logging.
+
+        Args:
+            query: Cypher statement text
+            name: Optional logical name for the statement (useful when calling many statements)
+        """
+        stmt_name = name or "cypher"
+        q_preview = (query or "").replace("\n", " ").strip()
+        if len(q_preview) > 200:
+            q_preview = q_preview[:200] + "..."
+
+        mylogger.info(
+            f"Cypher execution started - {query}",
+            extra={
+                "op": stmt_name,
+                "database": getattr(self, "_database_name", None),
+                "query_preview": q_preview,
+            },
+        )
+
+        start = time.time()
+        try:
+            with self._driver.session() as session:
+                session.execute_write(self._execute_cypher, query)
+        except Exception as e:
+            elapsed_ms = int((time.time() - start) * 1000)
+            mylogger.exception(
+                "Cypher execution failed",
+                extra={
+                    "op": stmt_name,
+                    "database": getattr(self, "_database_name", None),
+                    "elapsed_ms": elapsed_ms,
+                    "query_preview": q_preview,
+                },
+            )
+            raise
+        else:
+            elapsed_ms = int((time.time() - start) * 1000)
+            mylogger.info(
+                "Cypher execution finished",
+                extra={
+                    "op": stmt_name,
+                    "database": getattr(self, "_database_name", None),
+                    "elapsed_ms": elapsed_ms,
+                },
+            )
 
     # read graph data
     #
@@ -96,44 +142,41 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
-def clean_up_neo4j_graph(db : SemanticGraphDB):
-    db.execute_cypher(del_all_relationship)
-    db.execute_cypher(del_all_node)
+def clean_up_neo4j_graph(db: SemanticGraphDB):
+    db.execute_cypher(del_all_relationship, name="del_all_relationship")
+    db.execute_cypher(del_all_node, name="del_all_node")
 
 
-def materiliazed_rdf_model(db : SemanticGraphDB):
-
-    db.execute_cypher(crt_rel__restrict_cardinality_1)
-    db.execute_cypher(crt_rel__restrict_cardinality_2)
+def materiliazed_rdf_model(db: SemanticGraphDB):
+    db.execute_cypher(crt_rel__restrict_cardinality_1, name="crt_rel__restrict_cardinality_1")
+    db.execute_cypher(crt_rel__restrict_cardinality_2, name="crt_rel__restrict_cardinality_2")
 
     # db.execute_cypher(crt_rel__restrict_cardinality)
 
-    db.execute_cypher(domain_range_1)
-    db.execute_cypher(domain_range_2)
+    db.execute_cypher(domain_range_1, name="domain_range_1")
+    db.execute_cypher(domain_range_2, name="domain_range_2")
 
-    db.execute_cypher(data_property_without_range)
-    db.execute_cypher(object_property_without_range)
+    db.execute_cypher(data_property_without_range, name="data_property_without_range")
+    db.execute_cypher(object_property_without_range, name="object_property_without_range")
 
-    db.execute_cypher(allValueFrom)
-    db.execute_cypher(allValueFrom_01)
-    db.execute_cypher(someValueFrom)
-    db.execute_cypher(someValueFrom_01)
+    db.execute_cypher(allValueFrom, name="allValueFrom")
+    db.execute_cypher(allValueFrom_01, name="allValueFrom_01")
+    db.execute_cypher(someValueFrom, name="someValueFrom")
+    db.execute_cypher(someValueFrom_01, name="someValueFrom_01")
 
-
-    db.execute_cypher(domain_onProperty)
-    db.execute_cypher(range_onProperty_object)
-    db.execute_cypher(range_onProperty_datatype)
-    db.execute_cypher(range_onProperty_datarange)
-    db.execute_cypher(xsd_datatypes)
-    db.execute_cypher(union_of_datatype)
-    db.execute_cypher(union_of_class)
-    db.execute_cypher(union_of_class_1)
-    db.execute_cypher(oneOf)
-
+    db.execute_cypher(domain_onProperty, name="domain_onProperty")
+    db.execute_cypher(range_onProperty_object, name="range_onProperty_object")
+    db.execute_cypher(range_onProperty_datatype, name="range_onProperty_datatype")
+    db.execute_cypher(range_onProperty_datarange, name="range_onProperty_datarange")
+    db.execute_cypher(xsd_datatypes, name="xsd_datatypes")
+    db.execute_cypher(union_of_datatype, name="union_of_datatype")
+    db.execute_cypher(union_of_class, name="union_of_class")
+    db.execute_cypher(union_of_class_1, name="union_of_class_1")
+    db.execute_cypher(oneOf, name="oneOf")
 
     # clean up duplicated edge
-    db.execute_cypher(del_dup_rels)
-    db.execute_cypher(rm_redounded_label)
+    db.execute_cypher(del_dup_rels, name="del_dup_rels")
+    db.execute_cypher(rm_redounded_label, name="rm_redounded_label")
 
 
 def get_schema(start_node:str,db : SemanticGraphDB):
