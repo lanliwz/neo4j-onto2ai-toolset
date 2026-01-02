@@ -6,6 +6,54 @@ MATCH (n) DETACH DELETE n
 del_all_relationship =  '''
 MATCH ()-[n]-() DETACH DELETE n
 '''
+# 	•	matches specific restriction fillers (someValuesFrom, allValuesFrom, onClass)
+# 	•	builds a safe relationship type from uri
+# 	•	merges the relationship (no dupes)
+# 	•	copies all *Cardinality* props
+# 	•	deletes only the restriction node and the subClassOf edge (optional)
+crt_rel__restrict_cardinality = '''
+// ObjectProperty restriction -> relationship, copy cardinality props
+MATCH (n:owl__Class)-[sub:rdfs__subClassOf]->(res:owl__Restriction)
+MATCH (res)-[:owl__onProperty]->(onp:owl__ObjectProperty)
+
+// pick the filler(s) you actually support
+OPTIONAL MATCH (res)-[:owl__someValuesFrom|owl__allValuesFrom|owl__onClass]->(des:owl__Class)
+WITH n, sub, res, onp, des
+WHERE des IS NOT NULL
+
+// compute a safe relationship type from the property URI (supports / or # namespaces)
+WITH n, sub, res, onp, des,
+     coalesce(
+       apoc.text.regexGroups(onp.uri, '([^/#]+)$')[0][0],
+       onp.rdfs__label
+     ) AS rawType
+WITH n, sub, res, onp, des,
+     apoc.text.replace(rawType, '[^A-Za-z0-9_]', '_') AS relType
+
+CALL (n, des, onp, res, relType) {
+  // MERGE to avoid duplicates
+  CALL apoc.merge.relationship(
+    n,
+    relType,
+    { uri: onp.uri },          // identity key(s) for merge
+    properties(onp),           // on create / set
+    des,
+    {}
+  ) YIELD rel
+
+  // copy ALL cardinality-ish keys
+  WITH rel, res
+  UNWIND [k IN keys(res) WHERE k CONTAINS 'Cardinality'] AS k
+  WITH rel, k, res[k] AS v
+  WHERE v IS NOT NULL
+  CALL apoc.create.setRelProperty(rel, k, v) YIELD rel AS _
+  RETURN rel
+}
+WITH res, sub
+// safer cleanup: delete only the restriction and its subclass edge
+DELETE sub
+DETACH DELETE res
+'''
 # Create relationships from owl:Class with object property restrictions, copying cardinality from owl:Restriction (owl:onProperty + owl:Class)
 crt_rel__restrict_cardinality_1 = '''
 // relationship with cardinality 

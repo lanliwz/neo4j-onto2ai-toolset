@@ -105,6 +105,7 @@ def rdf_to_neo4j_graph(db : SemanticGraphDB):
 
     db.execute_cypher(crt_rel__restrict_cardinality_1)
     db.execute_cypher(crt_rel__restrict_cardinality_2)
+    # db.execute_cypher(crt_rel__restrict_cardinality)
 
     db.execute_cypher(domain_range_1)
     db.execute_cypher(domain_range_2)
