@@ -5,7 +5,7 @@ import logging
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import clean_up_neo4j_graph, rdf_to_neo4j_graph, SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import clean_up_neo4j_graph, materiliazed_rdf_model, SemanticGraphDB
 from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
@@ -110,6 +110,6 @@ for row in results:
 
 neo4j_aura.close(True)
 # convert owl to neo4j model
-rdf_to_neo4j_graph(db)
+materiliazed_rdf_model(db)
 
 db.close()
