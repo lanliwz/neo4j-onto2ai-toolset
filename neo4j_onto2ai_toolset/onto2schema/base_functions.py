@@ -3,8 +3,10 @@ import os
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 import os
+import logging
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 ONTO_ROOT = os.getenv('ONTOLOGY_ROOT_PATH')
 def get_rdf_data(url, ext='.rdf'):
     file_path = url_to_filepath(url,ext)
@@ -16,10 +18,10 @@ def get_rdf_data(url, ext='.rdf'):
             content = file.read()
         return content
     except FileNotFoundError:
-        print(f"The file '{file_path}' was not found.")
+        logger.error(f"The file '{file_path}' was not found.")
         return ""
     except IOError:
-        print(f"An error occurred while reading the file '{file_path}'.")
+        logger.exception(f"An error occurred while reading the file '{file_path}'.")
         return ""
 
 def url_to_filepath(url, ext = '.rdf'):
@@ -56,9 +58,9 @@ def download_as_rdf(url):
         response.raise_for_status()  # Ensure we got a successful response
         with open(save_path, 'wb') as file:
             file.write(response.content)
-        print(f"Content saved to {save_path}")
+        logger.info(f"Content saved to {save_path}")
     except requests.RequestException as e:
-        print(f"Failed to retrieve the URL: {e}")
+        logger.error(f"Failed to retrieve the URL: {e}")
 
 
 # print(get_rdf_data('https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/Agents/'))
