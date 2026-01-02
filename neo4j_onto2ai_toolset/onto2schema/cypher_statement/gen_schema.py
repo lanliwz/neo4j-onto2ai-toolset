@@ -253,15 +253,10 @@ FOREACH (dup in dupclass[1..] | DETACH DELETE dup)
 xsd_datatypes = '''
 MATCH (n:Resource)
 WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
-WITH n, 'xsd__'+substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
-CALL {
-    WITH n, extractedString
-    CALL apoc.create.addLabels(n, [extractedString,'rdfs__Datatype']) YIELD node
-    RETURN node
-}
-with n,extractedString
-SET n.rdfs__label = extractedString
-REMOVE n:Resource
+WITH n, 'xsd__' + substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
+CALL apoc.create.addLabels(n, [extractedString, 'rdfs__Datatype']) YIELD node
+SET node.rdfs__label = extractedString
+REMOVE node:Resource
 '''
 # Remove redundant :Resource label from core OWL schema elements (Class, ObjectProperty, DatatypeProperty, etc.)
 rm_redounded_label='''
