@@ -45,7 +45,7 @@ INDIVIDUAL_AXIOMS = {
 # , - is replaced with _ since - is operator
 prefixes = {
     # -----------------------------
-    # W3C / IETF (core standards)
+    # W3C / Core
     # -----------------------------
     "owl":    "http://www.w3.org/2002/07/owl#",
     "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -54,125 +54,117 @@ prefixes = {
     "xml":    "http://www.w3.org/XML/1998/namespace#",
     "sh":     "http://www.w3.org/ns/shacl#",
     "skos":   "http://www.w3.org/2004/02/skos/core#",
-    "dcterms":"http://purl.org/dc/terms/",
+    "dct":    "http://purl.org/dc/terms/",  # shorten dcterms -> dct (optional but common)
 
     # -----------------------------
-    # OMG Commons (domain + modules)
+    # OMG Commons (cmns_* -> c_*)
     # -----------------------------
-    "cmns":        "https://www.omg.org/spec/Commons/",
-
-    "cmns_av":     "https://www.omg.org/spec/Commons/AnnotationVocabulary/",
-    "cmns_cds":    "https://www.omg.org/spec/Commons/CodesAndCodeSets/",
-    "cmns_cls":    "https://www.omg.org/spec/Commons/Classifiers/",
-    "cmns_col":    "https://www.omg.org/spec/Commons/Collections/",
-    "cmns_cxtdsg": "https://www.omg.org/spec/Commons/ContextualDesignators/",
-    "cmns_cxtid":  "https://www.omg.org/spec/Commons/ContextualIdentifiers/",
-    "cmns_doc":    "https://www.omg.org/spec/Commons/Documents/",
-    "cmns_dsg":    "https://www.omg.org/spec/Commons/Designators/",
-    "cmns_dt":     "https://www.omg.org/spec/Commons/DatesAndTimes/",
-    "cmns_id":     "https://www.omg.org/spec/Commons/Identifiers/",
-    "cmns_loc":    "https://www.omg.org/spec/Commons/Locations/",
-    "cmns_qtu":    "https://www.omg.org/spec/Commons/QuantitiesAndUnits/",
-    "cmns_regag":  "https://www.omg.org/spec/Commons/RegulatoryAgencies/",
-    "cmns_txt":    "https://www.omg.org/spec/Commons/TextDatatype/",
-
-    # -----------------------------
-    # OMG LCC (domain + modules)
-    # -----------------------------
-    "lcc":    "https://www.omg.org/spec/LCC/",
-    "lcc_cr": "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/",
-    "lcc_lr": "https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/",
+    "c":      "https://www.omg.org/spec/Commons/",
+    "c_av":   "https://www.omg.org/spec/Commons/AnnotationVocabulary/",
+    "c_cds":  "https://www.omg.org/spec/Commons/CodesAndCodeSets/",
+    "c_cls":  "https://www.omg.org/spec/Commons/Classifiers/",
+    "c_col":  "https://www.omg.org/spec/Commons/Collections/",
+    "c_cxd":  "https://www.omg.org/spec/Commons/ContextualDesignators/",
+    "c_cxi":  "https://www.omg.org/spec/Commons/ContextualIdentifiers/",
+    "c_doc":  "https://www.omg.org/spec/Commons/Documents/",
+    "c_dsg":  "https://www.omg.org/spec/Commons/Designators/",
+    "c_dt":   "https://www.omg.org/spec/Commons/DatesAndTimes/",
+    "c_id":   "https://www.omg.org/spec/Commons/Identifiers/",
+    "c_loc":  "https://www.omg.org/spec/Commons/Locations/",
+    "c_qtu":  "https://www.omg.org/spec/Commons/QuantitiesAndUnits/",
+    "c_reg":  "https://www.omg.org/spec/Commons/RegulatoryAgencies/",
+    "c_txt":  "https://www.omg.org/spec/Commons/TextDatatype/",
 
     # -----------------------------
-    # OMG Specification Metadata (kept as-is)
+    # OMG LCC (lcc_* -> l_*)
+    # -----------------------------
+    "l":      "https://www.omg.org/spec/LCC/",
+    "l_cr":   "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/",
+    "l_lr":   "https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/",
+
+    # -----------------------------
+    # OMG Spec Metadata (keep; already short)
     # -----------------------------
     "sm": "http://www.omg.org/techprocess/ab/SpecificationMetadata/",
 
     # -----------------------------
-    # FIBO (domain + families + modules)
+    # FIBO roots (optional but handy)
     # -----------------------------
-    "fibo":     "https://spec.edmcouncil.org/fibo/ontology/",
-
-    # families
-    "fibo_be":  "https://spec.edmcouncil.org/fibo/ontology/BE/",
-    "fibo_fnd": "https://spec.edmcouncil.org/fibo/ontology/FND/",
-    "fibo_fbc": "https://spec.edmcouncil.org/fibo/ontology/FBC/",
-
-    # --- BE modules (LegalEntities / Corporations / GovernmentEntities / FunctionalEntities)
-    "fibo_be_le":   "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/",
-    "fibo_be_corp": "https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/",
-    "fibo_be_ge":   "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/",
-    "fibo_be_fct":  "https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/",
-
-    # --- FND modules
-    "fibo_fnd_acc": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/",
-    "fibo_fnd_aap": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/",
-    "fibo_fnd_agr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/",
-    "fibo_fnd_arr": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/",
-    "fibo_fnd_dt":  "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/",
-    "fibo_fnd_gao": "https://spec.edmcouncil.org/fibo/ontology/FND/GoalsAndObjectives/",
-    "fibo_fnd_law": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/",
-    "fibo_fnd_oac": "https://spec.edmcouncil.org/fibo/ontology/FND/OwnershipAndControl/",
-    "fibo_fnd_org": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/",
-    "fibo_fnd_pas": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/",
-    "fibo_fnd_plc": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/",
-    "fibo_fnd_pty": "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/",
-    "fibo_fnd_rel": "https://spec.edmcouncil.org/fibo/ontology/FND/Relations/",
-    "fibo_fnd_utl": "https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/",
-
-    # --- FBC modules
-    "fibo_fbc_dae": "https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/",
-    "fibo_fbc_fct": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/",
-    "fibo_fbc_fi":  "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/",
-    "fibo_fbc_pas": "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/",
+    "fibo": "https://spec.edmcouncil.org/fibo/ontology/",
+    "be":   "https://spec.edmcouncil.org/fibo/ontology/BE/",
+    "fnd":  "https://spec.edmcouncil.org/fibo/ontology/FND/",
+    "fbc":  "https://spec.edmcouncil.org/fibo/ontology/FBC/",
 
     # -----------------------------
-    # Leaf namespaces you already use (keep for precision)
+    # FIBO BE leaf (fibo_be_* -> be_*)
     # -----------------------------
-    # BE leaf
-    "fibo_be_fct_fct":  "https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/",
-    "fibo_be_le_fbo":   "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/FormalBusinessOrganizations/",
-    "fibo_be_le_lp":    "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/",
-    "fibo_be_le_lei":   "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/",
-    "fibo_be_le_cb":    "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/",
-    "fibo_be_corp_corp":"https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/",
-    "fibo_be_ge_ge":    "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/",
+    "be_fct":     "https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/",
+    "be_fct_fct": "https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/",
 
-    # FND leaf
-    "fibo_fnd_acc_aeq": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/AccountingEquity/",
-    "fibo_fnd_acc_cur": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/",
-    "fibo_fnd_aap_agt": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/Agents/",
-    "fibo_fnd_aap_ppl": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/",
-    "fibo_fnd_agr_agr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Agreements/",
-    "fibo_fnd_agr_ctr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Contracts/",
-    "fibo_fnd_arr_arr": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Arrangements/",
-    "fibo_fnd_arr_cls": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/ClassificationSchemes/",
-    "fibo_fnd_arr_doc": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Documents/",
-    "fibo_fnd_arr_id":  "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/IdentifiersAndIndices/",
-    "fibo_fnd_dt_bd":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/BusinessDates/",
-    "fibo_fnd_dt_fd":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/",
-    "fibo_fnd_dt_oc":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/Occurrences/",
-    "fibo_fnd_gao_obj": "https://spec.edmcouncil.org/fibo/ontology/FND/GoalsAndObjectives/Objectives/",
-    "fibo_fnd_law_cor": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/LegalCore/",
-    "fibo_fnd_law_jur": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/Jurisdiction/",
-    "fibo_fnd_law_lcap":"https://spec.edmcouncil.org/fibo/ontology/FND/Law/LegalCapacity/",
-    "fibo_fnd_oac_own": "https://spec.edmcouncil.org/fibo/ontology/FND/OwnershipAndControl/Ownership/",
-    "fibo_fnd_org_fm":  "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/",
-    "fibo_fnd_org_org": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/Organizations/",
-    "fibo_fnd_pas_pas": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/ProductsAndServices/",
-    "fibo_fnd_plc_adr": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/",
-    "fibo_fnd_plc_fac": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Facilities/",
-    "fibo_fnd_plc_loc": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Locations/",
-    "fibo_fnd_pty_pty": "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/",
-    "fibo_fnd_pty_rl":  "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Roles/",
-    "fibo_fnd_rel_rel": "https://spec.edmcouncil.org/fibo/ontology/FND/Relations/Relations/",
-    "fibo_fnd_utl_av":  "https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/AnnotationVocabulary/",
-    "fibo_fnd_utl_alx": "https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/",
+    "be_le":      "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/",
+    "be_le_fbo":  "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/FormalBusinessOrganizations/",
+    "be_le_lp":   "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LegalPersons/",
+    "be_le_lei":  "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/",
+    "be_le_cb":   "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/",
 
-    # FBC leaf
-    "fibo_fbc_dae_dbt":     "https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/",
-    "fibo_fbc_fct_breg":    "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/",
-    "fibo_fbc_pas_fpas":    "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/",
-    "fibo_fbc_pas_caa":     "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/",
-    "fibo_fbc_fbc_fi_fi":   "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/",
+    "be_corp":       "https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/",
+    "be_corp_corp":  "https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/",
+
+    "be_ge":      "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/",
+    "be_ge_ge":   "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/",
+
+    # -----------------------------
+    # FIBO FND leaf (fibo_fnd_* -> fnd_*)
+    # -----------------------------
+    "fnd_acc_aeq": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/AccountingEquity/",
+    "fnd_acc_cur": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/",
+
+    "fnd_aap_agt": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/Agents/",
+    "fnd_aap_ppl": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/",
+
+    "fnd_agr_agr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Agreements/",
+    "fnd_agr_ctr": "https://spec.edmcouncil.org/fibo/ontology/FND/Agreements/Contracts/",
+
+    "fnd_arr_arr": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Arrangements/",
+    "fnd_arr_cls": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/ClassificationSchemes/",
+    "fnd_arr_doc": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Documents/",
+    "fnd_arr_id":  "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/IdentifiersAndIndices/",
+
+    "fnd_dt_bd":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/BusinessDates/",
+    "fnd_dt_fd":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/",
+    "fnd_dt_oc":   "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/Occurrences/",
+
+    "fnd_gao_obj": "https://spec.edmcouncil.org/fibo/ontology/FND/GoalsAndObjectives/Objectives/",
+
+    "fnd_law_cor": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/LegalCore/",
+    "fnd_law_jur": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/Jurisdiction/",
+    "fnd_law_lcp": "https://spec.edmcouncil.org/fibo/ontology/FND/Law/LegalCapacity/",
+
+    "fnd_oac_own": "https://spec.edmcouncil.org/fibo/ontology/FND/OwnershipAndControl/Ownership/",
+
+    "fnd_org_fm":  "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/",
+    "fnd_org_org": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/Organizations/",
+
+    "fnd_pas_pas": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/ProductsAndServices/",
+
+    "fnd_plc_adr": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/",
+    "fnd_plc_fac": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Facilities/",
+    "fnd_plc_loc": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Locations/",
+
+    "fnd_pty_pty": "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/",
+    "fnd_pty_rl":  "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Roles/",
+
+    "fnd_rel_rel": "https://spec.edmcouncil.org/fibo/ontology/FND/Relations/Relations/",
+
+    "fnd_utl_av":  "https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/AnnotationVocabulary/",
+    "fnd_utl_alx": "https://spec.edmcouncil.org/fibo/ontology/FND/Utilities/Analytics/",
+
+    # -----------------------------
+    # FIBO FBC leaf (fibo_fbc_* -> fbc_*)
+    # -----------------------------
+    "fbc_pas_fpas":   "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/",
+    "fbc_dae_dbt":    "https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Debt/",
+    "fbc_fct_breg":   "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/",
+    "fbc_pas_caa":    "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/",
+    "fbc_fi_fi":      "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/",
 }
