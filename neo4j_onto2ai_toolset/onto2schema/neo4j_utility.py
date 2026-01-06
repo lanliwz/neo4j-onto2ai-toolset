@@ -146,39 +146,6 @@ def clean_up_neo4j_graph(db: SemanticGraphDB):
     db.execute_cypher(del_all_relationship, name="del_all_relationship")
     db.execute_cypher(del_all_node, name="del_all_node")
 
-
-def materiliazed_rdf_model(db: SemanticGraphDB):
-    db.execute_cypher(crt_rel__restrict_cardinality_1, name="crt_rel__restrict_cardinality_1")
-    db.execute_cypher(crt_rel__restrict_cardinality_2, name="crt_rel__restrict_cardinality_2")
-
-    # db.execute_cypher(crt_rel__restrict_cardinality)
-
-    db.execute_cypher(domain_range_1, name="domain_range_1")
-    db.execute_cypher(domain_range_2, name="domain_range_2")
-
-    db.execute_cypher(data_property_without_range, name="data_property_without_range")
-    db.execute_cypher(object_property_without_range, name="object_property_without_range")
-
-    db.execute_cypher(allValueFrom, name="allValueFrom")
-    db.execute_cypher(allValueFrom_01, name="allValueFrom_01")
-    db.execute_cypher(someValueFrom, name="someValueFrom")
-    db.execute_cypher(someValueFrom_01, name="someValueFrom_01")
-
-    db.execute_cypher(domain_onProperty, name="domain_onProperty")
-    db.execute_cypher(range_onProperty_object, name="range_onProperty_object")
-    db.execute_cypher(range_onProperty_datatype, name="range_onProperty_datatype")
-    db.execute_cypher(range_onProperty_datarange, name="range_onProperty_datarange")
-    db.execute_cypher(xsd_datatypes, name="xsd_datatypes")
-    db.execute_cypher(union_of_datatype, name="union_of_datatype")
-    db.execute_cypher(union_of_class, name="union_of_class")
-    db.execute_cypher(union_of_class_1, name="union_of_class_1")
-    db.execute_cypher(oneOf, name="oneOf")
-
-    # clean up duplicated edge
-    db.execute_cypher(del_dup_rels, name="del_dup_rels")
-    db.execute_cypher(rm_redounded_label, name="rm_redounded_label")
-
-
 def get_schema(start_node:str,db : SemanticGraphDB):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
               + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
