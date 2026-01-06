@@ -13,7 +13,8 @@ from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from neo4j_onto2ai_toolset.onto2schema.prefixes import PREFIXES_CANON as prefixes
 
-logger = logging.getLogger(__name__)
+# Use the application logger so messages follow the same handlers/formatters as the rest of the tool.
+logger = logging.getLogger("onto2ai-toolset")
 
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
@@ -23,33 +24,46 @@ config = Neo4jStoreConfig(auth_data=auth_data,
 already_loaded = set()
 
 
-def load_ontology(graph: Graph, uri, format):
-    """
-    Recursively load an ontology and all its imports into a graph.
-    :param format:
-    :param graph: A rdflib.Graph instance.
-    :param uri: URI of the ontology to load.
-    """
-    try:
-        if uri in already_loaded:
-            None
-        else:
-            print(f"Loading: {uri}")
-            rdfdata = get_rdf_data(uri)
-            graph.parse(data=rdfdata, format=format)
-            already_loaded.add(uri)
+def load_ontology(graph: Graph, uri, format=None):
+    uri_str = str(uri)
 
-            # Find all import statements in the currently loaded ontology.
-            for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
-                load_ontology(graph, imported_uri, format)
-    except FileNotFoundError:
-        logger.error("Ontology file not found", extra={"uri": uri})
-    except urllib.error.HTTPError as e:
-        logger.error("HTTP error while loading ontology", extra={"uri": uri, "error": str(e)})
-    except BadSyntax as e:
-        logger.error("Bad syntax in ontology file", extra={"uri": uri, "error": str(e)})
-    except Exception as e:
-        logger.exception("Unexpected error while loading ontology", extra={"uri": uri})
+    # normalize dedupe
+    if uri_str in already_loaded:
+        return
+
+    logger.info("Loading ontology", extra={"op": "load_ontology", "uri": uri_str})
+    logger.debug("Ontology queued/loaded", extra={"op": "load_ontology", "uri": uri_str, "already_loaded_size": len(already_loaded)})
+    already_loaded.add(uri_str)
+
+    rdfdata = get_rdf_data(uri_str)
+
+    # if you must keep `format`, at least add fallback
+    formats_to_try = [format] if format else [None]
+    if format:
+        formats_to_try += ["xml", "turtle", "n3", "json-ld"]
+
+    last_err = None
+    for fmt in formats_to_try:
+        try:
+            if fmt is None:
+                graph.parse(data=rdfdata)
+            else:
+                graph.parse(data=rdfdata, format=fmt)
+            last_err = None
+            break
+        except Exception as e:
+            last_err = e
+
+    if last_err is not None:
+        logger.exception(
+            "Failed to parse ontology",
+            extra={"op": "load_ontology", "uri": uri_str, "format": format},
+        )
+        raise last_err
+
+    # recurse imports (normalize to str)
+    for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
+        load_ontology(graph, str(imported_uri), format=format)
 
 
 
