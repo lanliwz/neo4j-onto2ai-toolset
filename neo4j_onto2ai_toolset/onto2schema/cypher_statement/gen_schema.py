@@ -129,25 +129,35 @@ SET link.inferred_by='someValuesFrom'
 DELETE sub,some
 DELETE restriction
 '''
-# Materialize object property relationships using rdfs:domain and rdfs:range between owl:Class nodes (object properties)
+# Materialize OWL ObjectProperty semantics into direct Neo4j relationships:
+# - Use rdfs:domain/rdfs:range to connect owl__Class -> owl__Class
+# - Relationship type is derived from the ObjectProperty URI local-name
+# - Annotate inferred relationships and remove the original rdfs:domain/rdfs:range triples
 domain_range_1 = '''
-//CREATE REL domain-range 
-match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class) 
-WITH n,op,c,d,r
-CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
+// Materialize ObjectProperty domain/range as property-graph edge
+// Rel-type extraction supports both '/' and '#' URIs.
+MATCH (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:owl__Class)
+WITH n, op, c, d, r,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+CALL apoc.create.relationship(n, relType, properties(op), c)
 YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='domain-range'
-DELETE d,r
+DELETE d, r
 '''
-# Materialize datatype property relationships using rdfs:domain and rdfs:range between owl:Class and Resource nodes (datatype properties)
+# Materialize OWL DatatypeProperty semantics into direct Neo4j relationships:
+# - Use rdfs:domain/rdfs:range to connect owl__Class -> Resource (typically XSD/rdfs datatypes)
+# - Relationship type is derived from the DatatypeProperty URI local-name
+# - Annotate inferred relationships and remove the original rdfs:domain/rdfs:range triples
 domain_range_2 = '''
-//CREATE REL domain-range 
-match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__DatatypeProperty)-[r:rdfs__range]->(c:Resource) 
-WITH n,op,c,d,r
-CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), c)
+// Materialize DatatypeProperty domain/range as property-graph edge
+// Rel-type extraction supports both '/' and '#' URIs.
+MATCH (n:owl__Class)<-[d:rdfs__domain]-(op:owl__DatatypeProperty)-[r:rdfs__range]->(c:Resource)
+WITH n, op, c, d, r,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+CALL apoc.create.relationship(n, relType, properties(op), c)
 YIELD rel
 SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='domain-range'
-DELETE d,r
+DELETE d, r
 '''
 # Create relationships from domain classes to restriction target classes via owl:onProperty + rdfs:subClassOf (object properties)
 domain_onProperty = '''
