@@ -138,7 +138,7 @@ load_neo4j_db(graph=neo4j_rdf_graph, imports=already_loaded)
 
 # Materialize inferred OWL semantics into an operational Neo4j property graph
 # (ObjectProperty/DataProperty relationships, domain/range, restrictions, cardinality, and remove duplicated things)
-# materialize_property_graph_model(neo4j_model_db)
+materialize_property_graph_model(neo4j_model_db)
 
 
 neo4j_rdf_graph.close(True)
