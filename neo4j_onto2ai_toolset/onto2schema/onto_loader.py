@@ -72,6 +72,29 @@ def load_neo4j_db(graph, imports:set()):
         data = get_rdf_data(url)
         graph.parse(data=data, format=format)
 
+def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
+    # Prepare the query
+    query = prepareQuery(sparQl, initNs=dict(in_mem_graph.namespaces()))
+    logger.info(f"RDF query is {query4dataprop}")
+
+    # Execute the query and retrieve results
+    results = in_mem_graph.query(query)
+
+    # Iterate over results and print named individuals and their types
+    for row in results:
+        clz = row.clz
+        type_class = row.datatype
+        prop = row.property
+        neo4j_graph.add((clz, prop, type_class))
+        logger.info(
+            f"Datatype property discovered - {str(prop)}",
+            extra={
+                "op": "sparql_extract_datatype_property",
+                "subject": str(clz),
+                "predicate": str(prop),
+                "datatype": str(type_class),
+            },
+        )
 # file_path = 'http://www.w3.org/2004/02/skos/core/skos/'
 # format="ttl"
 # file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/FunctionalEntities.rdf'
@@ -110,39 +133,13 @@ load_ontology_with_imports(rdf_reasoning_graph, file_path, format)
 
 # Neo4j-backed RDF staging graph
 neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
-
 load_neo4j_db(graph=neo4j_rdf_graph, imports=already_loaded)
+load_neo4j_db_ext(sparQl=query4dataprop,in_mem_graph=rdf_reasoning_graph,neo4j_graph=neo4j_rdf_graph)
 
-
-def load_neo4j_db_ext(in_mem_graph,neo4j_graph):
-    # Prepare the query
-    query = prepareQuery(query4dataprop, initNs=dict(in_mem_graph.namespaces()))
-    logger.info(f"RDF query is {query4dataprop}")
-
-    # Execute the query and retrieve results
-    results = in_mem_graph.query(query)
-
-    # Iterate over results and print named individuals and their types
-    for row in results:
-        clz = row.clz
-        type_class = row.datatype
-        prop = row.property
-        neo4j_graph.add((clz, prop, type_class))
-        logger.info(
-            f"Datatype property discovered - {str(prop)}",
-            extra={
-                "op": "sparql_extract_datatype_property",
-                "subject": str(clz),
-                "predicate": str(prop),
-                "datatype": str(type_class),
-            },
-        )
-
-load_neo4j_db_ext(in_mem_graph=rdf_reasoning_graph,neo4j_graph=neo4j_rdf_graph)
-
-neo4j_rdf_graph.close(True)
-# convert owl to neo4j model
+# Materialize inferred OWL semantics into an operational Neo4j property graph
+# (ObjectProperty/DataProperty relationships, domain/range, restrictions, cardinality, and remove duplicated things)
 materialize_property_graph_model(neo4j_model_db)
 
 
+neo4j_rdf_graph.close(True)
 neo4j_model_db.close()
