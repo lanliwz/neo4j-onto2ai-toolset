@@ -12,6 +12,7 @@ from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from neo4j_onto2ai_toolset.onto2schema.prefixes import PREFIXES_CANON as prefixes
+from rdflib.plugins.sparql import prepareQuery
 
 # Use the application logger so messages follow the same handlers/formatters as the rest of the tool.
 logger = logging.getLogger("onto2ai-toolset")
@@ -88,45 +89,48 @@ def load_ontology(graph: Graph, uri, format=None):
 file_path ='https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/'
 format = "application/rdf+xml"
 
-# Create the RDF Graph, parse & ingest the data to Neo4j, and close the store(If the field batching is set to True in the Neo4jStoreConfig, remember to close the store to prevent the loss of any uncommitted records.)
-neo4j_aura = Graph(store=Neo4jStore(config=config))
-
 neo4j_model = get_neo4j_model_config()
 
-# clean up before loading
-db = SemanticGraphDB(neo4j_model.url ,neo4j_model.username,neo4j_model.password,neo4j_model.database)
+# Operational Neo4j property graph
+# Operational Neo4j property graph before loading new ontology
+neo4j_model_db = SemanticGraphDB(
+    neo4j_model.url,
+    neo4j_model.username,
+    neo4j_model.password,
+    neo4j_model.database,
+)
+clean_up_neo4j_graph(neo4j_model_db)
 
-clean_up_neo4j_graph(db)
+# In-memory RDF graph for reasoning & SPARQL
+rdf_reasoning_graph = Graph()
+load_ontology(rdf_reasoning_graph, file_path, format)
 
-# Calling the parse method will implictly open the store
-# neo4j_aura.parse(file_path, format=format)
-g = Graph()
-load_ontology(g, file_path, format)
-
+# Neo4j-backed RDF staging graph
+neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
 for url in already_loaded:
-    rdfdata = get_rdf_data(url)
-    neo4j_aura.parse(data=rdfdata, format=format)
+    rdfd = get_rdf_data(url)
+    neo4j_rdf_graph.parse(data=rdfd, format=format)
 
-from rdflib.plugins.sparql import prepareQuery
+
 
 
 # Prepare the query
-query = prepareQuery(query4dataprop, initNs=dict(g.namespaces()))
+query = prepareQuery(query4dataprop, initNs=dict(rdf_reasoning_graph.namespaces()))
 
 # Execute the query and retrieve results
-results = g.query(query)
+results = rdf_reasoning_graph.query(query)
 
 # Iterate over results and print named individuals and their types
 for row in results:
     clz = row.clz
     type_class = row.datatype
     prop = row.property
-    neo4j_aura.add((clz, prop, type_class))
+    neo4j_rdf_graph.add((clz, prop, type_class))
     print(f"subj: {clz}, pred: {prop}, Type: {type_class}")
 
-neo4j_aura.close(True)
+neo4j_rdf_graph.close(True)
 # convert owl to neo4j model
-materialize_property_graph_model(db)
+materialize_property_graph_model(neo4j_model_db)
 
 
-db.close()
+neo4j_model_db.close()
