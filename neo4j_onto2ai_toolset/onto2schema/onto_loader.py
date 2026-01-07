@@ -113,19 +113,32 @@ neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
 
 load_neo4j_db(graph=neo4j_rdf_graph, imports=already_loaded)
 
-# Prepare the query
-query = prepareQuery(query4dataprop, initNs=dict(rdf_reasoning_graph.namespaces()))
 
-# Execute the query and retrieve results
-results = rdf_reasoning_graph.query(query)
+def load_neo4j_db_ext(in_mem_graph,neo4j_graph):
+    # Prepare the query
+    query = prepareQuery(query4dataprop, initNs=dict(in_mem_graph.namespaces()))
+    logger.info(f"RDF query is {query4dataprop}")
 
-# Iterate over results and print named individuals and their types
-for row in results:
-    clz = row.clz
-    type_class = row.datatype
-    prop = row.property
-    neo4j_rdf_graph.add((clz, prop, type_class))
-    print(f"subj: {clz}, pred: {prop}, Type: {type_class}")
+    # Execute the query and retrieve results
+    results = in_mem_graph.query(query)
+
+    # Iterate over results and print named individuals and their types
+    for row in results:
+        clz = row.clz
+        type_class = row.datatype
+        prop = row.property
+        neo4j_graph.add((clz, prop, type_class))
+        logger.info(
+            f"Datatype property discovered - {str(prop)}",
+            extra={
+                "op": "sparql_extract_datatype_property",
+                "subject": str(clz),
+                "predicate": str(prop),
+                "datatype": str(type_class),
+            },
+        )
+
+load_neo4j_db_ext(in_mem_graph=rdf_reasoning_graph,neo4j_graph=neo4j_rdf_graph)
 
 neo4j_rdf_graph.close(True)
 # convert owl to neo4j model
