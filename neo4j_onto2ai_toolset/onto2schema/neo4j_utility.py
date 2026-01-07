@@ -142,7 +142,7 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
-def clean_up_neo4j_graph(db: SemanticGraphDB):
+def clean_up_neo4j_db(db: SemanticGraphDB):
     db.execute_cypher(del_all_relationship, name="del_all_relationship")
     db.execute_cypher(del_all_node, name="del_all_node")
 

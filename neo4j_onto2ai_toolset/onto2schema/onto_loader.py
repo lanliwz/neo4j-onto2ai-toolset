@@ -5,7 +5,7 @@ import logging
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import clean_up_neo4j_graph
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import clean_up_neo4j_db
 from neo4j_onto2ai_toolset.onto2schema.semantic_model_materializer import materialize_property_graph_model
 from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
@@ -25,7 +25,7 @@ config = Neo4jStoreConfig(auth_data=auth_data,
 already_loaded = set()
 
 
-def load_ontology(graph: Graph, uri, format=None):
+def load_ontology_with_imports(graph: Graph, uri, format=None):
     uri_str = str(uri)
 
     # normalize dedupe
@@ -64,10 +64,13 @@ def load_ontology(graph: Graph, uri, format=None):
 
     # recurse imports (normalize to str)
     for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
-        load_ontology(graph, str(imported_uri), format=format)
+         load_ontology_with_imports(graph, str(imported_uri), format=format)
 
 
-
+def load_neo4j_db(graph, imports:set()):
+    for url in imports:
+        data = get_rdf_data(url)
+        graph.parse(data=data, format=format)
 
 # file_path = 'http://www.w3.org/2004/02/skos/core/skos/'
 # format="ttl"
@@ -89,30 +92,26 @@ def load_ontology(graph: Graph, uri, format=None):
 file_path ='https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/'
 format = "application/rdf+xml"
 
-neo4j_model = get_neo4j_model_config()
+neo4j_model_db_config = get_neo4j_model_config()
 
 # Operational Neo4j property graph
 # Operational Neo4j property graph before loading new ontology
 neo4j_model_db = SemanticGraphDB(
-    neo4j_model.url,
-    neo4j_model.username,
-    neo4j_model.password,
-    neo4j_model.database,
+    neo4j_model_db_config.url,
+    neo4j_model_db_config.username,
+    neo4j_model_db_config.password,
+    neo4j_model_db_config.database,
 )
-clean_up_neo4j_graph(neo4j_model_db)
+clean_up_neo4j_db(neo4j_model_db)
 
 # In-memory RDF graph for reasoning & SPARQL
 rdf_reasoning_graph = Graph()
-load_ontology(rdf_reasoning_graph, file_path, format)
+load_ontology_with_imports(rdf_reasoning_graph, file_path, format)
 
 # Neo4j-backed RDF staging graph
 neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
-for url in already_loaded:
-    rdfd = get_rdf_data(url)
-    neo4j_rdf_graph.parse(data=rdfd, format=format)
 
-
-
+load_neo4j_db(graph=neo4j_rdf_graph, imports=already_loaded)
 
 # Prepare the query
 query = prepareQuery(query4dataprop, initNs=dict(rdf_reasoning_graph.namespaces()))
