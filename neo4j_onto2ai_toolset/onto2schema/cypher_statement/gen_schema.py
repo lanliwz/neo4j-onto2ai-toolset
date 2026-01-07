@@ -161,137 +161,194 @@ DELETE d, r
 '''
 # Create relationships from domain classes to restriction target classes via owl:onProperty + rdfs:subClassOf (object properties)
 domain_onProperty = '''
-//CREATE REL domain-onProperty Restriction 
-match (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
-WITH n,op,res,d
-MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+// Materialize ObjectProperty semantics via OWL Restriction + onProperty + domain:
+// - Find class n that is the rdfs:domain of an ObjectProperty op
+// - Find restriction res that uses op via owl:onProperty
+// - Find target class des such that des rdfs:subClassOf res
+// - Create direct Neo4j relationship n -[:<relType>]-> des
+// - Relationship type is derived from op.uri local-name (supports both '/' and '#')
+// - Remove the original rdfs:domain edge (d) after materialization
+MATCH (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)<-[:owl__onProperty]-(res:owl__Restriction)
+WITH n, op, res, d,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+MATCH (res)<-[:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
-CALL apoc.create.relationship(n, last(split(properties(op).uri,"/")), properties(op), des)
+CALL apoc.create.relationship(n, relType, properties(op), des)
 YIELD rel
-SET rel.property_type='owl__ObjectProperty',rel.inferred_by='domain'
+SET rel.property_type='owl__ObjectProperty', rel.inferred_by='domain'
 DELETE d
 '''
-# Create relationships from restriction source classes to range classes via owl:onProperty + rdfs:range (object properties)
 range_onProperty = '''
-//CREATE REL range-onProperty Restriction 
-match (n:owl__Class)<-[d:rdfs__range]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
-WITH n,op,res,d
-MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+// Materialize ObjectProperty semantics via OWL Restriction + onProperty + range:
+// - Find class n that is the rdfs:range of an ObjectProperty op
+// - Find restriction res that uses op via owl:onProperty
+// - Find source class des such that des rdfs:subClassOf res
+// - Create direct Neo4j relationship des -[:<relType>]-> n
+// - Relationship type is derived from op.uri local-name (supports both '/' and '#')
+// - Remove the original rdfs:range edge (d) after materialization
+MATCH (n:owl__Class)<-[d:rdfs__range]-(op:owl__ObjectProperty)<-[:owl__onProperty]-(res:owl__Restriction)
+WITH n, op, res, d,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+MATCH (res)<-[:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
-CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
+CALL apoc.create.relationship(des, relType, properties(op), n)
 YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
-# Handle datatype properties with a domain but no explicit range by creating an 'undefined' rdfs:Datatype node and re-wiring
 data_property_without_range = '''
-//  data property with domain without range
-MATCH (prop:owl__DatatypeProperty)-[:rdfs__domain]->(cls:owl__Class) 
-WHERE 
-NOT (prop)-[:rdfs__range]-()
-WITH prop,cls
-CREATE (n:rdfs__Datatype) 
-SET n.rdfs__label='undefined'
-WITH cls,prop,n
-CALL apoc.create.relationship(cls, last(split(properties(prop).uri,"/")),properties(prop), n)
+// Materialize DatatypeProperty with domain but missing range:
+// - For DatatypeProperty prop with rdfs:domain cls and NO rdfs:range
+// - MERGE a shared placeholder datatype node (rdfs__Datatype {uri:'urn:onto2ai:datatype:undefined'})
+// - Create cls -[:<relType>]-> placeholder relationship (relType derived from prop.uri; supports '/' and '#')
+// - Remove all prop relationships and delete prop (destructive rewiring)
+MATCH (prop:owl__DatatypeProperty)-[:rdfs__domain]->(cls:owl__Class)
+WHERE NOT (prop)-[:rdfs__range]-()
+WITH prop, cls,
+     last(split(last(split(prop.uri, "#")), "/")) AS relType
+MERGE (dtype:rdfs__Datatype {uri: 'urn:onto2ai:datatype:undefined'})
+  ON CREATE SET dtype.rdfs__label = 'undefined'
+WITH prop, cls, relType, dtype
+CALL apoc.create.relationship(cls, relType, properties(prop), dtype)
 YIELD rel
-WITH cls,rel,n,prop
+WITH prop
 MATCH (prop)-[r]-()
 DELETE r
 DELETE prop
 '''
-# Handle object properties with a domain but no explicit range by creating an 'undefined' owl:Class node and re-wiring
 object_property_without_range = '''
-//  object property with domain without range
-MATCH (prop:owl__ObjectProperty)-[:rdfs__domain]->(cls:owl__Class) 
-WHERE 
-NOT (prop)-[:rdfs__range]-()
-WITH prop,cls
-CREATE (n:owl__Class) 
-SET n.rdfs__label='undefined'
-WITH cls,prop,n
-CALL apoc.create.relationship(cls, last(split(properties(prop).uri,"/")),properties(prop), n)
+// Materialize ObjectProperty with domain but missing range:
+// - For ObjectProperty prop with rdfs:domain cls and NO rdfs:range
+// - Create a placeholder class node (owl__Class {rdfs__label:'undefined'})
+// - Create cls -[:<relType>]-> undefinedClass relationship (relType derived from prop.uri)
+// - Delete all existing relationships from prop and delete prop itself (destructive rewiring)
+MATCH (prop:owl__ObjectProperty)-[:rdfs__domain]->(cls:owl__Class)
+WHERE NOT (prop)-[:rdfs__range]-()
+WITH prop, cls,
+     last(split(last(split(prop.uri, "#")), "/")) AS relType
+MERGE (target:owl__Class {uri:'urn:onto2ai:class:undefined'})
+  ON CREATE SET target.rdfs__label='undefined'
+WITH prop, cls, relType, target
+CALL apoc.create.relationship(cls, relType, properties(prop), target)
 YIELD rel
-WITH cls,rel,n,prop
+WITH prop
 MATCH (prop)-[r]-()
 DELETE r
 DELETE prop
 '''
-# Create relationships from classes to datatype nodes via owl:onDataRange restrictions and tag them with inferred_by='owl__onDataRange'
 range_onProperty_datarange = '''
-MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[d:owl__onDataRange]-(dtype) 
-with n,res,dtype,d 
-MATCH (res)-[:owl__onProperty]->(prop) 
-with n,res,dtype,prop,d 
-CALL apoc.create.relationship(n, last(split(properties(prop).uri,"/")), properties(prop), dtype)
+// Materialize owl:onDataRange restriction into a direct relationship:
+// - From class n to dtype node via the property used in the restriction
+// - Relationship type derived from prop.uri local-name (supports both '/' and '#')
+// - Tag inferred relationship with inferred_by='owl__onDataRange'
+// - Remove owl__onDataRange edge (d) after materialization
+MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[d:owl__onDataRange]-(dtype)
+MATCH (res)-[:owl__onProperty]->(prop)
+WITH n, dtype, d, prop,
+     last(split(last(split(properties(prop).uri, "#")), "/")) AS relType
+CALL apoc.create.relationship(n, relType, properties(prop), dtype)
 YIELD rel
-SET rel.property_type=prop.rdfs__label, rel.inferred_by='owl__onDataRange'
+SET rel.property_type = prop.rdfs__label, rel.inferred_by='owl__onDataRange'
 DELETE d
 '''
-# Create relationships from restriction source classes to range classes via owl:onProperty + rdfs:range (object properties, including subPropertyOf chains)
 range_onProperty_object = '''
-//CREATE REL range-onProperty Restriction 
-match (n:owl__Class)<-[d:rdfs__range]-(:owl__ObjectProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__ObjectProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
-WITH n,op,res,d
-MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+// Materialize ObjectProperty range semantics via Restriction + subPropertyOf chain:
+// - Find class n that is the rdfs:range of some ObjectProperty (or its super-properties)
+// - Find restriction res that uses op (or sub-property) via owl:onProperty
+// - Find source class des such that des rdfs:subClassOf res
+// - Create des -[:<relType>]-> n where relType comes from op.uri (supports both '/' and '#')
+// - Delete rdfs:range edge (d) after materialization
+MATCH (n:owl__Class)<-[d:rdfs__range]-(:owl__ObjectProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__ObjectProperty)<-[:owl__onProperty]-(res:owl__Restriction)
+WITH n, op, res, d,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+MATCH (res)<-[:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
-CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
+CALL apoc.create.relationship(des, relType, properties(op), n)
 YIELD rel
 SET rel.property_type='owl__ObjectProperty', rel.inferred_by='range'
 DELETE d
 '''
-# Create relationships from restriction source classes to range nodes via owl:onProperty + rdfs:range (datatype properties, including subPropertyOf chains)
 range_onProperty_datatype = '''
-//CREATE REL range-onProperty Restriction 
-match (n)<-[d:rdfs__range]-(:owl__DatatypeProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__DatatypeProperty)<-[onp:owl__onProperty]-(res:owl__Restriction) 
-WITH n,op,res,d
-MATCH (res)<-[sub:rdfs__subClassOf]->(des:owl__Class)
+// Materialize DatatypeProperty range semantics via Restriction + subPropertyOf chain:
+// - Find node n that is the rdfs:range of some DatatypeProperty (or its super-properties)
+// - Find restriction res that uses op (or sub-property) via owl:onProperty
+// - Find source class des such that des rdfs:subClassOf res
+// - Create des -[:<relType>]-> n where relType comes from op.uri (supports both '/' and '#')
+// - Delete rdfs:range edge (d) after materialization
+MATCH (n)<-[d:rdfs__range]-(:owl__DatatypeProperty)<-[:rdfs__subPropertyOf*0..]-(op:owl__DatatypeProperty)<-[:owl__onProperty]-(res:owl__Restriction)
+WITH n, op, res, d,
+     last(split(last(split(properties(op).uri, "#")), "/")) AS relType
+MATCH (res)<-[:rdfs__subClassOf]->(des:owl__Class)
 WHERE n <> des
-CALL apoc.create.relationship(des, last(split(properties(op).uri,"/")), properties(op), n)
+CALL apoc.create.relationship(des, relType, properties(op), n)
 YIELD rel
 SET rel.property_type='owl__DatatypeProperty', rel.inferred_by='range'
 DELETE d
 '''
-# Collapse owl:unionOf lists of rdfs:Datatype into a unionOf array property on the equivalent datatype node
+
+
+
 union_of_datatype = '''
+// Collapse owl:unionOf RDF list into an ordered array property on the equivalent datatype node
 MATCH (dt:rdfs__Datatype)-[ui:owl__unionOf]->(rs)
-MATCH path=(rs)-[:rdf__first|rdf__rest*1..]->(xsdtp:rdfs__Datatype)
-WITH xsdtp, dt, rs,ui
 MATCH (ddt:rdfs__Datatype)-[eq:owl__equivalentClass]->(dt)
-with ddt, collect(xsdtp.rdfs__label) AS xsdtp_collection,eq,ui
-set ddt.owl__unionOf = xsdtp_collection
-DELETE eq,ui
+WITH ddt, eq, ui, rs
+// Enumerate RDF list cells in order via rdf__rest chain
+MATCH p=(rs)-[:rdf__rest*0..]->(cell)
+MATCH (cell)-[:rdf__first]->(xsdtp:rdfs__Datatype)
+WITH ddt, eq, ui, length(p) AS idx, xsdtp
+ORDER BY idx
+WITH ddt, eq, ui, collect(xsdtp.rdfs__label) AS xsdtp_collection
+SET ddt.owl__unionOf = xsdtp_collection
+DELETE eq, ui
 '''
-# Prototype: create relationships for owl:unionOf class expressions from subject class to each member class (first element)
+
 union_of_class = '''
-MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[f:rdf__first]->(obj) 
-with sub,obj,r,f
-CALL apoc.create.relationship(sub, type(r), {}, obj) yield rel 
-set rel.owl__objectProperty='rdf__unionOf'
-DELETE f
+// Materialize owl:unionOf class expressions as direct relationships:
+// - sub: subject class
+// - mid1: intermediate class-expression node connected from sub via [r]
+// - mid1 -[:owl__unionOf]-> rs (RDF list head)
+// - list items are member classes
+// - create sub -[:type(r)]-> member for each member
+// - tag inferred relationship, then remove union scaffolding (relationships + intermediate node)
+MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[u:owl__unionOf]->(rs)
+WITH sub, r, mid1, u, rs, type(r) AS relType
+
+// Traverse full RDF list (includes first element via *0..)
+MATCH (rs)-[:rdf__rest*0..]->(cell)
+MATCH (cell)-[:rdf__first]->(obj:owl__Class)
+WITH sub, relType, mid1, u, r, collect(DISTINCT obj) AS members
+
+// Create relationships to each union member
+UNWIND members AS obj
+CALL apoc.create.relationship(sub, relType, {}, obj) YIELD rel
+SET rel.owl__objectProperty = 'rdf__unionOf'
+
+WITH mid1, u, r
+// Clean up union scaffolding edges and the intermediate node
+DELETE u, r
+WITH mid1
+// Only delete mid1 after its edges are removed
+DETACH DELETE mid1
 '''
-# Create relationships for owl:unionOf class expressions from subject class to each member class and clean up intermediate union structure
-union_of_class_1 = '''
-// CREATE REL unionOf
-MATCH (sub:owl__Class)-[r]->(mid1:owl__Class)-[midr:owl__unionOf]->(mid)-[:rdf__rest]-()-[f:rdf__first]->(obj)
-WITH sub, obj,  midr,mid1,r,type(r) AS relType,f
-CALL apoc.create.relationship(sub, relType, {}, obj) yield rel 
-set rel.owl__objectProperty='rdf__unionOf'
-DELETE f,midr,r
-DELETE mid1
-'''
-# Create 'oneOf' relationships from a class to each enumeration instance inferred from owl:oneOf + owl:equivalentClass
+
 oneOf = '''
-//Create REL oneOf
-MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(subject)-[`:rdf__first|:rdf__rest`*1..5]->(object)
-WITH cls,o1f,object,eq,mc
-MATCH ()-[:rdf__first]->(object)
-WITH cls,o1f,object,eq,mc
-CALL apoc.create.relationship(cls, 'oneOf', null,object)
-YIELD rel
-SET rel.inferred_by='oneOf'
-DELETE o1f
+// Create 'oneOf' relationships from a class to each enumeration member inferred from owl:oneOf + owl:equivalentClass
+MATCH (cls:owl__Class)-[eq:owl__equivalentClass]->(mc:owl__Class)-[o1f:owl__oneOf]->(rs)
+
+// Traverse RDF list: rs --(rdf__rest*)--> cell, cell --(rdf__first)--> member
+MATCH (rs)-[:rdf__rest*0..]->(cell)
+MATCH (cell)-[:rdf__first]->(member)
+
+WITH cls, eq, o1f, collect(DISTINCT member) AS members
+UNWIND members AS member
+CALL apoc.create.relationship(cls, 'oneOf', {}, member) YIELD rel
+SET rel.inferred_by = 'oneOf'
+
+WITH eq, o1f
+DELETE o1f, eq
 '''
+
 # Remove duplicate relationships between the same pair of nodes by keeping only the first one (using uri as grouping key)
 del_dup_rels = '''
 MATCH (a)-[r]->(b)
@@ -311,23 +368,28 @@ FOREACH (dup in dupclass[1..] | DETACH DELETE dup)
 xsd_datatypes = '''
 MATCH (n:Resource)
 WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
-WITH n, 'xsd__' + substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS extractedString
-CALL apoc.create.addLabels(n, [extractedString, 'rdfs__Datatype']) YIELD node
-SET node.rdfs__label = extractedString
-REMOVE node:Resource
+WITH n, substring(n.uri, size('http://www.w3.org/2001/XMLSchema#')) AS localName
+SET n:rdfs__Datatype
+SET n.rdfs__label = 'xsd__' + localName
+SET n.xsd_local_name = localName
+REMOVE n:Resource
 '''
+
 # Remove redundant :Resource label from core OWL schema elements (Class, ObjectProperty, DatatypeProperty, etc.)
 rm_redounded_label='''
 match (n:owl__Class|owl__ObjectProperty|owl__DatatypeProperty|owl__AnnotationProperty|owl__FunctionalProperty|owl__TransitiveProperty)
 remove n:Resource
 '''
-# Create owl:sameAs-style relationships between duplicate owl:Class nodes sharing the same rdfs__label, linking dup to base
-crt_sameAs_rel= """
-MATCH (a:owl__Class) 
-WITH a.rdfs__label AS clsuri, COLLECT(a) AS dupclass 
-WHERE SIZE(dupclass) > 1 
+crt_sameAs_rel = """
+MATCH (a:owl__Class)
+WHERE a.rdfs__label IS NOT NULL AND trim(a.rdfs__label) <> ''
+WITH a.rdfs__label AS cls_label, a
+ORDER BY cls_label, a.uri
+WITH cls_label, collect(a) AS dupclass
+WHERE size(dupclass) > 1
+WITH dupclass[0] AS base, dupclass
 UNWIND dupclass AS dup
-WITH dupclass[0] AS base, dup 
+WITH base, dup
 WHERE dup <> base
-MERGE (dup)-[:sameAs]->(base);
+MERGE (dup)-[:sameAs]->(base)
 """
