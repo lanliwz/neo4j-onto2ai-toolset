@@ -36,7 +36,7 @@ class SemanticGraphDB:
             q_preview = q_preview[:200] + "..."
 
         mylogger.info(
-            f"Cypher execution started - {query}",
+            f"{stmt_name} execution started - {query}",
             extra={
                 "op": stmt_name,
                 "database": getattr(self, "_database_name", None),
@@ -51,7 +51,7 @@ class SemanticGraphDB:
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
             mylogger.exception(
-                "Cypher execution failed",
+                f"{stmt_name} execution failed",
                 extra={
                     "op": stmt_name,
                     "database": getattr(self, "_database_name", None),
@@ -63,7 +63,7 @@ class SemanticGraphDB:
         else:
             elapsed_ms = int((time.time() - start) * 1000)
             mylogger.info(
-                "Cypher execution finished",
+                f"{stmt_name} execution finished",
                 extra={
                     "op": stmt_name,
                     "database": getattr(self, "_database_name", None),
@@ -142,9 +142,6 @@ class SemanticGraphDB:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
-def clean_up_neo4j_db(db: SemanticGraphDB):
-    db.execute_cypher(del_all_relationship, name="del_all_relationship")
-    db.execute_cypher(del_all_node, name="del_all_node")
 
 def get_schema(start_node:str,db : SemanticGraphDB):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
