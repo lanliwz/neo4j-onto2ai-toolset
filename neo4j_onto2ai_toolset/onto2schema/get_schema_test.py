@@ -1,10 +1,11 @@
-from neo4j_utility import SemanticGraphDB, get_schema, get_full_schema
+from neo4j_utility import get_full_schema
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
-
-db = SemanticGraphDB(neo4j_bolt_url,username,password,neo4j_db_name)
+neo4j_model = get_neo4j_model_config()
+db = SemanticGraphDB(neo4j_model.url,
+                     neo4j_model.username,
+                     neo4j_model.password,
+                     neo4j_model.database)
 
 
 start_node ='graph object'
-    # 'person'
-# print(get_node4schema(start_node,db))
-print(get_full_schema(db))
+get_full_schema(db)
