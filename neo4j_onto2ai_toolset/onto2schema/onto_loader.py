@@ -1,5 +1,6 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
 from rdflib import Graph
+import logging
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 from neo4j_onto2ai_toolset.onto2schema.onto_db_initializer import reset_neo4j_db
 from neo4j_onto2ai_toolset.onto2schema.onto_materializer import materialize_onto_db
@@ -11,7 +12,7 @@ from neo4j_onto2ai_toolset.onto2schema.prefixes import PREFIXES_CANON as prefixe
 from rdflib.plugins.sparql import prepareQuery
 
 # Use the application logger so messages follow the same handlers/formatters as the rest of the tool.
-ontologger = logging.getLogger("onto2ai-toolset")
+logger = logging.getLogger("onto2ai-toolset")
 
 # Define your custom mappings & store config
 config = Neo4jStoreConfig(auth_data=auth_data,
@@ -29,7 +30,14 @@ def load_ontology_with_imports(graph: Graph, uri, format=None):
         return
 
     logger.info("Loading ontology", extra={"op": "load_ontology", "uri": uri_str})
-    logger.debug("Ontology queued/loaded", extra={"op": "load_ontology", "uri": uri_str, "already_loaded_size": len(imported_onto_set)})
+    logger.debug(
+        "Ontology load state",
+        extra={
+            "op": "load_ontology",
+            "uri": uri_str,
+            "already_loaded_size": len(imported_onto_set),
+        },
+    )
     imported_onto_set.add(uri_str)
 
     rdfdata = get_rdf_data(uri_str)
@@ -60,10 +68,10 @@ def load_ontology_with_imports(graph: Graph, uri, format=None):
 
     # recurse imports (normalize to str)
     for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
-         load_ontology_with_imports(graph, str(imported_uri), format=format)
+        load_ontology_with_imports(graph, str(imported_uri), format=format)
 
 
-def load_neo4j_db(onto_uri,format,imports:set()):
+def load_neo4j_db(onto_uri: str, format: str, imports: set[str]) -> None:
     # In-memory RDF graph for reasoning & SPARQL
     rdf_reasoning_graph = Graph()
     load_ontology_with_imports(rdf_reasoning_graph, onto_uri, format)
@@ -76,7 +84,7 @@ def load_neo4j_db(onto_uri,format,imports:set()):
 def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
     # Prepare the query
     query = prepareQuery(sparQl, initNs=dict(in_mem_graph.namespaces()))
-    logger.info(f"RDF query is {query4dataprop}")
+    logger.info("RDF query prepared", extra={"op": "sparql_prepare", "query": sparQl})
 
     # Execute the query and retrieve results
     results = in_mem_graph.query(query)
@@ -98,14 +106,16 @@ def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
         )
 
 
-onto_uri = 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/'
-format = "application/rdf+xml"
 
+if __name__ == "__main__":
+    onto_uri = (
+        "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/"
+        "NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/"
+    )
+    rdf_format = "application/rdf+xml"
 
-reset_neo4j_db()
-
-load_neo4j_db(onto_uri=onto_uri,format=format,imports=imported_onto_set)
-# load_neo4j_db_ext(sparQl=query4dataprop,in_mem_graph=rdf_reasoning_graph,neo4j_graph=neo4j_rdf_graph)
-
-materialize_onto_db()
+    reset_neo4j_db()
+    load_neo4j_db(onto_uri=onto_uri, format=rdf_format, imports=imported_onto_set)
+    # load_neo4j_db_ext(sparQl=query4dataprop, in_mem_graph=rdf_reasoning_graph, neo4j_graph=neo4j_rdf_graph)
+    materialize_onto_db()
 
