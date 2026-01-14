@@ -29,15 +29,8 @@ def load_ontology_with_imports(graph: Graph, uri, format=None):
     if uri_str in imported_onto_set:
         return
 
-    logger.info("Loading ontology", extra={"op": "load_ontology", "uri": uri_str})
-    logger.debug(
-        "Ontology load state",
-        extra={
-            "op": "load_ontology",
-            "uri": uri_str,
-            "already_loaded_size": len(imported_onto_set),
-        },
-    )
+    logger.info(f"Load ontology {uri_str}")
+
     imported_onto_set.add(uri_str)
 
     rdfdata = get_rdf_data(uri_str)
