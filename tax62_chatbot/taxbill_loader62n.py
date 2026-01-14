@@ -1,10 +1,10 @@
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from ai_tools.pdf2graph import generate_cypher4taxbill
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
 from langchain_openai import ChatOpenAI
 
 neo4j_db_name = 'tax62n'
-taxdb = SemanticGraphDB(neo4j_bolt_url ,username,password,neo4j_db_name)
+taxdb = Neo4jDatabase(neo4j_bolt_url, username, password, neo4j_db_name)
 llm = ChatOpenAI(model="gpt-4o",temperature=0)
 
 def load_all_taxfile(folder_path):

@@ -11,7 +11,7 @@ def question2llm(question:str, schema:str, example_question = "", example_answer
                                        "example_answer":example_answer,
                                        "question":question})
 
-def gen_pydantic_class(start_node:str,db: SemanticGraphDB):
+def gen_pydantic_class(start_node:str, db: Neo4jDatabase):
     schema = get_schema(start_node=start_node,db=db)
     final_template = PromptTemplate.from_template(gen_pydantic_class_template)
     return final_template.invoke(schema)

@@ -1,9 +1,9 @@
 from neo4j_onto2ai_toolset.onto2ai_tool_config import get_neo4j_model_config
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
 
 
-def materialize_semantic_model_db():
+def materialize_onto_db():
     """
     Materialize an operational Neo4j property-graph model from OWL/RDF structures
     loaded into Neo4j (restrictions, domain/range, dataranges, unionOf/oneOf, XSD datatypes, etc.).
@@ -12,7 +12,7 @@ def materialize_semantic_model_db():
 
     # Operational Neo4j property graph
     # Operational Neo4j property graph before loading new ontology
-    db = SemanticGraphDB(
+    db = Neo4jDatabase(
         neo4j_model_db_config.url,
         neo4j_model_db_config.username,
         neo4j_model_db_config.password,

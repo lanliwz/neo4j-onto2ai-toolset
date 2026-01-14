@@ -2,7 +2,7 @@ import json
 from langgraph.runtime import get_runtime
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from langchain_core.tools import tool
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema as get_model_from_db, \
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase, get_schema as get_model_from_db, \
     get_full_schema
 from dataclasses import dataclass
 

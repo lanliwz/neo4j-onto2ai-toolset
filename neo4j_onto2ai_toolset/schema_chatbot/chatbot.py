@@ -6,7 +6,7 @@ import operator
 from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     neo4j_bolt_url, username, password, neo4j_db_name, llm, graphdb
 )
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
 from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
     OverallState, InputState, OutputState,
     more_question, generate_cypher, generate_pydantic_class,
@@ -15,7 +15,7 @@ from neo4j_onto2ai_toolset.schema_chatbot.onto2schema_langraph_model import (
 )
 
 # 1. Initialize DB Connection
-db = SemanticGraphDB(neo4j_bolt_url, username, password, neo4j_db_name)
+db = Neo4jDatabase(neo4j_bolt_url, username, password, neo4j_db_name)
 
 # 2. Modern Graph Definition
 # We pass Input and Output schemas to ensure clear contract validation

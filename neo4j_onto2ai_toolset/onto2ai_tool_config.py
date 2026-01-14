@@ -4,7 +4,7 @@ from typing import Optional
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI
 from neo4j_onto2ai_toolset.onto2ai_logger_config import *
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
 
 GPT_MODEL_NAME = os.getenv("GPT_MODEL_NAME")
 GPT_REASONING_EFFORT = os.getenv("GPT_REASONING_EFFORT")
@@ -56,7 +56,7 @@ auth_data = {
     "pwd": neo4j_model.password,
     }
 
-semanticdb = SemanticGraphDB(neo4j_model.url, neo4j_model.username, neo4j_model.password, neo4j_model.database)
+semanticdb = Neo4jDatabase(neo4j_model.url, neo4j_model.username, neo4j_model.password, neo4j_model.database)
 
 # LLM Model Config
 llm = ChatOpenAI(model=GPT_MODEL_NAME)

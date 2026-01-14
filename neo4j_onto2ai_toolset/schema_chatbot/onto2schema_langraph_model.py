@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import SemanticGraphDB, get_schema
+from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase, get_schema
 from neo4j_onto2ai_toolset.langgraph_prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
@@ -125,7 +125,7 @@ def more_question(state: OverallState) -> OutputState:
         "steps": ["more_question"],
     }
 
-def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
+def review_schema(state: OverallState, db: Neo4jDatabase) -> OverallState:
     mylogger.debug("review schema - " + state.get("start_node"))
     original_schema_prompt = get_schema(start_node=state.get("start_node"), db=db)
     mylogger.info(original_schema_prompt)
@@ -134,7 +134,7 @@ def review_schema(state: OverallState, db: SemanticGraphDB) -> OverallState:
         "steps": ["get_schema"]
     }
 
-def generate_relational_db_ddl(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
+def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
     original_schema = get_schema(start_node=state.get("start_node"), db=db)
     text2prompt = ChatPromptTemplate.from_messages(
         [
@@ -163,7 +163,7 @@ def generate_relational_db_ddl(state: OverallState, db: SemanticGraphDB, llm: Ch
     mylogger.info(generated_ddl)
     return {"cypher_statement": generated_ddl, "steps": ["generate_relational_db_ddl"]}
 
-def generate_pydantic_class(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
+def generate_pydantic_class(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
     original_schema_prompt = gen_pydantic_class(start_node=state.get("start_node"), db=db)
     text2prompt = ChatPromptTemplate.from_messages(
         [
@@ -244,7 +244,7 @@ def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
 
     return {"cypher_statement": generated_cypher, "steps": ["create_schema"]}
 
-def generate_cypher(state: OverallState, db: SemanticGraphDB, llm: ChatOpenAI) -> OverallState:
+def generate_cypher(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
     """
     Generates a cypher statement based on the provided schema and user input
     """

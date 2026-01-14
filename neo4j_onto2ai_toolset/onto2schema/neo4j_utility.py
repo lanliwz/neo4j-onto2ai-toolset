@@ -2,12 +2,12 @@ from neo4j import GraphDatabase
 import time
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
-from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
+from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as ontoToollogger
 import logging
-mylogger = logging.getLogger("onto2ai-toolset")
+ontoToollogger = logging.getLogger("onto2ai-toolset")
 # The SematicGraphDB class is used to interact with a Neo4j database.
 # It provides methods to create nodes, relationships, and execute arbitrary Cypher queries.
-class SemanticGraphDB:
+class Neo4jDatabase:
     # Initialize the FinGraphDB with the connection details to the Neo4j database.
     def __init__(self, uri, user, password, database_name):
         self._driver = GraphDatabase.driver(uri, auth=(user, password), database=database_name)
@@ -35,7 +35,7 @@ class SemanticGraphDB:
         if len(q_preview) > 200:
             q_preview = q_preview[:200] + "..."
 
-        mylogger.info(
+        ontoToollogger.info(
             f"{stmt_name} execution started - {query}",
             extra={
                 "op": stmt_name,
@@ -50,7 +50,7 @@ class SemanticGraphDB:
                 session.execute_write(self._execute_cypher, query)
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
-            mylogger.exception(
+            ontoToollogger.exception(
                 f"{stmt_name} execution failed",
                 extra={
                     "op": stmt_name,
@@ -62,7 +62,7 @@ class SemanticGraphDB:
             raise
         else:
             elapsed_ms = int((time.time() - start) * 1000)
-            mylogger.info(
+            ontoToollogger.info(
                 f"{stmt_name} execution finished",
                 extra={
                     "op": stmt_name,
@@ -76,9 +76,9 @@ class SemanticGraphDB:
     def get_node2node_relationship(self,label=None):
         with self._driver.session() as session:
             query = query_cls2cls_relationship(label)
-            mylogger.debug(query)
+            ontoToollogger.debug(query)
             result = session.execute_read(self._get_dataset,query)
-            mylogger.debug(result)
+            ontoToollogger.debug(result)
             return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
 
     def get_node_dataproperty(self, label=None):
@@ -89,9 +89,9 @@ class SemanticGraphDB:
 
     def get_nodes(self, label=None):
         with self._driver.session() as session:
-            mylogger.debug(query_start_nodes(label))
+            ontoToollogger.debug(query_start_nodes(label))
             result = session.execute_read(self._get_dataset,query_start_nodes(label))
-            mylogger.debug(result)
+            ontoToollogger.debug(result)
             return [f"(:{record['start_node']}) nodes have annotation properties {record['annotation_properties']}"
                     for record in result
                     if record['start_node'] is not None]
@@ -143,7 +143,7 @@ class SemanticGraphDB:
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
 
-def get_schema(start_node:str,db : SemanticGraphDB):
+def get_schema(start_node:str, db : Neo4jDatabase):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
               + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
               + "\n".join(db.get_end_nodes(start_node)) + '\n'
@@ -151,10 +151,10 @@ def get_schema(start_node:str,db : SemanticGraphDB):
               + "\n".join(db.get_relationships(start_node)) + '\n'
               )
 
-    mylogger.debug(schema)
+    ontoToollogger.debug(schema)
     return schema
 
-def get_full_schema(db : SemanticGraphDB):
+def get_full_schema(db : Neo4jDatabase):
     nodes = "\n".join(db.get_nodes())
     relationships = "\n".join(db.get_relationships())
     node2node_rels = "\n".join(db.get_node2node_relationship())
@@ -166,10 +166,10 @@ def get_full_schema(db : SemanticGraphDB):
         f"Node Properties: \n{node_dataprops} \n"
 
     )
-    mylogger.debug(schema)
+    ontoToollogger.debug(schema)
     return schema
 
-def get_node4schema(start_node:str,db : SemanticGraphDB):
+def get_node4schema(start_node:str, db : Neo4jDatabase):
     schema = (
               "\n".join(db.get_nodes(start_node)) + '\n'
               )
