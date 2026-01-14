@@ -1,10 +1,6 @@
 # pip install /Users/weizhang/github/rdflib-neo4j/dist/rdflib-neo4j-1.0.tar.gz
-import urllib
-import logging
-
 from rdflib import Graph
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
-
 from neo4j_onto2ai_toolset.onto2schema.onto_db_initializer import reset_neo4j_db
 from neo4j_onto2ai_toolset.onto2schema.onto_materializer import materialize_onto_db
 from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
@@ -67,10 +63,15 @@ def load_ontology_with_imports(graph: Graph, uri, format=None):
          load_ontology_with_imports(graph, str(imported_uri), format=format)
 
 
-def load_neo4j_db(graph, imports:set()):
+def load_neo4j_db(onto_uri,format,imports:set()):
+    # In-memory RDF graph for reasoning & SPARQL
+    rdf_reasoning_graph = Graph()
+    load_ontology_with_imports(rdf_reasoning_graph, onto_uri, format)
+    neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
     for url in imports:
         data = get_rdf_data(url)
-        graph.parse(data=data, format=format)
+        neo4j_rdf_graph.parse(data=data, format=format)
+    neo4j_rdf_graph.close(True)
 
 def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
     # Prepare the query
@@ -95,36 +96,16 @@ def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
                 "datatype": str(type_class),
             },
         )
-# file_path = 'http://www.w3.org/2004/02/skos/core/skos/'
-# format="ttl"
-# file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/FunctionalEntities.rdf'
-# file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/ClientsAndAccounts.rdf'
-# file_path = '/Users/weizhang/Downloads/ontology-fibo-rdf/CodesAndCodeSets.rdf'
-# file_path = 'https://www.omg.org/spec/Commons/Designators/'
-# file_path =  'https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/FunctionalEntities/'
-# file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/'
-# file_path = 'https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/LEIEntities/ISO20275-CodeSet'
-# file_path = 'https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/'
-# file_path = 'https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/MetadataBELegalEntities/LegalEntitiesModule'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/NorthAmericanEntities/USExampleEntities/'
-# file_path ='https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/'
-file_path ='https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/'
+
+
+onto_uri = 'https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/'
 format = "application/rdf+xml"
 
-# In-memory RDF graph for reasoning & SPARQL
-rdf_reasoning_graph = Graph()
-load_ontology_with_imports(rdf_reasoning_graph, file_path, format)
 
 reset_neo4j_db()
-# Neo4j-backed RDF staging graph
-neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
 
-load_neo4j_db(graph=neo4j_rdf_graph, imports=imported_onto_set)
+load_neo4j_db(onto_uri=onto_uri,format=format,imports=imported_onto_set)
 # load_neo4j_db_ext(sparQl=query4dataprop,in_mem_graph=rdf_reasoning_graph,neo4j_graph=neo4j_rdf_graph)
-neo4j_rdf_graph.close(True)
+
 materialize_onto_db()
 
