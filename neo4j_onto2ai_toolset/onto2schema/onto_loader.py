@@ -101,9 +101,9 @@ def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
 
 
 if __name__ == "__main__":
+    # https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/
     onto_uri = (
-        "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/"
-        "NorthAmericanJurisdiction/CAGovernmentEntitiesAndJurisdictions/"
+        "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/"
     )
     rdf_format = "application/rdf+xml"
 
