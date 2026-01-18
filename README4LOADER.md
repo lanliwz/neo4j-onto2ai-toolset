@@ -9,46 +9,58 @@ The loader ingests OWL/RDF ontologies (including all `owl:imports`) into Neo4j u
 
 ## High-level workflow
 
-```
-OWL / RDF URLs
-      ↓
-Recursive RDFLib loading (owl:imports)
-      ↓
-RDF triples streamed into Neo4j (rdflib-neo4j store)
-      ↓
-SPARQL inference for datatype properties
-      ↓
-RDF store close (flush batched writes)
-      ↓
-rdf_to_neo4j_graph(db)
-      ↓
-Neo4j Onto2Schema model
+```mermaid
+graph TD
+    A[OWL / RDF URLs] --> B[Recursive Loading rdflib]
+    B --> C[RDF Triples in Neo4j]
+    C --> D[SPARQL Datatype Inference]
+    D --> E[rdf_to_neo4j_graph Mapper]
+    E --> F[Neo4j Onto2Schema Concept Model]
+    F --> G[Property Materializer Phase 2]
+    G --> H[Simplified Property Graph Schema]
+    H --> I[MCP Server Tool Suite Phase 3]
 ```
 
 ---
 
-## What the loader does
+## Loading Phase
 
-1. Recursively loads an ontology and all its imports  
-   - Uses RDFLib to parse RDF documents  
-   - Follows `owl:imports` transitively  
-   - Prevents infinite loops via an `already_loaded` URI set  
+1. **Recursive Load**: Follows `owl:imports` to pull all dependencies.
+2. **Stream into Neo4j**: Uses `rdflib-neo4j` for persistency.
+3. **Inference**: Infers ranges for datatype properties that lack them.
+4. **Graph Mapping**: Converts RDF class/restriction nodes into a navigable Neo4j model.
 
-2. Streams RDF data into Neo4j  
-   - Uses `rdflib-neo4j` as the RDF store backend  
-   - Supports batched writes for performance  
+---
 
-3. Infers datatype property ranges  
-   - Runs a SPARQL query (`query4dataprop`) over the in-memory RDF graph  
-   - Adds inferred `(Class, DatatypeProperty, xsd:Type)` triples to Neo4j  
+## Materialization Phase (Post-Load)
 
-4. Converts RDF graph to Onto2Schema Neo4j model  
-   - Materializes OWL classes, properties, and restrictions  
-   - Normalizes URIs, labels, and annotations  
-   - Prepares the graph for downstream reasoning and schema generation  
+Once the ontology is loaded, use the `property_materializer.py` to simplify complex OWL restrictions into direct relationships:
 
-5. Optionally cleans the Neo4j database before loading  
-   - Uses `clean_up_neo4j_graph(db)` (destructive)
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+python3 neo4j_onto2ai_toolset/onto2schema/property_materializer.py
+```
+
+**What it does:**
+- Flattens `owl:Restriction` chains into direct relationships.
+- Resolves cardinality (e.g., `1`, `0..*`) from OWL constraints.
+- Handles `FunctionalProperty` constraints.
+- Cleans up duplicate relationships by URI.
+
+---
+
+## Schema Interfacing Phase (MCP Server)
+
+The final layer provides AI-ready schema management tools via the MCP server:
+
+```bash
+python3 neo4j_onto2ai_toolset/mcp_server.py
+```
+
+### Key Capabilities:
+- **`get_materialized_schema`**: Access direct and inherited properties for any class.
+- **`extract_data_model`**: Get structured JSON representation of nodes and relationships.
+- **`generate_schema_code`**: Produce SQL DDL, Pydantic classes, or Neo4j constraints.
 
 ---
 
