@@ -1,49 +1,16 @@
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
+from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 
-def materialize_properties_as_relationships(db: Neo4jDatabase):
+def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
     """
-    Materializes OWL ObjectProperties as native Neo4j relationships.
-    This creates relationship types between Classes and Instances based on:
-    1. Direct rdfs:domain and rdfs:range definitions.
-    2. OWL Restrictions (someValuesFrom, allValuesFrom).
-    
-    It resolves relationship types from the URI local name and handles blank nodes.
+    Generic function to materialize OWL properties (Object or Datatype) as native Neo4j relationships.
+    property_meta_type: 'owl__ObjectProperty' or 'owl__DatatypeProperty'
     """
+    is_object_prop = (property_meta_type == 'owl__ObjectProperty')
+    prop_label = "ObjectProperty" if is_object_prop else "DatatypeProperty"
     
-    # 1. Materialize relationships from rdfs:domain and rdfs:range
-    # This connects Classes directly.
-    domain_range_query = """
-    MATCH (n:owl__Class)<-[d:rdfs__domain]-(op:owl__ObjectProperty)-[r:rdfs__range]->(c:Resource)
-    WITH n, op, c, d, r,
-         // Extract local name from URI (handling # or /)
-         last(split(last(split(op.uri, '#')), '/')) AS relType
-    WITH n, relType, op, c, d, r
-    CALL apoc.merge.relationship(n, relType, properties(op), {inferred: true, cardinality: '0..*', requirement: 'Optional'}, c, {})
-    YIELD rel
-    SET rel.property_type = 'owl__ObjectProperty', rel.inferred_by = 'domain-range'
-    DELETE d, r
-    """
-
-    # 2. Materialize relationships from OWL Restrictions
-    # This captures logic like "Payment involves PaymentAmount"
-    restriction_query = """
-    MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:owl__ObjectProperty)
-    OPTIONAL MATCH (res)-[:owl__someValuesFrom|owl__allValuesFrom|owl__onClass]->(des:Resource)
-    OPTIONAL MATCH (res)-[r_some:owl__someValuesFrom]->()
-
-    WITH n, onp, des, res, r_some IS NOT NULL AS hasSome,
-         last(split(last(split(onp.uri, '#')), '/')) AS relType
-    
-    // Resolve Target: if des is missing or a blank node, use a generic Resource/Class placeholder
-    WITH n, relType, onp, res, hasSome,
-         coalesce(des, 
-                  head([target IN [(onp)-[:rdfs__range]->(t) | t] | target])
-         ) AS targetNode
-         
-    WHERE targetNode IS NOT NULL OR des IS NOT NULL
-    
-    // Calculate Cardinality and Requirement
-    WITH n, relType, onp, res, targetNode,
+    # Common Cardinality and Requirement calculation block
+    CARDINALITY_LOGIC = """
          CASE 
            WHEN res.owl__cardinality IS NOT NULL THEN toString(res.owl__cardinality)
            WHEN res.owl__qualifiedCardinality IS NOT NULL THEN toString(res.owl__qualifiedCardinality)
@@ -63,26 +30,74 @@ def materialize_properties_as_relationships(db: Neo4jDatabase):
            WHEN cardinality = "0" THEN "Optional"
            ELSE "Mandatory" 
          END AS requirement
+    """
 
-    CALL (n, relType, onp, targetNode, cardinality, requirement) {
-        CALL apoc.merge.relationship(n, relType, properties(onp), {inferred: true, cardinality: cardinality, requirement: requirement}, targetNode, {})
-        YIELD rel
-        SET rel.property_type = 'owl__ObjectProperty', rel.inferred_by = 'restriction'
-        RETURN rel
-    }
+    # 1. Materialize relationships from rdfs:domain and rdfs:range
+    domain_range_query = f"""
+    MATCH (n:owl__Class)<-[d:rdfs__domain]-(op:{property_meta_type})-[r:rdfs__range]->(c:Resource)
+    WITH n, op, c, d, r,
+         last(split(last(split(op.uri, '#')), '/')) AS relType
+    WITH n, relType, op, c, d, r
+    CALL apoc.merge.relationship(n, relType, properties(op), {{inferred: true, cardinality: '0..*', requirement: 'Optional', materialized: true}}, c, {{}})
+    YIELD rel
+    SET rel.property_type = '{property_meta_type}', rel.inferred_by = 'domain-range'
+    DELETE d, r
+    """
+
+    # 2. Materialize relationships from OWL Restrictions
+    # Handles both object property fillers and datatype ranges
+    restriction_query = f"""
+    MATCH (n:owl__Class)-[:rdfs__subClassOf]->(res:owl__Restriction)-[:owl__onProperty]->(onp:{property_meta_type})
+    OPTIONAL MATCH (res)-[:owl__someValuesFrom|owl__allValuesFrom|owl__onClass|owl__onDataRange]->(des:Resource)
+    OPTIONAL MATCH (res)-[r_some:owl__someValuesFrom]->()
+
+    WITH n, onp, des, res, r_some IS NOT NULL AS hasSome,
+         last(split(last(split(onp.uri, '#')), '/')) AS relType
     
-    // Cleanup and metadata tagging
-    WITH n, onp, targetNode, res, relType
+    WITH n, relType, onp, res, hasSome,
+         coalesce(des, head([target IN [(onp)-[:rdfs__range]->(t) | t] | target])) AS targetNode
+         
+    WHERE targetNode IS NOT NULL OR des IS NOT NULL
+    
+    WITH n, relType, onp, res, targetNode, hasSome,
+    {CARDINALITY_LOGIC}
+
+    CALL (n, relType, onp, targetNode, cardinality, requirement) {{
+        CALL apoc.merge.relationship(n, relType, properties(onp), {{inferred: true, cardinality: cardinality, requirement: requirement, materialized: true}}, targetNode, {{}})
+        YIELD rel
+        SET rel.property_type = '{property_meta_type}', rel.inferred_by = 'restriction'
+        RETURN rel
+    }}
+    
+    WITH res
     SET res.materialized = true
     RETURN count(*)
     """
 
-    db.execute_cypher(domain_range_query, name="materialize_domain_range")
-    db.execute_cypher(restriction_query, name="materialize_restrictions")
+    db.execute_cypher(domain_range_query, name=f"materialize_{prop_label}_domain_range")
+    db.execute_cypher(restriction_query, name=f"materialize_{prop_label}_restrictions")
 
-
+def cleanup_duplicate_relationships(db: Neo4jDatabase):
+    """
+    Remove duplicate relationships between nodes where the URI and type are identical,
+    focusing only on materialized relationships.
+    """
+    cleanup_query = """
+    MATCH (a)-[r {materialized: true}]->(b)
+    WITH a, b, type(r) AS relType, r.uri AS relUri, COLLECT(r) AS rels
+    WHERE size(rels) > 1
+    UNWIND rels[1..] AS toDelete
+    DELETE toDelete
+    RETURN count(toDelete) AS deletedCount
+    """
+    results = db.execute_cypher(cleanup_query, name="cleanup_duplicate_relationships")
+    deleted_count = 0
+    if results:
+        deleted_count = results[0].get('deletedCount', 0)
+    logger.info(f"Cleanup finished. Deleted {deleted_count} duplicate relationships.")
 
 # if __name__ == "__main__":
-#     # Example usage (requires environment variables to be set)
-#     from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb
-#     materialize_properties_as_relationships(semanticdb)
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb
+    # materialize_properties(semanticdb, 'owl__ObjectProperty')
+    # materialize_properties(semanticdb, 'owl__DatatypeProperty')
+    # cleanup_duplicate_relationships(semanticdb)

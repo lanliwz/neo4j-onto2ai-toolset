@@ -47,7 +47,7 @@ class Neo4jDatabase:
         start = time.time()
         try:
             with self._driver.session() as session:
-                session.execute_write(self._execute_cypher, query)
+                return session.execute_write(self._get_dataset, query)
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
             ontoToollogger.exception(

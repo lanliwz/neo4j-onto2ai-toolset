@@ -4,7 +4,7 @@ import logging
 from rdflib_neo4j import Neo4jStoreConfig, Neo4jStore, HANDLE_VOCAB_URI_STRATEGY
 from neo4j_onto2ai_toolset.onto2schema.onto_db_initializer import reset_neo4j_db
 from neo4j_onto2ai_toolset.onto2schema.onto_materializer import materialize_onto_db
-from neo4j_onto2ai_toolset.onto2schema.property_materializer import materialize_properties_as_relationships
+from neo4j_onto2ai_toolset.onto2schema.property_materializer import *
 from neo4j_onto2ai_toolset.onto2schema.sparql_statement import query4dataprop
 from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data
 from rdf_statement import *
@@ -109,6 +109,8 @@ if __name__ == "__main__":
 
     reset_neo4j_db()
     load_neo4j_db(onto_uri=onto_uri, format=rdf_format, imports=imported_onto_set)
-    materialize_properties_as_relationships(semanticdb)
+    materialize_properties(semanticdb, 'owl__ObjectProperty')
+    materialize_properties(semanticdb, 'owl__DatatypeProperty')
+    cleanup_duplicate_relationships(semanticdb)
 
 
