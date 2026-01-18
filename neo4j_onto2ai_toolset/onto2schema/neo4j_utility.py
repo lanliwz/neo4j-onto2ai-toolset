@@ -23,7 +23,7 @@ class Neo4jDatabase:
             session.execute_write(self._create_node, label, properties)
 
     # Execute an arbitrary Cypher query with structured logging.
-    def execute_cypher(self, query, *, name: str | None = None):
+    def execute_cypher(self, query, params=None, *, name: str | None = None):
         """Execute a Cypher statement with structured logging.
 
         Args:
@@ -47,7 +47,7 @@ class Neo4jDatabase:
         start = time.time()
         try:
             with self._driver.session() as session:
-                return session.execute_write(self._get_dataset, query)
+                return session.execute_write(self._get_dataset, query, params)
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
             ontoToollogger.exception(
@@ -77,7 +77,7 @@ class Neo4jDatabase:
         with self._driver.session() as session:
             query = query_cls2cls_relationship(label)
             ontoToollogger.debug(query)
-            result = session.execute_read(self._get_dataset,query)
+            result = session.execute_read(self._get_dataset, query)
             ontoToollogger.debug(result)
             return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
 
@@ -90,7 +90,7 @@ class Neo4jDatabase:
     def get_nodes(self, label=None):
         with self._driver.session() as session:
             ontoToollogger.debug(query_start_nodes(label))
-            result = session.execute_read(self._get_dataset,query_start_nodes(label))
+            result = session.execute_read(self._get_dataset, query_start_nodes(label))
             ontoToollogger.debug(result)
             return [f"(:{record['start_node']}) nodes have annotation properties {record['annotation_properties']}"
                     for record in result
@@ -109,8 +109,8 @@ class Neo4jDatabase:
             return [f"[:{record['relationship']}] relationship has annotation properties  {record['annotation_properties']}" for record in result]
 
     @staticmethod
-    def _get_dataset(tx,query):
-        result = tx.run(query)
+    def _get_dataset(tx, query, params=None):
+        result = tx.run(query, parameters=params)
         return [record.data() for record in result]
 
 
