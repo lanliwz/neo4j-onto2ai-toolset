@@ -4,7 +4,7 @@ from typing import Optional
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI
 from neo4j_onto2ai_toolset.onto2ai_logger_config import *
-from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_utility import Neo4jDatabase
+from neo4j_onto2ai_toolset.onto2ai_utility import Neo4jDatabase
 
 GPT_MODEL_NAME = os.getenv("GPT_MODEL_NAME")
 GPT_REASONING_EFFORT = os.getenv("GPT_REASONING_EFFORT")
