@@ -1,6 +1,6 @@
 import json
 from operator import add
-from typing import Annotated, List, Literal, Optional
+from typing import Annotated, List, Literal, Optional, Union, Dict, Any
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,357 +9,179 @@ from typing_extensions import TypedDict
 
 from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase, get_schema
 from neo4j_onto2ai_toolset.langgraph_prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
-from neo4j_onto2ai_toolset.onto2ai_tool_config import *
+from neo4j_onto2ai_toolset.onto2ai_tool_config import llm, graphdb
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
+# --- State Definitions ---
 
-
+class OverallState(TypedDict):
+    question: str
+    next_action: Annotated[str, "The high-level action category"]
+    to_do_action: Annotated[str, "The specific operation within the category"]
+    start_node: str
+    domain: str
+    based_on: str
+    cypher_statement: str
+    cypher_errors: Annotated[List[str], add]
+    database_records: Union[str, List[Dict[str, Any]]]
+    steps: Annotated[List[str], add]
 
 class InputState(TypedDict):
     question: str
-    start_node: str
-    init: str = "init"
-
-class OverallState(TypedDict):
-    to_do_action: str
-    start_node: str
-    question: str
-    domain: str
-    based_on: str
-    next_action: str
-    cypher_statement: str
-    cypher_errors: List[str]
-    database_records: List[dict]
-    steps: Annotated[List[str], add]
-
 
 class OutputState(TypedDict):
     answer: str
     steps: List[str]
+    database_records: Union[str, List[Dict[str, Any]]]
     cypher_statement: str
+    next_action: str
 
-class Property(BaseModel):
-    """
-    Represents a filter condition based on a specific node property in a graph in a Cypher statement.
-    """
+# --- Structured Output Models ---
 
-    node_label: str = Field(
-        description="The label of the node to which this property belongs."
+class IntentDecision(BaseModel):
+    """Decision on how to handle the user's schema/ontology related question."""
+    decision: Literal["schema", "pydantic-model", "relation-model", "end"] = Field(
+        description="The target output format or investigation area."
     )
-    property_key: str = Field(description="The key of the property being filtered.")
-    property_value: str = Field(
-        description="The value that the property is being matched against."
+    start_node: str = Field(
+        description="Main entity or concept name (in lower case)."
     )
-
-
-class ValidateCypherOutput(BaseModel):
-    """
-    Represents the validation result of a Cypher query's output,
-    including any errors and applied filters.
-    """
-
-    errors: Optional[List[str]] = Field(
-        description="A list of syntax or semantical errors in the Cypher statement. Always explain the discrepancy between schema and Cypher statement"
+    action: Literal["review", "enhance", "create"] = Field(
+        default="review",
+        description="Specific intent: reviewing existing, enhancing, or creating new from scratch."
     )
-    filters: Optional[List[Property]] = Field(
-        description="A list of property-based filters applied in the Cypher statement."
+    based_on: Optional[str] = Field(
+        default=None,
+        description="Optional source material or URL mentioned as documentation."
+    )
+    domain: Optional[str] = Field(
+        default="http://mydomain/ontology",
+        description="The target ontology domain if relevant."
     )
 
-def more_question(state: OverallState) -> OutputState:
-    """
-    Decides if more question need to ask
-    """
-    class Decision(BaseModel):
-        decision: Literal["schema","pydantic-model","relation-model", "based_on","domain","end"] = Field(
-            description="Decision on whether the question is related to ontology or schema etc"
-        )
-        start_node: str = Field(
-            description="class label or node label"
-        )
-        action: Literal["review", "enhance","create"] = Field(
-            description="whether the question is related to review, enhance or create schema etc"
-        )
-        based_on: str = Field(
-            description="The link in the question or the description after 'base on'?"
-        )
-        domain: str = Field(
-            description="extract domain from the link or the url provided in the question"
-        )
+# --- Node Functions ---
 
-    guard_of_entrance = """
-    As an intelligent assistant, your primary objective is to decide whether a given question is related to schema, model, ontology, then provide structured response.
-    If the question is related, and at least one class name or node label provided in the question as schema, output the class label or node label in lower case as start_node.
-    To make this decision, assess the content of the question.
-    If it refers to get ontology/schema, output decision=schema.
-    If it refers to generate pydantic model, output decision=pydantic-model.  
-    If it refers to generate relation model, output decision=relation-model.  
-    Otherwise, output decision=end
-    """
-    guard_of_entrance_prompt = ChatPromptTemplate.from_messages(    [
-            (
-                "system",
-                guard_of_entrance,
-            ),
-            (
-                "human",
-                ("{question}"),
-            ),
-        ]
-    )
-    db_records = ""
-    guard_of_entrance_chain = guard_of_entrance_prompt | llm.with_structured_output(Decision)
-    question = state.get("question")
-    if not question:
-        # Fallback if somehow missing
-        return {"database_records": "No question provided", "next_action": "end", "steps": ["more_question"]}
+async def classify_intent(state: OverallState) -> Dict[str, Any]:
+    """Classifies user question into a specific schema/model action."""
+    system_msg = """
+    You are an ontology architect. Analyze the user question and determine the next action.
+    - 'schema' if they want to see, update, or create an ontology model/schema.
+    - 'pydantic-model' if they want Python Pydantic classes.
+    - 'relation-model' if they want SQL/Relational DDL.
+    - 'end' for unrelated topics.
     
-    output = guard_of_entrance_chain.invoke({"question": question})
-    if output.decision=='end':
-        db_records = "unrelated question, end the conversation!"
-
-    mylogger.info(output)
-
+    If it's about a specific concept (e.g., 'Person', 'Order'), put it in 'start_node'.
+    """
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_msg),
+        ("human", "{question}")
+    ])
+    
+    chain = prompt | llm.with_structured_output(IntentDecision)
+    output = await chain.ainvoke({"question": state["question"]})
+    
+    mylogger.info(f"Intent Classification: {output}")
+    
     return {
         "next_action": output.decision,
         "start_node": output.start_node,
         "to_do_action": output.action,
         "based_on": output.based_on,
-        "domain": output.domain or "http://mydomain/ontology",
-        "database_records": db_records,
-        "steps": ["more_question"],
+        "domain": output.domain,
+        "steps": ["classify_intent"]
     }
 
-def review_schema(state: OverallState, db: Neo4jDatabase) -> OverallState:
-    mylogger.debug("review schema - " + state.get("start_node"))
-    original_schema_prompt = get_schema(start_node=state.get("start_node"), db=db)
-    mylogger.info(original_schema_prompt)
+async def review_schema(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
+    """Retrieves the current schema for a concept."""
+    concept = state.get("start_node", "person")
+    mylogger.debug(f"Reviewing schema for: {concept}")
+    schema_text = get_schema(start_node=concept, db=db)
     return {
-        "database_records": original_schema_prompt,
-        "steps": ["get_schema"]
+        "database_records": schema_text,
+        "steps": ["review_schema"]
     }
 
-def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
-    original_schema = get_schema(start_node=state.get("start_node"), db=db)
-    text2prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                (
-                    "Given an input, generate oracle database DDL, ignore annotation properties. No pre-amble."
-                    "For simple node and one to one relationship, add column to the table instead of creating another table"
-                    "Do not wrap the response in any backticks or anything else. Respond with code only!"
-                ),
-            ),
-            (
-                "human",
-                (
-                    """{schema}"""
-                ),
-            ),
-        ]
-    )
-    text_chain = text2prompt | llm | StrOutputParser()
-    generated_ddl = text_chain.invoke(
-        {
-            "schema": original_schema
-        }
-    )
-    mylogger.info(generated_ddl)
-    return {"cypher_statement": generated_ddl, "steps": ["generate_relational_db_ddl"]}
-
-def generate_pydantic_class(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
-    original_schema_prompt = gen_pydantic_class(start_node=state.get("start_node"), db=db)
-    text2prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                (
-                    "Given an input, generate Pydantic classes. No pre-amble."
-                    "Do not wrap the response in any backticks or anything else. Respond with code only!"
-                ),
-            ),
-            (
-                "human",
-                (
-                    """{schema}"""
-                ),
-            ),
-        ]
-    )
-    text2cypher_chain = text2prompt | llm | StrOutputParser()
-    generated_clz = text2cypher_chain.invoke(
-        {
-            "schema": original_schema_prompt.to_string()
-        }
-    )
-    mylogger.info(generated_clz)
-    return {"cypher_statement": generated_clz, "steps": ["generate_pydantic_class"]}
-
-def create_schema(state: OverallState, llm: ChatOpenAI) -> OverallState:
-    """
-    Generates a cypher statement based on the provided schema and user input
-    """
-    # Check if 'based_on' exists, if not, do nothing
-
-    text2cypher_prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                (
-                    """
-                    Given an input, convert it to a Cypher query. No pre-amble.
-                    Do not wrap the response in any backticks or anything else. Respond with a Cypher statement only!
-                    """
-                ),
-            ),
-            (
-                "human",
-                (
-                    """
-                    Task: generate Cypher statements to add node and relationship, output each statement as one element of an array.
-                    Instruction: The node in the schema is a owl__Class with rdfs_label, and the annotation properties are metadata for both node and relationship. 
-                    Merge the node in case of the node already exists.
-                    Match the nodes and generate Cypher statement to create relationship, if possible, add relationship property owl__minQualifiedCardinality.
-                    The new node or relationship should have uri with http protocol and domain {domain}.                    
-                    rdfs__label always be lower case, with space between words.
-                    relationship type is camel case with first character lower case.
-                    For each node and relationship, generate a skos__definition, which should not contain single quote character.
-                    match only with rdfs__label.
-                    Get schema info from {schema}
-                    If {schema} is a url, add annotation property gojs_documentLink to the node.
-                    Note: Add many relationships you can find, do not include any explanations or apologies in your responses.
-                    """
-                ),
-            ),
-        ]
-    )
-    mylogger.info(text2cypher_prompt)
-    text2cypher_chain = text2cypher_prompt | llm | StrOutputParser()
-
-    if not state.get('based_on'):
-        return {"cypher_statement": '[]', "steps": ["create_schema"]}
-
-    generated_cypher = text2cypher_chain.invoke(
-        {
-            "schema": state.get('based_on'),
-            "domain": state.get('domain')
-        }
-    )
-
-    return {"cypher_statement": generated_cypher, "steps": ["create_schema"]}
-
-def generate_cypher(state: OverallState, db: Neo4jDatabase, llm: ChatOpenAI) -> OverallState:
-    """
-    Generates a cypher statement based on the provided schema and user input
-    """
-    original_schema_prompt = gen_prompt4schema(start_node=state.get("start_node"), db=db)
-
-    logger.info(original_schema_prompt.to_string())
-
-    text2cypher_prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                (
-                    "Given an input, convert it to a Cypher query. No pre-amble."
-                    "Do not wrap the response in any backticks or anything else. Respond with a Cypher statement only!"
-                    "When merge a node, using rdfs__label as merge property"
-                    "ON CREATE SET a.uri='some uri'"
-                    "ON MATCH SET a.uri=COALESCE(a.uri,'some uri')"
-                ),
-            ),
-            (
-                "human",
-                (
-                    """{schema}"""
-                ),
-            ),
-        ]
-    )
-    text2cypher_chain = text2cypher_prompt | llm | StrOutputParser()
-    generated_cypher = text2cypher_chain.invoke(
-        {
-            "schema": original_schema_prompt.to_string()
-        }
-    )
-
-    return {"cypher_statement": generated_cypher, "steps": ["generate_cypher"]}
-
-
-
-
-def execute_graph_query(state: OverallState, graph: Neo4jGraph) -> OverallState:
-    # import ast
-    """
-    Executes the given Cypher statement.
-    """
-    no_results = "I couldn't find any relevant information in the database"
-    stmt_str = state.get("cypher_statement")
-    mylogger.debug(stmt_str)
-    statements = json.loads(stmt_str)
-    records = []
-    for stmt in statements:
-
-        try:
-            records.append(graph.query(stmt))
-            mylogger.info(f'executed - {stmt}')
-        except Exception as e:
-            mylogger.error(e)
-            records.append(e)
-    return {
-        "database_records": records if records else no_results,
-        "next_action": "end",
-        "steps": ["execute_cypher"],
-    }
-
-def del_dup_cls_rels(state: OverallState, graph: Neo4jGraph) -> OverallState:
-    from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels,del_dup_class
-    """
-    Executes the given Cypher statements.
-    """
-    no_results = "I couldn't find any relevant information in the database"
-    statements = [del_dup_rels,del_dup_class]
-    records = []
-    for stmt in statements:
-
-        try:
-            records.append(graph.query(stmt))
-            mylogger.info(f'executed - {stmt}')
-        except Exception as e:
-            mylogger.error(e)
-            records.append(e)
-    return {
-        "database_records": records if records else no_results,
-        "next_action": "end",
-        "steps": ["execute_cypher"],
-    }
-
-def generate_final_answer_g(state: OverallState,llm: ChatOpenAI) -> OutputState:
-    """
-    Decides if the question is related to movies.
-    """
-    generate_final_prompt = ChatPromptTemplate.from_messages([
-        (
-            "system",
-            "You are a helpful assistant",
-        ),
-        (
-            "human",
-            (
-                """Use the following results retrieved from a database to provide
-                    a succinct, definitive answer to the user's question.
-
-                    Respond as if you are answering the question directly.
-
-                    Results: {results}
-                    Question: {question}"""
-            ),
-        ),
+async def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
+    """Generates Oracle DDL from the schema."""
+    schema_text = get_schema(start_node=state.get("start_node"), db=db)
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Generate Oracle DDL for the given schema. No pre-amble. One-to-one as columns. Code only."),
+        ("human", "{schema}")
     ])
+    chain = prompt | llm | StrOutputParser()
+    ddl = await chain.ainvoke({"schema": schema_text})
+    return {"cypher_statement": ddl, "steps": ["generate_relational_db_ddl"]}
 
-    generate_final_chain = generate_final_prompt | llm | StrOutputParser()
+async def generate_pydantic_class_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
+    """Generates Pydantic v2 classes from the schema."""
+    # Using existing prompt utility
+    prompt_value = gen_pydantic_class(start_node=state.get("start_node"), db=db)
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Generate Pydantic v2 classes. No pre-amble. Code only."),
+        ("human", "{prompt}")
+    ])
+    chain = prompt | llm | StrOutputParser()
+    code = await chain.ainvoke({"prompt": str(prompt_value)})
+    return {"cypher_statement": code, "steps": ["generate_pydantic_class"]}
 
-    final_answer = generate_final_chain.invoke(
-        {"question": state.get("question"), "results": state.get("database_records")}
-    )
-    return {"answer": final_answer, "steps": ["generate_final_answer"]}
+async def create_schema_node(state: OverallState) -> Dict[str, Any]:
+    """Generates a Cypher statement to create a new schema from external text/URL."""
+    if not state.get('based_on'):
+        return {"cypher_statement": "[]", "steps": ["create_schema_aborted"]}
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Convert input text/URL into a list of Cypher MERGE statements to create classes and relationships."),
+        ("human", "Domain: {domain}\nInput: {based_on}")
+    ])
+    chain = prompt | llm | StrOutputParser()
+    cypher = await chain.ainvoke({"domain": state["domain"], "based_on": state["based_on"]})
+    return {"cypher_statement": cypher, "steps": ["create_schema"]}
+
+async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
+    """Generates a Cypher statement to enhance an existing schema."""
+    concept = state.get("start_node")
+    prompt_value = gen_prompt4schema(start_node=concept, db=db)
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Generate a Cypher statement to enhance the following schema. MATCH with rdfs__label."),
+        ("human", "{schema}")
+    ])
+    chain = prompt | llm | StrOutputParser()
+    cypher = await chain.ainvoke({"schema": str(prompt_value)})
+    return {"cypher_statement": cypher, "steps": ["generate_cypher"]}
+
+async def execute_query_node(state: OverallState) -> Dict[str, Any]:
+    """Executes generated Cypher (if it is a list of statements)."""
+    stmt_str = state.get("cypher_statement", "[]")
+    
+    try:
+        # Expected to be a JSON list of strings
+        statements = json.loads(stmt_str) if stmt_str.startswith("[") else [stmt_str]
+    except:
+        statements = [stmt_str]
+
+    records = []
+    for stmt in statements:
+        if not stmt or len(stmt.strip()) < 5: continue
+        try:
+            res = graphdb.query(stmt)
+            records.append(res)
+        except Exception as e:
+            mylogger.error(f"Cypher Error: {e}")
+            return {"cypher_errors": [str(e)], "steps": ["execute_query_failed"]}
+
+    return {
+        "database_records": records,
+        "next_action": "end",
+        "steps": ["execute_query"]
+    }
+
+async def del_dup_node(state: OverallState) -> Dict[str, Any]:
+    """Cleans up duplicate classes and relationships."""
+    from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels, del_dup_class
+    for stmt in [del_dup_rels, del_dup_class]:
+        try:
+            graphdb.query(stmt)
+        except Exception as e:
+            mylogger.error(f"Deduplication Error: {e}")
+    return {"steps": ["delete_duplicates"]}
