@@ -54,7 +54,7 @@ python3 neo4j_onto2ai_toolset/onto2schema/property_materializer.py
 The final layer provides AI-ready schema management tools via the MCP server:
 
 ```bash
-python3 neo4j_onto2ai_toolset/mcp_server.py
+python3 neo4j_onto2ai_toolset/onto2ai_mcp.py
 ```
 
 ### Key Capabilities:

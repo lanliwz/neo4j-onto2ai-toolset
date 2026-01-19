@@ -28,7 +28,7 @@ Ensure your `PYTHONPATH` includes the project root and start the server:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:.
-python3 neo4j_onto2ai_toolset/mcp_server.py
+python3 neo4j_onto2ai_toolset/onto2ai_mcp.py
 ```
 
 ## Configuration

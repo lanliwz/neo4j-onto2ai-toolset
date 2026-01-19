@@ -5,7 +5,7 @@ from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, llm
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
 
-mcp = FastMCP("OntologyMaterializedSchema")
+mcp = FastMCP("Onto2AI")
 
 @mcp.tool()
 async def get_materialized_schema(class_names: Union[str, List[str]]) -> List[dict]:
