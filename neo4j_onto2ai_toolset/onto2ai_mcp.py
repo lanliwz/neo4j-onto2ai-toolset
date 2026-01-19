@@ -14,6 +14,7 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> List[di
     Returns direct and inherited properties that have been materialized as Neo4j relationships.
     """
     if isinstance(class_names, str):
+
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
