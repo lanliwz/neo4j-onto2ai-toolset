@@ -108,7 +108,11 @@ def more_question(state: OverallState) -> OutputState:
     )
     db_records = ""
     guard_of_entrance_chain = guard_of_entrance_prompt | llm.with_structured_output(Decision)
-    question=input("what is your question?")
+    question = state.get("question")
+    if not question:
+        # Fallback if somehow missing
+        return {"database_records": "No question provided", "next_action": "end", "steps": ["more_question"]}
+    
     output = guard_of_entrance_chain.invoke({"question": question})
     if output.decision=='end':
         db_records = "unrelated question, end the conversation!"
