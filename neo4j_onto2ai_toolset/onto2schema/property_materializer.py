@@ -1,4 +1,4 @@
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_utility import Neo4jDatabase
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 
 def materialize_properties(db: Neo4jDatabase, property_meta_type: str):

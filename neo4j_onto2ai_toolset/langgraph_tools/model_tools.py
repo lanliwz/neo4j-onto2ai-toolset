@@ -2,8 +2,10 @@ import json
 from langgraph.runtime import get_runtime
 from neo4j_onto2ai_toolset.onto2ai_tool_config import *
 from langchain_core.tools import tool
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase, get_schema as get_model_from_db, \
-    get_full_schema
+from neo4j_onto2ai_toolset.schema_chatbot.onto2ai_utility import (
+    Neo4jDatabase, get_schema as get_model_from_db,
+    get_full_schema, get_node4schema as get_node_model_from_db
+)
 from dataclasses import dataclass
 
 from neo4j_onto2ai_toolset.onto2ai_tool_config import (

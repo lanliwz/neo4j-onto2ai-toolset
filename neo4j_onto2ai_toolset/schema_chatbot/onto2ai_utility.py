@@ -1,18 +1,167 @@
 import json
+import time
+import logging
 from operator import add
 from typing import Annotated, List, Literal, Optional, Union, Dict, Any
 
+from neo4j import GraphDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
-from neo4j_onto2ai_toolset.onto2schema.neo4j_utility import Neo4jDatabase, get_schema
+# Internal project imports
+from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
+from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.langgraph_prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
-from neo4j_onto2ai_toolset.onto2ai_tool_config import llm, graphdb
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
-# --- State Definitions ---
+ontoToollogger = logging.getLogger("onto2ai-toolset")
+
+# --- Database Utilities (Merged from neo4j_utility.py) ---
+
+class Neo4jDatabase:
+    """Interacts with a Neo4j database for schema-related operations."""
+    def __init__(self, uri, user, password, database_name):
+        self._driver = GraphDatabase.driver(uri, auth=(user, password), database=database_name)
+        self._database_name = database_name
+
+    def close(self):
+        self._driver.close()
+
+    def create_node(self, label, properties):
+        with self._driver.session() as session:
+            session.execute_write(self._create_node, label, properties)
+
+    def execute_cypher(self, query, params=None, *, name: str | None = None):
+        """Execute a Cypher statement with structured logging."""
+        stmt_name = name or "cypher"
+        q_preview = (query or "").replace("\n", " ").strip()
+        if len(q_preview) > 200:
+            q_preview = q_preview[:200] + "..."
+
+        ontoToollogger.info(
+            f"{stmt_name} execution started - {query}",
+            extra={
+                "op": stmt_name,
+                "database": getattr(self, "_database_name", None),
+                "query_preview": q_preview,
+            },
+        )
+
+        start = time.time()
+        try:
+            with self._driver.session() as session:
+                return session.execute_write(self._get_dataset, query, params)
+        except Exception as e:
+            elapsed_ms = int((time.time() - start) * 1000)
+            ontoToollogger.exception(
+                f"{stmt_name} execution failed",
+                extra={
+                    "op": stmt_name,
+                    "database": getattr(self, "_database_name", None),
+                    "elapsed_ms": elapsed_ms,
+                    "query_preview": q_preview,
+                },
+            )
+            raise
+        else:
+            elapsed_ms = int((time.time() - start) * 1000)
+            ontoToollogger.info(
+                f"{stmt_name} execution finished",
+                extra={
+                    "op": stmt_name,
+                    "database": getattr(self, "_database_name", None),
+                    "elapsed_ms": elapsed_ms,
+                },
+            )
+
+    def get_node2node_relationship(self, label=None):
+        with self._driver.session() as session:
+            query = query_cls2cls_relationship(label)
+            ontoToollogger.debug(query)
+            result = session.execute_read(self._get_dataset, query)
+            ontoToollogger.debug(result)
+            return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
+
+    def get_node_dataproperty(self, label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset, query_dataproperty(label))
+            return [f"(:{record['start_node']}) nodes have data property {record['relationship']}" for record in result]
+
+    def get_nodes(self, label=None):
+        with self._driver.session() as session:
+            ontoToollogger.debug(query_start_nodes(label))
+            result = session.execute_read(self._get_dataset, query_start_nodes(label))
+            ontoToollogger.debug(result)
+            return [f"(:{record['start_node']}) nodes have annotation properties {record['annotation_properties']}"
+                    for record in result if record['start_node'] is not None]
+
+    def get_end_nodes(self, label=None):
+        with self._driver.session() as session:
+            result = session.execute_read(self._get_dataset, query_end_nodes(label))
+            return [f"(:{record['end_node']}) nodes have annotation properties {record['annotation_properties']}"
+                    for record in result if record['end_node'] is not None]
+
+    def get_relationships(self, label=None):
+        with (self._driver.session() as session):
+            result = session.execute_read(self._get_dataset, query_relationships(label))
+            return [f"[:{record['relationship']}] relationship has annotation properties  {record['annotation_properties']}" for record in result]
+
+    @staticmethod
+    def _get_dataset(tx, query, params=None):
+        result = tx.run(query, parameters=params)
+        return [record.data() for record in result]
+
+    @staticmethod
+    def _create_node(tx, label, properties):
+        query = f"CREATE (a:{label} {{properties}})"
+        tx.run(query, properties=properties)
+
+    @staticmethod
+    def _execute_cypher(tx, query):
+        tx.run(query)
+
+    def create_node_and_relationship(self, node1_label, node1_properties, relationship_type, node2_label, node2_properties):
+        with self._driver.session() as session:
+            session.execute_write(self._create_node_rel, node1_label, node1_properties, relationship_type, node2_label, node2_properties)
+
+    @staticmethod
+    def _create_node_rel(tx, node1_label, node1_properties, relationship_type, node2_label, node2_properties):
+        query = (
+            f"CREATE (a:{node1_label} {{properties1}}) "
+            f"-[:{relationship_type}]-> "
+            f"(b:{node2_label} {{properties2}})"
+        )
+        tx.run(query, properties1=node1_properties, properties2=node2_properties)
+
+def get_schema(start_node: str, db: Neo4jDatabase):
+    schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
+              + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
+              + "\n".join(db.get_end_nodes(start_node)) + '\n'
+              + "\n".join(db.get_nodes(start_node)) + '\n'
+              + "\n".join(db.get_relationships(start_node)) + '\n')
+    ontoToollogger.debug(schema)
+    return schema
+
+def get_full_schema(db: Neo4jDatabase):
+    nodes = "\n".join(db.get_nodes())
+    relationships = "\n".join(db.get_relationships())
+    node2node_rels = "\n".join(db.get_node2node_relationship())
+    node_dataprops = "\n".join(db.get_node_dataproperty())
+    schema = (
+        f"Node Labels: \n{nodes} \n"
+        f"Relationships: \n{node2node_rels} \n"
+        f"Relationship types: \n{relationships} \n"
+        f"Node Properties: \n{node_dataprops} \n"
+    )
+    ontoToollogger.debug(schema)
+    return schema
+
+def get_node4schema(start_node: str, db: Neo4jDatabase):
+    return "\n".join(db.get_nodes(start_node)) + '\n'
+
+# --- Chatbot State Definitions ---
 
 class OverallState(TypedDict):
     question: str
@@ -59,10 +208,12 @@ class IntentDecision(BaseModel):
         description="The target ontology domain if relevant."
     )
 
-# --- Node Functions ---
+# --- Chatbot Node Functions (Local imports to break circles) ---
 
 async def classify_intent(state: OverallState) -> Dict[str, Any]:
     """Classifies user question into a specific schema/model action."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    
     system_msg = """
     You are an ontology architect. Analyze the user question and determine the next action.
     - 'schema' if they want to see, update, or create an ontology model/schema.
@@ -104,6 +255,8 @@ async def review_schema(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any
 
 async def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates Oracle DDL from the schema."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    
     schema_text = get_schema(start_node=state.get("start_node"), db=db)
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Generate Oracle DDL for the given schema. No pre-amble. One-to-one as columns. Code only."),
@@ -115,7 +268,8 @@ async def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase) -> 
 
 async def generate_pydantic_class_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates Pydantic v2 classes from the schema."""
-    # Using existing prompt utility
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    
     prompt_value = gen_pydantic_class(start_node=state.get("start_node"), db=db)
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Generate Pydantic v2 classes. No pre-amble. Code only."),
@@ -127,6 +281,8 @@ async def generate_pydantic_class_node(state: OverallState, db: Neo4jDatabase) -
 
 async def create_schema_node(state: OverallState) -> Dict[str, Any]:
     """Generates a Cypher statement to create a new schema from external text/URL."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    
     if not state.get('based_on'):
         return {"cypher_statement": "[]", "steps": ["create_schema_aborted"]}
 
@@ -140,6 +296,8 @@ async def create_schema_node(state: OverallState) -> Dict[str, Any]:
 
 async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates a Cypher statement to enhance an existing schema."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    
     concept = state.get("start_node")
     prompt_value = gen_prompt4schema(start_node=concept, db=db)
     prompt = ChatPromptTemplate.from_messages([
@@ -152,10 +310,11 @@ async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[s
 
 async def execute_query_node(state: OverallState) -> Dict[str, Any]:
     """Executes generated Cypher (if it is a list of statements)."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import graphdb
+    
     stmt_str = state.get("cypher_statement", "[]")
     
     try:
-        # Expected to be a JSON list of strings
         statements = json.loads(stmt_str) if stmt_str.startswith("[") else [stmt_str]
     except:
         statements = [stmt_str]
@@ -178,7 +337,9 @@ async def execute_query_node(state: OverallState) -> Dict[str, Any]:
 
 async def del_dup_node(state: OverallState) -> Dict[str, Any]:
     """Cleans up duplicate classes and relationships."""
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import graphdb
     from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels, del_dup_class
+    
     for stmt in [del_dup_rels, del_dup_class]:
         try:
             graphdb.query(stmt)
