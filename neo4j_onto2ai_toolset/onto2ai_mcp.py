@@ -8,13 +8,14 @@ from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Rela
 mcp = FastMCP("Onto2AI")
 
 @mcp.tool()
-async def get_materialized_schema(class_names: Union[str, List[str]]) -> List[dict]:
+async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """
     Retrieve the materialized schema for one or more ontology classes.
-    Returns direct and inherited properties that have been materialized as Neo4j relationships.
+    Returns:
+        Section 1: Classes with labels, definitions, and URIs.
+        Section 2: Relationships with definitions, URIs, source/target, and constraints.
     """
     if isinstance(class_names, str):
-
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
@@ -25,22 +26,64 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> List[di
     MATCH (parent)-[r]->(target)
     WHERE r.materialized = true
     RETURN DISTINCT
-      c.rdfs__label AS RequestedClass,
-      parent.rdfs__label AS DefinitionSource,
-      type(r) AS Property,
-      coalesce(target.rdfs__label, target.uri, "Resource") AS Target,
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
       r.cardinality AS Cardinality,
-      r.requirement AS Requirement
-    ORDER BY RequestedClass, DefinitionSource, Property
+      r.requirement AS Requirement,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    ORDER BY SourceClassLabel, RelType
     """
     
-    logger.info(f"Fetching materialized schema for classes: {labels}")
+    logger.info(f"Fetching enhanced materialized schema for: {labels}")
     try:
         results = semanticdb.execute_cypher(query, params={"labels": labels}, name="get_materialized_schema_tool")
-        return results if results else []
+        
+        classes_section = {}
+        relationships_section = []
+        
+        for row in results:
+            # Add Source Class to section 1
+            src_label = row['SourceClassLabel']
+            if src_label not in classes_section:
+                classes_section[src_label] = {
+                    "label": src_label,
+                    "uri": row['SourceClassURI'],
+                    "definition": row['SourceClassDef']
+                }
+            
+            # Add Target Class to section 1
+            tgt_label = row['TargetClassLabel']
+            if tgt_label not in classes_section and tgt_label != "Resource":
+                classes_section[tgt_label] = {
+                    "label": tgt_label,
+                    "uri": row['TargetClassURI'],
+                    "definition": row['TargetClassDef']
+                }
+            
+            # Add Relationship to section 2
+            relationships_section.append({
+                "source_class": src_label,
+                "relationship_type": row['RelType'],
+                "target_class": tgt_label,
+                "definition": row['RelDef'],
+                "uri": row['RelURI'],
+                "cardinality": row['Cardinality'],
+                "requirement": row['Requirement']
+            })
+            
+        return {
+            "section_1_classes": list(classes_section.values()),
+            "section_2_relationships": relationships_section
+        }
     except Exception as e:
-        logger.error(f"Error fetching materialized schema: {e}")
-        return [{"error": str(e)}]
+        logger.error(f"Error fetching enhanced materialized schema: {e}")
+        return {"error": str(e)}
 
 @mcp.tool()
 async def get_ontological_schema(class_names: Union[str, List[str]]) -> List[dict]:
