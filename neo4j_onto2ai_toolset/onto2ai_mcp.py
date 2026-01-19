@@ -69,8 +69,10 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
             # Add Relationship to section 2
             relationships_section.append({
                 "source_class": src_label,
+                "source_class_uri": row['SourceClassURI'],
                 "relationship_type": row['RelType'],
                 "target_class": tgt_label,
+                "target_class_uri": row['TargetClassURI'],
                 "definition": row['RelDef'],
                 "uri": row['RelURI'],
                 "cardinality": row['Cardinality'],

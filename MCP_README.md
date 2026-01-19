@@ -5,7 +5,9 @@ This MCP server provides a powerful set of tools to interrogate, enhance, and ma
 ## Features
 
 ### 1. Schema Exploration
-- **`get_materialized_schema`**: Returns a simplified property-graph view of a class, including flattened inheritance and materialized relationships. Ideal for application developers.
+- **`get_materialized_schema`**: Returns a structured view of a class in two parts:
+    - **Section 1 (Classes)**: deduplicated entities with labels, definitions, and URIs.
+    - **Section 2 (Relationships)**: full property mapping Source → Property → Target with URIs and constraints.
 - **`get_ontological_schema`**: Returns the raw, non-flattened ontological definitions (Restrictions, domain/range) for auditing or deep model analysis.
 
 ### 2. Schema Manager (AI-Powered)
