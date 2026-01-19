@@ -88,10 +88,12 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
         return {"error": str(e)}
 
 @mcp.tool()
-async def get_ontological_schema(class_names: Union[str, List[str]]) -> List[dict]:
+async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """
     Retrieve the raw ontological schema (meta-model view) for one or more classes.
-    Traverses OWL Restrictions, rdfs:domain/range, and the subClassOf hierarchy.
+    Returns:
+        Section 1: Classes/Ranges with labels, definitions, and URIs.
+        Section 2: Ontological mappings with full logic, URIs, and constraints.
     """
     if isinstance(class_names, str):
         class_names = [class_names]
@@ -120,7 +122,7 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> List[dic
 
     WHERE property IS NOT NULL
 
-    WITH c, parent, property, range,
+    WITH c, parent, property, range, rest,
          CASE 
            WHEN rest.owl__cardinality IS NOT NULL THEN toString(rest.owl__cardinality)
            WHEN rest.owl__qualifiedCardinality IS NOT NULL THEN toString(rest.owl__qualifiedCardinality)
@@ -145,21 +147,78 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> List[dic
 
     RETURN DISTINCT
       c.rdfs__label AS RequestedClass,
+      c.uri AS RequestedClassURI,
+      c.skos__definition AS RequestedClassDef,
       parent.rdfs__label AS DefinitionSource,
-      property.rdfs__label AS Property,
-      coalesce(range.rdfs__label, range.uri, "Resource") AS Target,
+      parent.uri AS DefinitionSourceURI,
+      property.rdfs__label AS PropertyLabel,
+      property.uri AS PropertyURI,
+      property.skos__definition AS PropertyDef,
+      coalesce(range.rdfs__label, range.uri, "Resource") AS RangeLabel,
+      range.uri AS RangeURI,
+      range.skos__definition AS RangeDef,
       Cardinality,
       Requirement
-    ORDER BY RequestedClass, DefinitionSource, Property
+    ORDER BY RequestedClass, DefinitionSource, PropertyLabel
     """
     
-    logger.info(f"Fetching ontological schema for classes: {labels}")
+    logger.info(f"Fetching enhanced ontological schema for: {labels}")
     try:
         results = semanticdb.execute_cypher(query, params={"labels": labels}, name="get_ontological_schema_tool")
-        return results if results else []
+        
+        classes_section = {}
+        ontological_section = []
+        
+        for row in results:
+            # Add Requested Class/Source Class to section 1
+            req_label = row['RequestedClass']
+            if req_label not in classes_section:
+                classes_section[req_label] = {
+                    "label": req_label,
+                    "uri": row['RequestedClassURI'],
+                    "definition": row['RequestedClassDef']
+                }
+            
+            # Add Definition Source (if different)
+            src_label = row['DefinitionSource']
+            if src_label not in classes_section:
+                classes_section[src_label] = {
+                    "label": src_label,
+                    "uri": row['DefinitionSourceURI'],
+                    "definition": None # Cypher can be expanded to get this if needed
+                }
+
+            # Add Range/Target to section 1
+            rng_label = row['RangeLabel']
+            if rng_label not in classes_section and rng_label != "Resource":
+                classes_section[rng_label] = {
+                    "label": rng_label,
+                    "uri": row['RangeURI'],
+                    "definition": row['RangeDef']
+                }
+            
+            # Add Ontological Definition to section 2
+            ontological_section.append({
+                "requested_class": req_label,
+                "requested_class_uri": row['RequestedClassURI'],
+                "definition_source": src_label,
+                "definition_source_uri": row['DefinitionSourceURI'],
+                "property": row['PropertyLabel'],
+                "property_uri": row['PropertyURI'],
+                "property_definition": row['PropertyDef'],
+                "range": rng_label,
+                "range_uri": row['RangeURI'],
+                "cardinality": row['Cardinality'],
+                "requirement": row['Requirement']
+            })
+            
+        return {
+            "section_1_classes": list(classes_section.values()),
+            "section_2_ontological_definitions": ontological_section
+        }
     except Exception as e:
-        logger.error(f"Error fetching ontological schema: {e}")
-        return [{"error": str(e)}]
+        logger.error(f"Error fetching enhanced ontological schema: {e}")
+        return {"error": str(e)}
 
 @mcp.tool()
 async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
