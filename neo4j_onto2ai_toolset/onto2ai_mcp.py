@@ -223,27 +223,34 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str
 @mcp.tool()
 async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
     """
-    Extract a structured DataModel from the ontology for one or more classes.
-    Distinguishes between properties (attributes) and relationships (links to other classes).
+    Extract a structured DataModel (Pydantic) for one or more classes.
+    Includes rich metadata (definitions, URIs) for downstream AI enhancement.
     """
     if isinstance(class_names, str):
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
     
+    # query synchronized with get_materialized_schema but includes PropMetaType for structural building
     query = """
     MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
     MATCH (parent)-[r]->(target)
     WHERE r.materialized = true
     RETURN DISTINCT
-      c.rdfs__label AS RequestedClass,
-      type(r) AS PropName,
-      coalesce(target.rdfs__label, target.uri) AS TargetName,
-      labels(target) AS TargetLabels,
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
       r.cardinality AS Cardinality,
       r.requirement AS Requirement,
-      r.property_type AS PropMetaType
+      r.property_type AS PropMetaType,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    ORDER BY SourceClassLabel, RelType
     """
     
     try:
@@ -253,32 +260,38 @@ async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
         relationships = []
         
         for row in results:
-            cls_name = row['RequestedClass']
+            cls_name = row['SourceClassLabel']
             if cls_name not in nodes_dict:
-                nodes_dict[cls_name] = Node(label=cls_name, properties=[])
+                nodes_dict[cls_name] = Node(
+                    label=cls_name, 
+                    description=row['SourceClassDef'],
+                    properties=[]
+                )
             
             is_rel = (row['PropMetaType'] == 'owl__ObjectProperty')
             
             prop_obj = Property(
-                name=row['PropName'],
-                type=row['TargetName'],
+                name=row['RelType'],
+                type=row['TargetClassLabel'],
+                description=row['RelDef'],
                 mandatory=(row['Requirement'] == 'Mandatory'),
                 cardinality=row['Cardinality']
             )
             
             if is_rel:
                 relationships.append(Relationship(
-                    type=row['PropName'],
+                    type=row['RelType'],
                     start_node_label=cls_name,
-                    end_node_label=row['TargetName'],
-                    properties=[]
+                    end_node_label=row['TargetClassLabel'],
+                    description=row['RelDef']
                 ))
             else:
                 nodes_dict[cls_name].properties.append(prop_obj)
         
         return DataModel(
             nodes=list(nodes_dict.values()),
-            relationships=relationships
+            relationships=relationships,
+            metadata={"source_classes": labels, "engine": "Onto2AI-Materialized"}
         )
     except Exception as e:
         logger.error(f"Error extracting data model: {e}")
@@ -327,9 +340,16 @@ async def generate_schema_code(data_model: DataModel, target_type: str = "pydant
     {data_model.model_dump_json(indent=2)}
     
     Constraints:
-    - If 'sql', generate Oracle-compatible DDL.
     - If 'pydantic', generate Python classes using Pydantic v2.
+    - If 'sql', generate Oracle-compatible DDL.
     - If 'neo4j', generate Cypher CREATE CONSTRAINT/INDEX statements.
+    
+    Documentation Style (CRITICAL):
+    - Class and Node definitions MUST be included as docstrings or inline comments at the class/table level.
+    - Property and Relationship definitions MUST be included as INLINE COMMENTS (# for Python, -- for SQL, // for Cypher) next to the field or constraint.
+    - Definitions should be for ANNOTATION ONLY; do not include them as functional data fields.
+    
+    Format:
     - Return ONLY the code. No explanations, no markdown fences.
     """
     
