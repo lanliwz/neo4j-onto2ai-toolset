@@ -11,6 +11,14 @@ mcp = FastMCP("Onto2AI")
 async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """
     Retrieve the materialized schema for one or more ontology classes.
+    
+    Formatting Instructions (CRITICAL):
+    - ALWAYS show the output in two distinct sections: (1) Classes and (2) Relationships.
+    - Render both sections as Markdown TABLES.
+    - Section 1: Use the 'Label' as a clickable Markdown link to its 'URI'.
+    - Section 2: Use the 'Relationship Type' as a clickable Markdown link to its 'URI'.
+    - Do not show URIs in separate columns unless labels are missing.
+    
     Returns:
         Section 1: Classes with labels, definitions, and URIs.
         Section 2: Relationships with definitions, URIs, source/target, and constraints.
@@ -91,6 +99,14 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
 async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """
     Retrieve the raw ontological schema (meta-model view) for one or more classes.
+    
+    Formatting Instructions (CRITICAL):
+    - ALWAYS show the output in two distinct sections: (1) Classes and (2) Ontological Definitions.
+    - Render both sections as Markdown TABLES.
+    - Section 1: Use the 'Label' as a clickable Markdown link to its 'URI'.
+    - Section 2: Use the 'Property' name as a clickable Markdown link to its 'Property URI'.
+    - Do not show URI or Property URI in separate columns unless labels/names are missing.
+    
     Returns:
         Section 1: Classes/Ranges with labels, definitions, and URIs.
         Section 2: Ontological mappings with full logic, URIs, and constraints.

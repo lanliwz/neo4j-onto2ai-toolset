@@ -5,18 +5,18 @@ This MCP server provides a powerful set of tools to interrogate, enhance, and ma
 ## Features
 
 ### 1. Schema Exploration
-- **`get_materialized_schema`**: Returns a structured view of a class in two parts:
-    - **Section 1 (Classes)**: deduplicated entities with labels, definitions, and URIs.
-    - **Section 2 (Relationships)**: full property mapping Source → Property → Target with URIs and constraints.
-- **`get_ontological_schema`**: Returns the raw, non-flattened ontological definitions (Restrictions, domain/range) for auditing or deep model analysis.
+- **`get_materialized_schema`**: Returns a flattened, production-ready view of a class.
+    - **Formatting**: Rendered as two Markdown tables. Section 1 links **Labels** to URIs; Section 2 links **Relationships** to URIs.
+- **`get_ontological_schema`**: Returns raw logic (Restrictions, domain/range).
+    - **Formatting**: Rendered as two Markdown tables. Section 1 links **Labels** to URIs; Section 2 links **Properties** to URIs.
 
 ### 2. Schema Manager (AI-Powered)
-- **`extract_data_model`**: Extracts a structured JSON `DataModel` from any ontology class.
-- **`enhance_schema`**: Uses AI to modify a `DataModel` based on natural language instructions (e.g., "Add a middleName", "Make email unique").
-- **`generate_schema_code`**: Generates production-ready code from a `DataModel` for:
+- **`enhance_schema`**: Auto-extracts from ontology and modifies a `DataModel` via natural language (e.g., "Add middleName").
+- **`generate_schema_code`**: Unified entry point to go from ontology classes directly to production code:
   - **SQL**: Database DDL (Oracle compatible).
   - **Pydantic**: Python data validation classes.
   - **Neo4j**: Cypher constraints and indexes.
+  - *Pass `instructions` for on-the-fly AI enhancements.*
 
 ## Installation
 
@@ -43,9 +43,9 @@ The server requires the following environment variables (configured via `.env` o
 
 ## Example Usage (via MCP Client)
 
-1.  **Extract Base**: `extract_data_model(class_names='Person')`
-2.  **Add Property**: `enhance_schema(model, 'Add a mandatory SSN to Person')`
-3.  **Generate Code**: `generate_schema_code(target_type='pydantic', data_model=enhanced_model)`
+1. **Browse**: `get_materialized_schema(class_names=['Account', 'Person'])`
+2. **Transform**: `enhance_schema(class_names=['Person'], instructions='Add mandatory SSN')`
+3. **Generate**: `generate_schema_code(class_names=['Payment'], target_type='sql', instructions='Add status enum')`
 
 ## Dependencies
 
