@@ -220,18 +220,13 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str
         logger.error(f"Error fetching enhanced ontological schema: {e}")
         return {"error": str(e)}
 
-@mcp.tool()
-async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
-    """
-    Extract a structured DataModel (Pydantic) for one or more classes.
-    Includes rich metadata (definitions, URIs) for downstream AI enhancement.
-    """
+async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
+    """Internal helper to extract a DataModel from the ontology."""
     if isinstance(class_names, str):
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
     
-    # query synchronized with get_materialized_schema but includes PropMetaType for structural building
     query = """
     MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
@@ -254,7 +249,7 @@ async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
     """
     
     try:
-        results = semanticdb.execute_cypher(query, params={"labels": labels}, name="extract_data_model_tool")
+        results = semanticdb.execute_cypher(query, params={"labels": labels}, name="internal_extract_data_model")
         
         nodes_dict = {}
         relationships = []
@@ -294,26 +289,29 @@ async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
             metadata={"source_classes": labels, "engine": "Onto2AI-Materialized"}
         )
     except Exception as e:
-        logger.error(f"Error extracting data model: {e}")
+        logger.error(f"Error in internal extraction: {e}")
         raise
 
 @mcp.tool()
-async def enhance_schema(data_model: DataModel, instructions: str) -> DataModel:
+async def enhance_schema(class_names: Union[str, List[str]], instructions: str) -> DataModel:
     """
-    Enhance or modify a DataModel based on natural language instructions using AI.
+    Extract a model from ontology and enhance it using AI instructions.
+    Returns the updated DataModel (JSON).
     """
-    prompt = f"""
-    You are a data architect. Modify the following Neo4j DataModel based on these instructions: "{instructions}"
-    
-    Current DataModel (JSON):
-    {data_model.model_dump_json(indent=2)}
-    
-    Return ONLY a valid JSON object matching the DataModel schema. 
-    Ensure PascalCase for labels and SCREAMING_SNAKE_CASE for relationship types if adding new ones.
-    Do not include markdown fences or any explanation.
-    """
-    
     try:
+        data_model = await _extract_data_model(class_names)
+        
+        prompt = f"""
+        You are a data architect. Modify the following Neo4j DataModel based on these instructions: "{instructions}"
+        
+        Current DataModel (JSON):
+        {data_model.model_dump_json(indent=2)}
+        
+        Return ONLY a valid JSON object matching the DataModel schema. 
+        Ensure PascalCase for labels and SCREAMING_SNAKE_CASE for relationship types if adding new ones.
+        Do not include markdown fences or any explanation.
+        """
+        
         response = await llm.ainvoke(prompt)
         content = str(response.content).strip()
         if content.startswith("```json"):
@@ -328,32 +326,44 @@ async def enhance_schema(data_model: DataModel, instructions: str) -> DataModel:
         raise
 
 @mcp.tool()
-async def generate_schema_code(data_model: DataModel, target_type: str = "pydantic") -> str:
+async def generate_schema_code(
+    class_names: Union[str, List[str]], 
+    target_type: str = "pydantic", 
+    instructions: Optional[str] = None
+) -> str:
     """
-    Generate code (SQL, Pydantic, Neo4j) for a given DataModel.
-    target_type: 'sql', 'pydantic', 'neo4j'
+    Generate production-ready code (SQL, Pydantic, Neo4j) for one or more ontology classes.
+    Optional 'instructions' allows on-the-fly AI enhancement of the base ontology schema.
     """
-    prompt = f"""
-    You are a code generation expert. Generate {target_type} code for the following DataModel.
-    
-    DataModel (JSON):
-    {data_model.model_dump_json(indent=2)}
-    
-    Constraints:
-    - If 'pydantic', generate Python classes using Pydantic v2.
-    - If 'sql', generate Oracle-compatible DDL.
-    - If 'neo4j', generate Cypher CREATE CONSTRAINT/INDEX statements.
-    
-    Documentation Style (CRITICAL):
-    - Class and Node definitions MUST be included as docstrings or inline comments at the class/table level.
-    - Property and Relationship definitions MUST be included as INLINE COMMENTS (# for Python, -- for SQL, // for Cypher) next to the field or constraint.
-    - Definitions should be for ANNOTATION ONLY; do not include them as functional data fields.
-    
-    Format:
-    - Return ONLY the code. No explanations, no markdown fences.
-    """
-    
     try:
+        # 1. Extract base model
+        if instructions:
+            data_model = await enhance_schema(class_names, instructions)
+        else:
+            data_model = await _extract_data_model(class_names)
+            
+        # 2. Generate code
+        prompt = f"""
+        You are a code generation expert. Generate {target_type} code for the following DataModel.
+        
+        DataModel (JSON):
+        {data_model.model_dump_json(indent=2)}
+        
+        Constraints:
+        - If 'pydantic', generate Python classes using Pydantic v2.
+        - If 'sql', generate Oracle-compatible DDL.
+        - If 'neo4j', generate Cypher CREATE CONSTRAINT/INDEX statements.
+        
+        Documentation Style (CRITICAL):
+        - For Pydantic: Class definitions MUST be rendered as Python DOCSTRINGS (triple quotes) inside the class.
+        - For SQL: Table definitions MUST be rendered using 'COMMENT ON TABLE [name] IS ...' statements.
+        - Property and Relationship definitions MUST be included as INLINE COMMENTS (# for Python, -- for SQL, // for Cypher) next to the field or constraint.
+        - Definitions should be for ANNOTATION ONLY; do not include them as functional data fields.
+        
+        Format:
+        - Return ONLY the code. No explanations, no markdown fences.
+        """
+        
         response = await llm.ainvoke(prompt)
         return str(response.content).strip()
     except Exception as e:
