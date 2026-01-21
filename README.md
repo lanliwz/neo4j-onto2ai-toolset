@@ -104,3 +104,35 @@ The repository includes a comprehensive MCP Server providing ontology interrogat
 
 For detailed documentation, see [MCP_README.md](./MCP_README.md).
 
+### FIBO Ontology Dependency Tree
+The following diagram illustrates the high-level dependencies within the FIBO ontology and its reliance on external standards:
+
+```mermaid
+graph TD
+    subgraph "FIBO Domains"
+        FBC["<b>FBC</b><br/>Financial Business and Commerce"]
+        BE["<b>BE</b><br/>Business Entities"]
+        FND["<b>FND</b><br/>Foundations"]
+    end
+
+    subgraph "Standard Ontologies"
+        Commons["<b>Commons</b><br/>OMG Commons"]
+        LCC["<b>LCC</b><br/>Languages, Countries and Codes"]
+    end
+
+    FBC --> BE
+    FBC --> FND
+    FBC --> Commons
+    FBC --> LCC
+
+    BE --> FND
+    BE --> Commons
+
+    FND --> Commons
+```
+
+- **FBC**: Depends on BE, FND, and international standards.
+- **BE**: Provides the legal/organizational layer by extending FND.
+- **FND**: The core semantic bedrock for all financial concepts.
+- **Commons/LCC**: Global standards for foundational data (dates, identities, locations).
+

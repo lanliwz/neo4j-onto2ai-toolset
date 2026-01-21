@@ -1,7 +1,7 @@
 ## Ontology Loader (RDFLib → Neo4j → Onto2AI Schema)
 
 This document describes the ontology loading pipeline implemented in  
-`neo4j_onto2ai_toolset/onto2schema/onto2ai_loader.py`.
+`neo4j_onto2ai_toolset/onto2ai_loader.py`.
 
 The loader ingests OWL/RDF ontologies (including all `owl:imports`) into Neo4j using **RDFLib + rdflib-neo4j**, enriches the RDF graph with inferred datatype-property ranges, and then converts the RDF layer into the project’s **Neo4j Onto2Schema domain model**.
 
@@ -124,7 +124,7 @@ Neo4jStoreConfig(
 From the project root:
 
 ```bash
-python neo4j_onto2ai_toolset/onto2schema/onto2ai_loader.py
+python neo4j_onto2ai_toolset/onto2ai_loader.py
 ```
 
 ### Select ontology to load
