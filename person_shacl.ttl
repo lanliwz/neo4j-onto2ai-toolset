@@ -1,0 +1,52 @@
+@prefix ex: <http://example.org/shacl/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix fibo-fnd-aap-ppl: <https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/> .
+@prefix cmns-dsg: <https://www.omg.org/spec/Commons/Designators/> .
+
+ex:Person4Modelling a sh:NodeShape ;
+    sh:targetClass fibo-fnd-aap-ppl:Person ;
+    sh:description "individual human being, with consciousness of self" ;
+    sh:property ex:HasGender4Modelling, 
+                ex:HasTextualName4Modelling, 
+                ex:HasGivenName4Modelling, 
+                ex:HasSurname4Modelling, 
+                ex:HasMiddleNameOrInitial4Modelling,
+                ex:HasDateOfBirth4Modelling .
+
+ex:HasGender4Modelling a sh:PropertyShape ;
+    sh:path fibo-fnd-aap-ppl:hasGender ;
+    sh:description "links a particular gender value with a person" ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .
+
+ex:HasTextualName4Modelling a sh:PropertyShape ;
+    sh:path cmns-dsg:hasTextualName ;
+    sh:description "associates a name, reference name, or appellation with an individual concept" ;
+    sh:datatype xsd:string ;
+    sh:minCount 0 .
+
+ex:HasGivenName4Modelling a sh:PropertyShape ;
+    sh:path <https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasGivenName> ;
+    sh:description "The name assigned to a person at birth or at baptism (equivalent to First Name)." ;
+    sh:datatype xsd:string ;
+    sh:minCount 0 .
+
+ex:HasSurname4Modelling a sh:PropertyShape ;
+    sh:path <https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasSurname> ;
+    sh:description "The name shared in common to identify members of a family (equivalent to Last Name)." ;
+    sh:datatype xsd:string ;
+    sh:minCount 0 .
+
+ex:HasMiddleNameOrInitial4Modelling a sh:PropertyShape ;
+    sh:path <https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasMiddleNameOrInitial> ;
+    sh:description "Additional names or initials occurring between the first and last name." ;
+    sh:datatype xsd:string ;
+    sh:minCount 0 .
+
+ex:HasDateOfBirth4Modelling a sh:PropertyShape ;
+    sh:path fibo-fnd-aap-ppl:hasDateOfBirth ;
+    sh:description "identifies the date on which an individual was born" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 .

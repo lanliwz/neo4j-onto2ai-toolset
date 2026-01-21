@@ -276,7 +276,8 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
                 nodes_dict[cls_name] = Node(
                     label=cls_name, 
                     description=row['SourceClassDef'],
-                    properties=[]
+                    properties=[],
+                    uri=row['SourceClassURI']
                 )
             
             is_rel = (row['PropMetaType'] == 'owl__ObjectProperty')
@@ -286,7 +287,8 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
                 type=row['TargetClassLabel'],
                 description=row['RelDef'],
                 mandatory=(row['Requirement'] == 'Mandatory'),
-                cardinality=row['Cardinality']
+                cardinality=row['Cardinality'],
+                uri=row['RelURI']
             )
             
             if is_rel:
@@ -294,7 +296,8 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
                     type=row['RelType'],
                     start_node_label=cls_name,
                     end_node_label=row['TargetClassLabel'],
-                    description=row['RelDef']
+                    description=row['RelDef'],
+                    uri=row['RelURI']
                 ))
             else:
                 nodes_dict[cls_name].properties.append(prop_obj)
@@ -384,6 +387,57 @@ async def generate_schema_code(
         return str(response.content).strip()
     except Exception as e:
         logger.error(f"Error generating schema code: {e}")
+        return f"Error: {e}"
+
+@mcp.tool()
+async def generate_shacl_for_modelling(
+    class_names: Union[str, List[str]], 
+    instructions: Optional[str] = None
+) -> str:
+    """
+    Generate modeling-ready SHACL files for one or more ontology classes.
+    
+    SHACL Standard (CRITICAL):
+    - EXACT NAMESPACES: Use official FIBO/CMNS URIs for sh:targetClass and sh:path.
+    - LOCAL IDENTIFIERS: Use ex: namespace (http://example.org/shacl/) for NodeShapes and PropertyShapes.
+    - NAMING CONVENTION: Identify shapes as 'xxx4Modelling' (e.g., Person4Modelling).
+    - INCORPORATE: All definitions, datatypes, and cardinality from the ontology.
+    """
+    try:
+        # Extract base model (includes URIs)
+        if instructions:
+            data_model = await enhance_schema(class_names, instructions)
+        else:
+            data_model = await _extract_data_model(class_names)
+            
+        prompt = f"""
+        You are a semantic modeling expert. Generate SHACL code in Turtle format for the following DataModel.
+        
+        DataModel (JSON):
+        {data_model.model_dump_json(indent=2)}
+        
+        Formatting Rules (MANDATORY):
+        1. NAMESPACES: 
+           - Use 'ex: <http://example.org/shacl/>' for the Shape identifiers.
+           - Use official ontologies (fibo, cmns, lcc, etc.) for the targets. Define necessary prefixes.
+        2. SHAPE NAMING:
+           - NodeShape identifiers MUST end with '4Modelling' (e.g. ex:Person4Modelling).
+           - PropertyShape identifiers MUST end with '4Modelling' (e.g. ex:HasName4Modelling).
+        3. TARGETS:
+           - sh:targetClass MUST use the official URI provided in the DataModel.
+           - sh:path MUST use the official URI provided in the DataModel.
+        4. CONSTRAINTS:
+           - Use sh:datatype, sh:minCount, sh:maxCount, and sh:node based on the DataModel properties.
+           - Include sh:description using the ontological definitions.
+        
+        Format:
+        - Return ONLY the Turtle code. No explanations, no markdown fences.
+        """
+        
+        response = await llm.ainvoke(prompt)
+        return str(response.content).strip()
+    except Exception as e:
+        logger.error(f"Error generating SHACL: {e}")
         return f"Error: {e}"
 
 if __name__ == "__main__":

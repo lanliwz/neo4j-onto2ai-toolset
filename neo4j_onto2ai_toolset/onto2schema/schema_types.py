@@ -7,11 +7,13 @@ class Property(BaseModel):
     description: Optional[str] = None
     mandatory: bool = False
     cardinality: str = "0..1"
+    uri: Optional[str] = None
 
 class Node(BaseModel):
     label: str
     properties: List[Property] = []
     description: Optional[str] = None
+    uri: Optional[str] = None
 
 class Relationship(BaseModel):
     type: str
@@ -19,6 +21,7 @@ class Relationship(BaseModel):
     end_node_label: str
     properties: List[Property] = []
     description: Optional[str] = None
+    uri: Optional[str] = None
 
 class DataModel(BaseModel):
     nodes: List[Node] = []

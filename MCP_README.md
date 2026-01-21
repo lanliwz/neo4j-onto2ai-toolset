@@ -12,7 +12,8 @@ This MCP server provides a powerful set of tools to interrogate, enhance, and ma
 
 ### 2. Schema Manager (AI-Powered)
 - **`enhance_schema`**: Auto-extracts from ontology and modifies a `DataModel` via natural language (e.g., "Add middleName").
-- **`generate_schema_code`**: Unified entry point to go from ontology classes directly to production code:
+- **`generate_schema_code`**: Generates production-ready code (SQL, Pydantic, Neo4j).
+- **`generate_shacl_for_modelling`**: Generates SHACL files using local shape namespaces and `4Modelling` naming conventions, while targeting official ontological URIs.
   - **SQL**: Database DDL (Oracle compatible).
   - **Pydantic**: Python data validation classes.
   - **Neo4j**: Cypher constraints and indexes.

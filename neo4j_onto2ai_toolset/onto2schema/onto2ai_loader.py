@@ -102,13 +102,14 @@ def load_neo4j_db_ext(sparQl, in_mem_graph,neo4j_graph):
 
 
 if __name__ == "__main__":
-    onto_uri = (
-        "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/"
-    )
+    onto_uri_list = ["https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/",
+                "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/"]
+
     rdf_format = "application/rdf+xml"
 
     reset_neo4j_db()
-    load_neo4j_db(onto_uri=onto_uri, format=rdf_format, imports=imported_onto_set)
+    for onto_uri in onto_uri_list:
+        load_neo4j_db(onto_uri=onto_uri, format=rdf_format, imports=imported_onto_set)
     materialize_properties(semanticdb, 'owl__ObjectProperty')
     materialize_properties(semanticdb, 'owl__DatatypeProperty')
     cleanup_duplicate_relationships(semanticdb)
