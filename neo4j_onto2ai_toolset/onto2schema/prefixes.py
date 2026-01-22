@@ -48,6 +48,7 @@ PREFIXES_CANON: Dict[str, str] = {
     "c_gov":  "https://www.omg.org/spec/Commons/Governance/",
     "c_idm":  "https://www.omg.org/spec/Commons/IdentifiersAndMetadata/",
     "c_pas":  "https://www.omg.org/spec/Commons/PartiesAndSituations/",
+    "c_ra":   "https://www.omg.org/spec/Commons/RegistrationAuthorities/",
 
     # OMG LCC
     "l":    "https://www.omg.org/spec/LCC/",
@@ -156,6 +157,7 @@ PREFIXES_CANON: Dict[str, str] = {
     "ind_ind_ind":  "https://spec.edmcouncil.org/fibo/ontology/IND/Indicators/Indicators/",
     "ind_ir_ir":    "https://spec.edmcouncil.org/fibo/ontology/IND/InterestRates/InterestRates/",
     "ind_fx_fx":    "https://spec.edmcouncil.org/fibo/ontology/IND/ForeignExchange/ForeignExchange/",
+    "ind_ei_ei":    "https://spec.edmcouncil.org/fibo/ontology/IND/EconomicIndicators/EconomicIndicators/",
     "ind_mkt_bas":  "https://spec.edmcouncil.org/fibo/ontology/IND/MarketIndices/BasketIndices/",
     "der_drc_comm": "https://spec.edmcouncil.org/fibo/ontology/DER/DerivativesContracts/CommoditiesContracts/",
     "der_drc_curr": "https://spec.edmcouncil.org/fibo/ontology/DER/DerivativesContracts/CurrencyContracts/",
