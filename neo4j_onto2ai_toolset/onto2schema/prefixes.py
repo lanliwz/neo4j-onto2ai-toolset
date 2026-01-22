@@ -37,6 +37,17 @@ PREFIXES_CANON: Dict[str, str] = {
     "c_qtu":  "https://www.omg.org/spec/Commons/QuantitiesAndUnits/",
     "c_reg":  "https://www.omg.org/spec/Commons/RegulatoryAgencies/",
     "c_txt":  "https://www.omg.org/spec/Commons/TextDatatype/",
+    "c_org":  "https://www.omg.org/spec/Commons/Organizations/",
+    "c_pty":  "https://www.omg.org/spec/Commons/Parties/",
+    "c_fac":  "https://www.omg.org/spec/Commons/Facilities/",
+    "c_agr":  "https://www.omg.org/spec/Commons/Agreements/",
+    "c_ctr":  "https://www.omg.org/spec/Commons/Contracts/",
+    "c_mod":  "https://www.omg.org/spec/Commons/AnnotationMetadata/",
+    "c_rac":  "https://www.omg.org/spec/Commons/RolesAndCompositions/",
+    "c_pmp":  "https://www.omg.org/spec/Commons/PartiesAndPeople/",
+    "c_gov":  "https://www.omg.org/spec/Commons/Governance/",
+    "c_idm":  "https://www.omg.org/spec/Commons/IdentifiersAndMetadata/",
+    "c_pas":  "https://www.omg.org/spec/Commons/PartiesAndSituations/",
 
     # OMG LCC
     "l":    "https://www.omg.org/spec/LCC/",
@@ -60,6 +71,13 @@ PREFIXES_CANON: Dict[str, str] = {
     "be_le_cb":    "https://spec.edmcouncil.org/fibo/ontology/BE/LegalEntities/CorporateBodies/",
     "be_corp_corp":"https://spec.edmcouncil.org/fibo/ontology/BE/Corporations/Corporations/",
     "be_ge_ge":    "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/GovernmentEntities/",
+    "be_ptr_ptr":   "https://spec.edmcouncil.org/fibo/ontology/BE/Partnerships/Partnerships/",
+    "be_plc_plc":   "https://spec.edmcouncil.org/fibo/ontology/BE/PrivateLimitedCompanies/PrivateLimitedCompanies/",
+    "be_oac_exec":  "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/Executives/",
+    "be_oac_own":   "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/OwnershipParties/",
+    "be_oac_cctl":  "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/CorporateControl/",
+    "be_oac_cown":  "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/CorporateOwnership/",
+    "be_oac_ctl":   "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/ControlParties/",
 
     # --- FND leaf you use
     "fnd_arr_cls": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/ClassificationSchemes/",
@@ -97,6 +115,9 @@ PREFIXES_CANON: Dict[str, str] = {
     "fbc_fct_breg": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/BusinessRegistries/",
     "fbc_pas_caa":  "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/",
     "fbc_fi_fi":    "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/",
+    "fbc_fct_fse":  "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/FinancialServicesEntities/",
+    "fbc_dae_eq":   "https://spec.edmcouncil.org/fibo/ontology/FBC/DebtAndEquities/Equities/",
+    "be_fct_pub":   "https://spec.edmcouncil.org/fibo/ontology/BE/FunctionalEntities/Publishers/",
 }
 
 
