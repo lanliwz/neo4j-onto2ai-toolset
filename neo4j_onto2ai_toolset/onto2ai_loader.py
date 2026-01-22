@@ -139,7 +139,8 @@ if __name__ == "__main__":
 
     # --- USER SELECTION ---
     # Set discover=True to recursively find all modules/ontologies in a domain or spec
-    selection = [FND_DOMAIN,BE_DOMAIN,BP_DOMAIN]
+    # selection = [FND_DOMAIN,BE_DOMAIN,BP_DOMAIN,FBC_DOMAIN]
+    selection = [FBC_DOMAIN]
     discover_mode = True 
     # ----------------------
 
