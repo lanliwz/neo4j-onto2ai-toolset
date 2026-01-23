@@ -1,6 +1,7 @@
 from langgraph_supervisor import create_supervisor
 from neo4j_onto2ai_toolset.langraph_agents.model_agents import *
 
+from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
 
 model_manager = create_supervisor(
     # Each message in messages should follow the Chat Message format:
@@ -10,7 +11,7 @@ model_manager = create_supervisor(
     # }
     #
     agents=[validate_model_agent, rdb_ddl_agent, pydantic_class_agent, model_review_agent, model_view_all_agent,create_model_agent, modify_model_agent, create_entitlement_model_agent],
-    model=llm,
+    model=get_llm(),
     prompt=(
         "You are a supervisor responsible for routing the user's inquiry to the correct agent.\n"
         "Task:\n"

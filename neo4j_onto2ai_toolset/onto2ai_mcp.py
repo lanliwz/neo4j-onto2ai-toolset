@@ -1,7 +1,7 @@
 import json
 from typing import List, Union, Optional, Dict, Any
 from mcp.server.fastmcp import FastMCP
-from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, llm
+from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
 
@@ -331,7 +331,7 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
         Do not include markdown fences or any explanation.
         """
         
-        response = await llm.ainvoke(prompt)
+        response = await get_llm().ainvoke(prompt)
         content = str(response.content).strip()
         if content.startswith("```json"):
             content = content.split("```json")[1].split("```")[0].strip()
@@ -383,7 +383,7 @@ async def generate_schema_code(
         - Return ONLY the code. No explanations, no markdown fences.
         """
         
-        response = await llm.ainvoke(prompt)
+        response = await get_llm().ainvoke(prompt)
         return str(response.content).strip()
     except Exception as e:
         logger.error(f"Error generating schema code: {e}")
@@ -434,7 +434,7 @@ async def generate_shacl_for_modelling(
         - Return ONLY the Turtle code. No explanations, no markdown fences.
         """
         
-        response = await llm.ainvoke(prompt)
+        response = await get_llm().ainvoke(prompt)
         return str(response.content).strip()
     except Exception as e:
         logger.error(f"Error generating SHACL: {e}")

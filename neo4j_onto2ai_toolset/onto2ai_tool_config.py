@@ -59,7 +59,15 @@ auth_data = {
 semanticdb = Neo4jDatabase(neo4j_model.url, neo4j_model.username, neo4j_model.password, neo4j_model.database)
 
 # LLM Model Config
-llm = ChatOpenAI(model=GPT_MODEL_NAME)
+_llm = None
+
+def get_llm():
+    """Lazy initialization of the LLM."""
+    global _llm
+    if _llm is None:
+        logger.info(f"Initializing LLM: {GPT_MODEL_NAME}")
+        _llm = ChatOpenAI(model=GPT_MODEL_NAME)
+    return _llm
 
 # Graph Database Config
 graphdb = Neo4jGraph(

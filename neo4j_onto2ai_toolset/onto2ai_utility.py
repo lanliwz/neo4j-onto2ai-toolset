@@ -212,7 +212,7 @@ class IntentDecision(BaseModel):
 
 async def classify_intent(state: OverallState) -> Dict[str, Any]:
     """Classifies user question into a specific schema/model action."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
     
     system_msg = """
     You are an ontology architect. Analyze the user question and determine the next action.
@@ -229,7 +229,7 @@ async def classify_intent(state: OverallState) -> Dict[str, Any]:
         ("human", "{question}")
     ])
     
-    chain = prompt | llm.with_structured_output(IntentDecision)
+    chain = prompt | get_llm().with_structured_output(IntentDecision)
     output = await chain.ainvoke({"question": state["question"]})
     
     mylogger.info(f"Intent Classification: {output}")
@@ -255,33 +255,33 @@ async def review_schema(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any
 
 async def generate_relational_db_ddl(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates Oracle DDL from the schema."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
     
     schema_text = get_schema(start_node=state.get("start_node"), db=db)
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Generate Oracle DDL for the given schema. No pre-amble. One-to-one as columns. Code only."),
         ("human", "{schema}")
     ])
-    chain = prompt | llm | StrOutputParser()
+    chain = prompt | get_llm() | StrOutputParser()
     ddl = await chain.ainvoke({"schema": schema_text})
     return {"cypher_statement": ddl, "steps": ["generate_relational_db_ddl"]}
 
 async def generate_pydantic_class_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates Pydantic v2 classes from the schema."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
     
     prompt_value = gen_pydantic_class(start_node=state.get("start_node"), db=db)
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Generate Pydantic v2 classes. No pre-amble. Code only."),
         ("human", "{prompt}")
     ])
-    chain = prompt | llm | StrOutputParser()
+    chain = prompt | get_llm() | StrOutputParser()
     code = await chain.ainvoke({"prompt": str(prompt_value)})
     return {"cypher_statement": code, "steps": ["generate_pydantic_class"]}
 
 async def create_schema_node(state: OverallState) -> Dict[str, Any]:
     """Generates a Cypher statement to create a new schema from external text/URL."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
     
     if not state.get('based_on'):
         return {"cypher_statement": "[]", "steps": ["create_schema_aborted"]}
@@ -290,13 +290,13 @@ async def create_schema_node(state: OverallState) -> Dict[str, Any]:
         ("system", "Convert input text/URL into a list of Cypher MERGE statements to create classes and relationships."),
         ("human", "Domain: {domain}\nInput: {based_on}")
     ])
-    chain = prompt | llm | StrOutputParser()
+    chain = prompt | get_llm() | StrOutputParser()
     cypher = await chain.ainvoke({"domain": state["domain"], "based_on": state["based_on"]})
     return {"cypher_statement": cypher, "steps": ["create_schema"]}
 
 async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[str, Any]:
     """Generates a Cypher statement to enhance an existing schema."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
     
     concept = state.get("start_node")
     prompt_value = gen_prompt4schema(start_node=concept, db=db)
@@ -304,7 +304,7 @@ async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[s
         ("system", "Generate a Cypher statement to enhance the following schema. MATCH with rdfs__label."),
         ("human", "{schema}")
     ])
-    chain = prompt | llm | StrOutputParser()
+    chain = prompt | get_llm() | StrOutputParser()
     cypher = await chain.ainvoke({"schema": str(prompt_value)})
     return {"cypher_statement": cypher, "steps": ["generate_cypher"]}
 

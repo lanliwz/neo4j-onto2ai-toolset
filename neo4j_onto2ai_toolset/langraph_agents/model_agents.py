@@ -1,5 +1,5 @@
 from langgraph.prebuilt import create_react_agent
-from neo4j_onto2ai_toolset.onto2ai_tool_config import llm
+from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
 from neo4j_onto2ai_toolset.langgraph_tools.model_tools import *
 from neo4j_onto2ai_toolset.langgraph_prompts.agent_prompts import create_model_prompt, enhance_model_prompt, \
     validate_and_clean_model_prompt
@@ -10,7 +10,7 @@ from langgraph.types import interrupt
 checkpointer = InMemorySaver()
 # Agents
 create_entitlement_model_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[modify_model],
     name="create_entitlement_model_agent",
     prompt=create_entitlement_model_prompt,
@@ -19,7 +19,7 @@ create_entitlement_model_agent = create_react_agent(
 )
 
 create_model_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[modify_model],
     name="create_model_agent",
     prompt=create_model_prompt,
@@ -28,7 +28,7 @@ create_model_agent = create_react_agent(
 )
 
 modify_model_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_model,modify_model],
     name="modify_model_agent",
     prompt=enhance_model_prompt,
@@ -36,7 +36,7 @@ modify_model_agent = create_react_agent(
     checkpointer = checkpointer
 )
 model_review_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_model],
     name="model_review_agent",
     prompt=(
@@ -54,7 +54,7 @@ model_review_agent = create_react_agent(
 )
 
 model_view_all_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_all_model],
     name="model_view_all_agent",
     prompt=(
@@ -73,7 +73,7 @@ model_view_all_agent = create_react_agent(
 
 # Agents
 validate_model_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_model,modify_model],
     name="validate_model_agent",
     prompt=validate_and_clean_model_prompt,
@@ -81,7 +81,7 @@ validate_model_agent = create_react_agent(
 )
 
 rdb_ddl_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_model],
     name="rdb_ddl_agent",
     prompt= (
@@ -94,7 +94,7 @@ rdb_ddl_agent = create_react_agent(
 )
 
 pydantic_class_agent = create_react_agent(
-    model=llm,
+    model=get_llm(),
     tools=[retrieve_model],
     name="pydantic_class_agent",
     prompt= (

@@ -7,9 +7,9 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, START, END
 from langchain_core.agents import AgentFinish
-from neo4j_onto2ai_toolset.onto2ai_tool_config import llm, graphdb
+from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm, graphdb
 
-# from neo4j_onto2ai_toolset.onto2ai_tool_config import llm, graphdb
+# from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm, graphdb
 
 # 1. Define State
 class AgentState(TypedDict, total=False):
@@ -37,7 +37,7 @@ prompt = ChatPromptTemplate.from_messages([
 # create_tool_calling_agent requires a tools list, even if empty.
 # Note: Ensure 'llm' has .bind_tools() capability (e.g., ChatOpenAI or ChatVertexAI)
 create_model_agent: Runnable = create_tool_calling_agent(
-    llm=llm,
+    llm=get_llm(),
     tools=[],
     prompt=prompt
 )
