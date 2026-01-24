@@ -440,6 +440,175 @@ async def generate_shacl_for_modelling(
         logger.error(f"Error generating SHACL: {e}")
         return f"Error: {e}"
 
+@mcp.tool()
+async def staging_materialized_schema(
+    class_names: Union[str, List[str]],
+    staging_db_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Extract materialized schema for one or more ontology classes and copy 
+    all involved classes and relationships to a staging Neo4j database.
+    
+    Args:
+        class_names: One or more class labels to extract (e.g., "person" or ["person", "account"])
+        staging_db_name: Target database name. Defaults to NEO4J_STAGING_DB_NAME env var.
+    
+    Returns:
+        Summary of copied classes and relationships with counts.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db
+    
+    if isinstance(class_names, str):
+        class_names = [class_names]
+    
+    labels = [label.strip() for label in class_names]
+    
+    # Step 1: Extract materialized schema from source database
+    query = """
+    MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+    MATCH (parent)-[r]->(target)
+    WHERE r.materialized = true
+    RETURN DISTINCT
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
+      r.cardinality AS Cardinality,
+      r.requirement AS Requirement,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    ORDER BY SourceClassLabel, RelType
+    """
+    
+    logger.info(f"Extracting materialized schema for staging: {labels}")
+    
+    try:
+        results = semanticdb.execute_cypher(query, params={"labels": labels}, name="staging_extract")
+        
+        if not results:
+            return {
+                "status": "warning",
+                "message": f"No materialized schema found for classes: {labels}",
+                "classes_copied": 0,
+                "relationships_copied": 0
+            }
+        
+        # Step 2: Collect unique classes and relationships
+        classes = {}
+        relationships = []
+        
+        for row in results:
+            # Collect source class
+            src_uri = row['SourceClassURI']
+            if src_uri and src_uri not in classes:
+                classes[src_uri] = {
+                    "uri": src_uri,
+                    "label": row['SourceClassLabel'],
+                    "definition": row['SourceClassDef']
+                }
+            
+            # Collect target class
+            tgt_uri = row['TargetClassURI']
+            if tgt_uri and tgt_uri not in classes:
+                classes[tgt_uri] = {
+                    "uri": tgt_uri,
+                    "label": row['TargetClassLabel'],
+                    "definition": row['TargetClassDef']
+                }
+            
+            # Collect relationship
+            relationships.append({
+                "source_uri": src_uri,
+                "target_uri": tgt_uri,
+                "rel_type": row['RelType'],
+                "rel_uri": row['RelURI'],
+                "definition": row['RelDef'],
+                "cardinality": row['Cardinality'],
+                "requirement": row['Requirement']
+            })
+        
+        # Step 3: Connect to staging database
+        staging_db = get_staging_db(staging_db_name)
+        
+        try:
+            # Step 4: Insert classes into staging database
+            class_insert_query = """
+            MERGE (c:owl__Class {uri: $uri})
+            SET c.rdfs__label = $label,
+                c.skos__definition = $definition
+            """
+            
+            for cls in classes.values():
+                staging_db.execute_cypher(
+                    class_insert_query,
+                    params={
+                        "uri": cls["uri"],
+                        "label": cls["label"],
+                        "definition": cls["definition"]
+                    },
+                    name="staging_class_insert"
+                )
+            
+            logger.info(f"Inserted {len(classes)} classes into staging database")
+            
+            # Step 5: Insert relationships into staging database
+            # Note: We need to create dynamic relationship types, so we build queries per type
+            rel_types_created = set()
+            
+            for rel in relationships:
+                rel_type = rel["rel_type"]
+                if not rel_type:
+                    continue
+                
+                rel_insert_query = f"""
+                MATCH (source:owl__Class {{uri: $source_uri}})
+                MATCH (target:owl__Class {{uri: $target_uri}})
+                MERGE (source)-[r:{rel_type}]->(target)
+                SET r.uri = $rel_uri,
+                    r.skos__definition = $definition,
+                    r.cardinality = $cardinality,
+                    r.requirement = $requirement,
+                    r.materialized = true
+                """
+                
+                staging_db.execute_cypher(
+                    rel_insert_query,
+                    params={
+                        "source_uri": rel["source_uri"],
+                        "target_uri": rel["target_uri"],
+                        "rel_uri": rel["rel_uri"],
+                        "definition": rel["definition"],
+                        "cardinality": rel["cardinality"],
+                        "requirement": rel["requirement"]
+                    },
+                    name="staging_rel_insert"
+                )
+                rel_types_created.add(rel_type)
+            
+            logger.info(f"Inserted {len(relationships)} relationships into staging database")
+            
+        finally:
+            staging_db.close()
+        
+        # Return summary
+        return {
+            "status": "success",
+            "staging_database": staging_db_name or "stagingdb",
+            "classes_copied": len(classes),
+            "relationships_copied": len(relationships),
+            "class_labels": [c["label"] for c in classes.values()],
+            "relationship_types": list(rel_types_created)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error staging materialized schema: {e}")
+        return {"status": "error", "error": str(e)}
+
 if __name__ == "__main__":
     # By default, run using stdio for MCP integration
     mcp.run()
+

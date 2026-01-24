@@ -58,6 +58,27 @@ auth_data = {
 
 semanticdb = Neo4jDatabase(neo4j_model.url, neo4j_model.username, neo4j_model.password, neo4j_model.database)
 
+# Default staging database name from environment
+NEO4J_STAGING_DB_NAME = os.getenv("NEO4J_STAGING_DB_NAME", "stagingdb")
+
+def get_staging_db(staging_db_name: str = None) -> Neo4jDatabase:
+    """Create a Neo4jDatabase connection to the staging database.
+    
+    Args:
+        staging_db_name: Target database name. Defaults to NEO4J_STAGING_DB_NAME env var.
+    
+    Returns:
+        Neo4jDatabase instance connected to the staging database.
+    """
+    db_name = staging_db_name or NEO4J_STAGING_DB_NAME
+    logger.info(f"Creating staging database connection to: {db_name}")
+    return Neo4jDatabase(
+        neo4j_model.url,
+        neo4j_model.username,
+        neo4j_model.password,
+        db_name
+    )
+
 # LLM Model Config
 _llm = None
 

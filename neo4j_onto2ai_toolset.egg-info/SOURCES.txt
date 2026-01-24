@@ -3,8 +3,11 @@ README.md
 setup.py
 neo4j_onto2ai_toolset/__init__.py
 neo4j_onto2ai_toolset/display_dataflow.py
+neo4j_onto2ai_toolset/onto2ai_loader.py
 neo4j_onto2ai_toolset/onto2ai_logger_config.py
+neo4j_onto2ai_toolset/onto2ai_mcp.py
 neo4j_onto2ai_toolset/onto2ai_tool_config.py
+neo4j_onto2ai_toolset/onto2ai_utility.py
 neo4j_onto2ai_toolset.egg-info/PKG-INFO
 neo4j_onto2ai_toolset.egg-info/SOURCES.txt
 neo4j_onto2ai_toolset.egg-info/dependency_links.txt
@@ -30,8 +33,11 @@ neo4j_onto2ai_toolset/langraph_agents/model_agents.py
 neo4j_onto2ai_toolset/onto2schema/__init__.py
 neo4j_onto2ai_toolset/onto2schema/base_functions.py
 neo4j_onto2ai_toolset/onto2schema/get_schema_test.py
-neo4j_onto2ai_toolset/onto2schema/neo4j_utility.py
-neo4j_onto2ai_toolset/onto2schema/onto_loader.py
+neo4j_onto2ai_toolset/onto2schema/onto_db_initializer.py
+neo4j_onto2ai_toolset/onto2schema/onto_materializer.py
+neo4j_onto2ai_toolset/onto2schema/prefixes.py
+neo4j_onto2ai_toolset/onto2schema/property_materializer.py
+neo4j_onto2ai_toolset/onto2schema/schema_types.py
 neo4j_onto2ai_toolset/onto2schema/cypher_statement/__init__.py
 neo4j_onto2ai_toolset/onto2schema/cypher_statement/cypher_for_modeling.py
 neo4j_onto2ai_toolset/onto2schema/cypher_statement/gen_gojs_schema.py
@@ -41,6 +47,5 @@ neo4j_onto2ai_toolset/onto2schema/rdf_statement/__init__.py
 neo4j_onto2ai_toolset/onto2schema/sparql_statement/__init__.py
 neo4j_onto2ai_toolset/schema_chatbot/__init__.py
 neo4j_onto2ai_toolset/schema_chatbot/chatbot.py
-neo4j_onto2ai_toolset/schema_chatbot/onto2schema_langraph_model.py
 neo4j_onto2ai_toolset/schema_chatbot/onto2schema_query_example.py
 neo4j_onto2ai_toolset/schema_chatbot/supervised_chat.py

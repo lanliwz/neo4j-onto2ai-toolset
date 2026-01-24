@@ -81,6 +81,8 @@ apoc.map.removeKeys(properties(m), ['embedding']) as annotation_properties
 '''
 
 def query_schema(label=None):
+
+
     # Base query
     query = schema_base_cls2cls
     # Parameters dictionary
