@@ -481,9 +481,11 @@ async def staging_materialized_schema(
     
     # Step 1: Extract materialized schema from source database
     query = """
-    MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    MATCH (c:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
-    MATCH (parent)-[r]->(target)
+    OPTIONAL MATCH (c)-[:owl__subClassOf*0..]->(parent:owl__Class)
+    WITH coalesce(parent, c) AS classNode, c
+    MATCH (classNode)-[r]->(target)
     WHERE r.materialized = true
     RETURN DISTINCT
       c.rdfs__label AS SourceClassLabel,
@@ -496,7 +498,8 @@ async def staging_materialized_schema(
       r.requirement AS Requirement,
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
-      target.skos__definition AS TargetClassDef
+      target.skos__definition AS TargetClassDef,
+      labels(target) AS TargetLabels
     ORDER BY SourceClassLabel, RelType
     """
     
@@ -513,8 +516,10 @@ async def staging_materialized_schema(
                 "relationships_copied": 0
             }
         
-        # Step 2: Collect unique classes and relationships
+        # Step 2: Collect unique classes, datatypes, individuals and relationships
         classes = {}
+        datatypes = {}
+        named_individuals = {}
         relationships = []
         
         for row in results:
@@ -527,14 +532,49 @@ async def staging_materialized_schema(
                     "definition": row['SourceClassDef']
                 }
             
-            # Collect target class
+            # Collect target based on its type
             tgt_uri = row['TargetClassURI']
-            if tgt_uri and tgt_uri not in classes:
-                classes[tgt_uri] = {
-                    "uri": tgt_uri,
-                    "label": row['TargetClassLabel'],
-                    "definition": row['TargetClassDef']
-                }
+            tgt_labels = row.get('TargetLabels', []) or []
+            
+            if tgt_uri:
+                # Check for XSD datatypes by URI pattern (they may be labeled as Resource)
+                is_xsd_datatype = 'XMLSchema#' in tgt_uri or 'XMLSchema/' in tgt_uri
+                
+                if 'rdfs__Datatype' in tgt_labels or is_xsd_datatype:
+                    if tgt_uri not in datatypes:
+                        # Extract short name for XSD types
+                        if is_xsd_datatype:
+                            short_label = tgt_uri.split('#')[-1] if '#' in tgt_uri else tgt_uri.split('/')[-1]
+                            label = f"xsd:{short_label}"
+                        else:
+                            label = row['TargetClassLabel']
+                        datatypes[tgt_uri] = {
+                            "uri": tgt_uri,
+                            "label": label,
+                            "definition": row['TargetClassDef']
+                        }
+                elif 'owl__NamedIndividual' in tgt_labels:
+                    if tgt_uri not in named_individuals:
+                        named_individuals[tgt_uri] = {
+                            "uri": tgt_uri,
+                            "label": row['TargetClassLabel'],
+                            "definition": row['TargetClassDef']
+                        }
+                elif 'owl__Class' in tgt_labels:
+                    if tgt_uri not in classes:
+                        classes[tgt_uri] = {
+                            "uri": tgt_uri,
+                            "label": row['TargetClassLabel'],
+                            "definition": row['TargetClassDef']
+                        }
+                else:
+                    # Default to class for unknown types (non-XSD)
+                    if tgt_uri not in classes:
+                        classes[tgt_uri] = {
+                            "uri": tgt_uri,
+                            "label": row['TargetClassLabel'],
+                            "definition": row['TargetClassDef']
+                        }
             
             # Collect relationship
             relationships.append({
@@ -544,14 +584,15 @@ async def staging_materialized_schema(
                 "rel_uri": row['RelURI'],
                 "definition": row['RelDef'],
                 "cardinality": row['Cardinality'],
-                "requirement": row['Requirement']
+                "requirement": row['Requirement'],
+                "target_labels": tgt_labels
             })
         
         # Step 3: Connect to staging database
         staging_db = get_staging_db(staging_db_name)
         
         try:
-            # Step 4: Insert classes into staging database
+            # Step 4a: Insert classes into staging database
             class_insert_query = """
             MERGE (c:owl__Class {uri: $uri})
             SET c.rdfs__label = $label,
@@ -571,8 +612,47 @@ async def staging_materialized_schema(
             
             logger.info(f"Inserted {len(classes)} classes into staging database")
             
+            # Step 4b: Insert datatypes into staging database
+            datatype_insert_query = """
+            MERGE (d:rdfs__Datatype {uri: $uri})
+            SET d.rdfs__label = $label,
+                d.skos__definition = $definition
+            """
+            
+            for dt in datatypes.values():
+                staging_db.execute_cypher(
+                    datatype_insert_query,
+                    params={
+                        "uri": dt["uri"],
+                        "label": dt["label"],
+                        "definition": dt["definition"]
+                    },
+                    name="staging_datatype_insert"
+                )
+            
+            logger.info(f"Inserted {len(datatypes)} datatypes into staging database")
+            
+            # Step 4c: Insert named individuals into staging database
+            individual_insert_query = """
+            MERGE (i:owl__NamedIndividual {uri: $uri})
+            SET i.rdfs__label = $label,
+                i.skos__definition = $definition
+            """
+            
+            for ind in named_individuals.values():
+                staging_db.execute_cypher(
+                    individual_insert_query,
+                    params={
+                        "uri": ind["uri"],
+                        "label": ind["label"],
+                        "definition": ind["definition"]
+                    },
+                    name="staging_individual_insert"
+                )
+            
+            logger.info(f"Inserted {len(named_individuals)} named individuals into staging database")
+            
             # Step 5: Insert relationships into staging database
-            # Note: We need to create dynamic relationship types, so we build queries per type
             rel_types_created = set()
             
             for rel in relationships:
@@ -580,9 +660,23 @@ async def staging_materialized_schema(
                 if not rel_type:
                     continue
                 
+                tgt_labels = rel.get("target_labels", []) or []
+                tgt_uri = rel.get("target_uri", "")
+                
+                # Check for XSD datatypes by URI pattern
+                is_xsd_datatype = 'XMLSchema#' in tgt_uri or 'XMLSchema/' in tgt_uri
+                
+                # Determine target label based on type
+                if 'rdfs__Datatype' in tgt_labels or is_xsd_datatype:
+                    target_label = "rdfs__Datatype"
+                elif 'owl__NamedIndividual' in tgt_labels:
+                    target_label = "owl__NamedIndividual"
+                else:
+                    target_label = "owl__Class"
+                
                 rel_insert_query = f"""
                 MATCH (source:owl__Class {{uri: $source_uri}})
-                MATCH (target:owl__Class {{uri: $target_uri}})
+                MATCH (target:{target_label} {{uri: $target_uri}})
                 MERGE (source)-[r:{rel_type}]->(target)
                 SET r.uri = $rel_uri,
                     r.skos__definition = $definition,
@@ -615,8 +709,12 @@ async def staging_materialized_schema(
             "status": "success",
             "staging_database": staging_db_name or "stagingdb",
             "classes_copied": len(classes),
+            "datatypes_copied": len(datatypes),
+            "named_individuals_copied": len(named_individuals),
             "relationships_copied": len(relationships),
             "class_labels": [c["label"] for c in classes.values()],
+            "datatype_labels": [d["label"] for d in datatypes.values()],
+            "individual_labels": [i["label"] for i in named_individuals.values()],
             "relationship_types": list(rel_types_created)
         }
         

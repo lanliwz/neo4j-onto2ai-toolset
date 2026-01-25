@@ -43,9 +43,38 @@ class Neo4jDatabaseSimple:
         self._database = database
     
     def execute_cypher(self, query, params=None, name=None):
+        """Execute a Cypher query with pretty logging."""
+        query_name = name or "unnamed_query"
+        
+        # Create executable query by substituting parameters
+        executable_query = query.strip()
+        if params:
+            for key, value in params.items():
+                if isinstance(value, str):
+                    executable_query = executable_query.replace(f"${key}", f"'{value}'")
+                else:
+                    executable_query = executable_query.replace(f"${key}", str(value))
+        
+        # Pretty format the log output
+        separator = "─" * 70
+        print(f"\n┌{separator}┐")
+        print(f"│ 🔍 CYPHER QUERY: {query_name}")
+        print(f"├{separator}┤")
+        print(f"│ 📋 Copy-paste ready query for Neo4j Browser:")
+        print(f"└{separator}┘")
+        print()
+        print(executable_query)
+        print()
+        
         with self._driver.session(database=self._database) as session:
             result = session.run(query, params or {})
-            return [dict(record) for record in result]
+            records = [dict(record) for record in result]
+            
+            # Log result count
+            print(f"✅ Returned {len(records)} record(s)")
+            print(f"{'─' * 70}\n")
+            
+            return records
 
 
 @router.get("/classes", response_model=List[ClassInfo])
@@ -63,10 +92,12 @@ async def list_classes():
           AND NOT c.rdfs__label =~ '^N[0-9a-f]{32}$'
           AND NOT c.rdfs__label =~ '^[0-9a-f]{8}-[0-9a-f]{4}-.*'
           AND size(c.rdfs__label) > 1
+          AND 'owl__Class' IN labels(c)
         RETURN DISTINCT 
             c.rdfs__label AS label,
             c.uri AS uri,
-            c.skos__definition AS definition
+            c.skos__definition AS definition,
+            labels(c) AS nodeLabels
         ORDER BY c.rdfs__label
         """
         results = db.execute_cypher(query, name="list_classes")
@@ -227,23 +258,41 @@ async def get_graph_data(class_name: str):
     db = get_db()
     try:
         query = """
-        MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        MATCH (c:owl__Class)
         WHERE c.rdfs__label = $label OR c.uri = $label
-        MATCH (parent)-[r]->(target)
-        WHERE r.materialized = true
+        OPTIONAL MATCH (c)-[:owl__subClassOf*0..]->(parent:owl__Class)
+        WITH coalesce(parent, c) AS classNode, c
+        
+        // Outbound relationships
+        OPTIONAL MATCH (classNode)-[r_out]->(target)
+        WHERE r_out.materialized = true
+        
+        // Inbound relationships
+        OPTIONAL MATCH (source)-[r_in]->(classNode)
+        WHERE r_in.materialized = true
+        
+        WITH c, classNode,
+             collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
+             collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
+        
+        UNWIND (outRels + inRels) AS relData
+        WITH c, classNode, relData
+        WHERE relData.rel IS NOT NULL
+        
         RETURN DISTINCT
           c.rdfs__label AS SourceLabel,
           c.uri AS SourceURI,
           c.skos__definition AS SourceDef,
-          type(r) AS RelType,
-          r.uri AS RelURI,
-          r.skos__definition AS RelDef,
-          r.cardinality AS Cardinality,
-          r.requirement AS Requirement,
-          r.property_type AS PropType,
-          coalesce(target.rdfs__label, target.uri, 'Resource') AS TargetLabel,
-          target.uri AS TargetURI,
-          target.skos__definition AS TargetDef
+          type(relData.rel) AS RelType,
+          relData.rel.uri AS RelURI,
+          relData.rel.skos__definition AS RelDef,
+          relData.rel.cardinality AS Cardinality,
+          relData.rel.requirement AS Requirement,
+          relData.rel.property_type AS PropType,
+          coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
+          relData.other.uri AS TargetURI,
+          relData.other.skos__definition AS TargetDef,
+          relData.dir AS Direction
         ORDER BY SourceLabel, RelType
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data")
