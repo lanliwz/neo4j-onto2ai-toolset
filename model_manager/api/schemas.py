@@ -53,12 +53,16 @@ async def list_classes():
     """
     List all owl:Class nodes in the stagingdb.
     Returns basic info: label, URI, definition.
+    Filters out placeholder/empty nodes.
     """
     db = get_db()
     try:
         query = """
         MATCH (c:owl__Class)
         WHERE c.rdfs__label IS NOT NULL
+          AND NOT c.rdfs__label =~ '^N[0-9a-f]{32}$'
+          AND NOT c.rdfs__label =~ '^[0-9a-f]{8}-[0-9a-f]{4}-.*'
+          AND size(c.rdfs__label) > 1
         RETURN DISTINCT 
             c.rdfs__label AS label,
             c.uri AS uri,
@@ -289,4 +293,117 @@ async def get_graph_data(class_name: str):
         }
     except Exception as e:
         logger.error(f"Error getting graph data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/node-focus/{node_label}")
+async def get_node_focus_data(node_label: str):
+    """
+    Get a node and its direct in/out relationships for focused graph view.
+    Returns the selected node plus all directly connected nodes.
+    """
+    db = get_db()
+    try:
+        query = """
+        MATCH (center:owl__Class)
+        WHERE center.rdfs__label = $label OR center.uri = $label
+        OPTIONAL MATCH (center)-[r_out]->(target)
+        WHERE r_out.materialized = true
+        OPTIONAL MATCH (source)-[r_in]->(center)
+        WHERE r_in.materialized = true
+        WITH center, 
+             collect(DISTINCT {
+                rel: r_out, 
+                node: target, 
+                direction: 'out'
+             }) AS outgoing,
+             collect(DISTINCT {
+                rel: r_in, 
+                node: source, 
+                direction: 'in'
+             }) AS incoming
+        RETURN center, outgoing, incoming
+        """
+        results = db.execute_cypher(query, params={"label": node_label}, name="get_node_focus_data")
+        
+        if not results:
+            return {"nodes": [], "links": []}
+        
+        row = results[0]
+        nodes = {}
+        links = []
+        
+        # Add center node
+        center = row["center"]
+        center_label = center.get("rdfs__label", node_label)
+        nodes[center_label] = {
+            "key": center_label,
+            "label": center_label,
+            "uri": center.get("uri"),
+            "definition": center.get("skos__definition"),
+            "category": "class",
+            "isCenter": True
+        }
+        
+        # Process outgoing relationships
+        for item in row["outgoing"]:
+            if item["rel"] is None or item["node"] is None:
+                continue
+            rel = item["rel"]
+            target = item["node"]
+            tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
+            
+            if tgt_label not in nodes:
+                is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
+                nodes[tgt_label] = {
+                    "key": tgt_label,
+                    "label": tgt_label,
+                    "uri": target.get("uri"),
+                    "definition": target.get("skos__definition"),
+                    "category": "datatype" if is_datatype else "class"
+                }
+            
+            links.append({
+                "from": center_label,
+                "to": tgt_label,
+                "relationship": rel.type if hasattr(rel, 'type') else str(type(rel).__name__),
+                "uri": rel.get("uri"),
+                "definition": rel.get("skos__definition"),
+                "cardinality": rel.get("cardinality"),
+                "requirement": rel.get("requirement")
+            })
+        
+        # Process incoming relationships
+        for item in row["incoming"]:
+            if item["rel"] is None or item["node"] is None:
+                continue
+            rel = item["rel"]
+            source = item["node"]
+            src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
+            
+            if src_label not in nodes:
+                nodes[src_label] = {
+                    "key": src_label,
+                    "label": src_label,
+                    "uri": source.get("uri"),
+                    "definition": source.get("skos__definition"),
+                    "category": "class"
+                }
+            
+            links.append({
+                "from": src_label,
+                "to": center_label,
+                "relationship": rel.type if hasattr(rel, 'type') else str(type(rel).__name__),
+                "uri": rel.get("uri"),
+                "definition": rel.get("skos__definition"),
+                "cardinality": rel.get("cardinality"),
+                "requirement": rel.get("requirement")
+            })
+        
+        return {
+            "nodes": list(nodes.values()),
+            "links": links
+        }
+    except Exception as e:
+        logger.error(f"Error getting node focus data: {e}")
         raise HTTPException(status_code=500, detail=str(e))

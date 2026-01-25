@@ -28,7 +28,8 @@ function initGraph() {
             {
                 selectionAdorned: true,
                 cursor: "pointer",
-                click: (e, node) => onNodeClick(node)
+                click: (e, node) => onNodeClick(node),
+                doubleClick: (e, node) => onNodeDoubleClick(node)
             },
             $(go.Shape, "RoundedRectangle", {
                 fill: "#4f46e5",
@@ -38,7 +39,11 @@ function initGraph() {
                 fromLinkable: true,
                 toLinkable: true
             },
-                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "#4f46e5").ofObject()),
+                new go.Binding("fill", "isCenter", (isCenter, obj) => {
+                    if (obj.part.isSelected) return "#f59e0b";
+                    return isCenter ? "#7c3aed" : "#4f46e5";
+                }),
+                new go.Binding("stroke", "isCenter", (isCenter) => isCenter ? "#a78bfa" : "#818cf8")),
             $(go.Panel, "Vertical",
                 { margin: 12 },
                 $(go.TextBlock, {
@@ -89,13 +94,18 @@ function initGraph() {
             {
                 selectionAdorned: true,
                 cursor: "pointer",
-                click: (e, node) => onNodeClick(node)
+                click: (e, node) => onNodeClick(node),
+                doubleClick: (e, node) => onNodeDoubleClick(node)
             },
             $(go.Shape, "RoundedRectangle", {
                 fill: "#4f46e5",
                 stroke: "#818cf8",
                 strokeWidth: 2
-            }),
+            },
+                new go.Binding("fill", "isCenter", (isCenter, obj) => {
+                    if (obj.part.isSelected) return "#f59e0b";
+                    return isCenter ? "#7c3aed" : "#4f46e5";
+                })),
             $(go.Panel, "Vertical",
                 { margin: 12 },
                 $(go.TextBlock, {
@@ -195,6 +205,37 @@ function onNodeClick(node) {
 function onLinkClick(link) {
     const data = link.data;
     showLinkProperties(data);
+}
+
+/**
+ * Handle node double-click - load focused view with node and its direct connections
+ */
+async function onNodeDoubleClick(node) {
+    const nodeLabel = node.data.label;
+    if (!nodeLabel) return;
+
+    try {
+        const response = await fetch(`/api/node-focus/${encodeURIComponent(nodeLabel)}`);
+        if (!response.ok) throw new Error('Failed to load node focus data');
+
+        const data = await response.json();
+
+        if (data.nodes.length === 0) {
+            console.log('No focus data found for node:', nodeLabel);
+            return;
+        }
+
+        // Set the model with focused data
+        myDiagram.model = new go.GraphLinksModel(data.nodes, data.links);
+
+        // Fit to view after layout
+        setTimeout(() => {
+            myDiagram.zoomToFit();
+        }, 500);
+
+    } catch (error) {
+        console.error('Error loading node focus:', error);
+    }
 }
 
 /**

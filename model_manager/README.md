@@ -44,7 +44,7 @@ GPT_MODEL_NAME=gpt-4o
 
 ```bash
 cd model_manager
-../venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8080
+../venv/bin/python -m uvicorn main:app --host localhost --port 8180
 ```
 
 Open http://localhost:8080
