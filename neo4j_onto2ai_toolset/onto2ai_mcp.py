@@ -1,16 +1,24 @@
 import json
 from typing import List, Union, Optional, Dict, Any
 from mcp.server.fastmcp import FastMCP
-from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm
+from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm, get_staging_db
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
 
 mcp = FastMCP("Onto2AI")
 
 @mcp.tool()
-async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
+async def get_materialized_schema(
+    class_names: Union[str, List[str]], 
+    database: Optional[str] = None
+) -> Dict[str, Any]:
     """
     Retrieve the materialized schema for one or more ontology classes.
+    
+    Args:
+        class_names: One or more class labels to query (e.g., "person" or ["person", "account"])
+        database: Optional database name to query. Defaults to the main ontology database.
+                  Use "stagingdb" to query the staging database.
     
     Formatting Instructions (CRITICAL):
     - ALWAYS show the output in two distinct sections: (1) Classes and (2) Relationships.
@@ -27,6 +35,9 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
+    
+    # Use specified database or default to semanticdb
+    db = get_staging_db(database) if database else semanticdb
     
     query = """
     MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
@@ -48,9 +59,9 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
     ORDER BY SourceClassLabel, RelType
     """
     
-    logger.info(f"Fetching enhanced materialized schema for: {labels}")
+    logger.info(f"Fetching enhanced materialized schema for: {labels} from database: {database or 'default'}")
     try:
-        results = semanticdb.execute_cypher(query, params={"labels": labels}, name="get_materialized_schema_tool")
+        results = db.execute_cypher(query, params={"labels": labels}, name="get_materialized_schema_tool")
         
         classes_section = {}
         relationships_section = []
@@ -88,12 +99,17 @@ async def get_materialized_schema(class_names: Union[str, List[str]]) -> Dict[st
             })
             
         return {
+            "database": database or "default",
             "section_1_classes": list(classes_section.values()),
             "section_2_relationships": relationships_section
         }
     except Exception as e:
         logger.error(f"Error fetching enhanced materialized schema: {e}")
         return {"error": str(e)}
+    finally:
+        # Close the connection if using a custom database
+        if database:
+            db.close()
 
 @mcp.tool()
 async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
