@@ -287,9 +287,13 @@ async def get_graph_data(class_name: str):
                 "requirement": row.get("Requirement")
             })
         
+        # Include query for display in Query tab
+        display_query = query.replace("$label", f"'{class_name}'")
+        
         return {
             "nodes": list(nodes.values()),
-            "links": links
+            "links": links,
+            "query": display_query.strip()
         }
     except Exception as e:
         logger.error(f"Error getting graph data: {e}")
@@ -400,9 +404,13 @@ async def get_node_focus_data(node_label: str):
                 "requirement": rel.get("requirement")
             })
         
+        # Include query for display in Query tab
+        display_query = query.replace("$label", f"'{node_label}'")
+        
         return {
             "nodes": list(nodes.values()),
-            "links": links
+            "links": links,
+            "query": display_query.strip()
         }
     except Exception as e:
         logger.error(f"Error getting node focus data: {e}")

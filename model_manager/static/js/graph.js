@@ -181,6 +181,11 @@ async function loadGraphData(className) {
         // Hide placeholder
         document.getElementById('graph-placeholder').classList.add('hidden');
 
+        // Display the query in the Query tab
+        if (data.query) {
+            updateQueryDisplay(data.query);
+        }
+
         // Fit to view after layout
         setTimeout(() => {
             myDiagram.zoomToFit();
@@ -188,6 +193,16 @@ async function loadGraphData(className) {
 
     } catch (error) {
         console.error('Error loading graph:', error);
+    }
+}
+
+/**
+ * Update the Query tab with the last executed query
+ */
+function updateQueryDisplay(query) {
+    const queryInput = document.getElementById('cypher-input');
+    if (queryInput) {
+        queryInput.value = query;
     }
 }
 
@@ -227,6 +242,11 @@ async function onNodeDoubleClick(node) {
 
         // Set the model with focused data
         myDiagram.model = new go.GraphLinksModel(data.nodes, data.links);
+
+        // Display the query in the Query tab
+        if (data.query) {
+            updateQueryDisplay(data.query);
+        }
 
         // Fit to view after layout
         setTimeout(() => {
