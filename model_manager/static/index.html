@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onto2AI Model Manager</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://unpkg.com/gojs/release/go.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">🔷</div>
+                <h1>Onto2AI Model Manager</h1>
+            </div>
+            <div class="header-right">
+                <span class="status-indicator" id="status">● Connected</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Search/Chat/Query -->
+            <aside class="left-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="search">Search</button>
+                    <button class="tab-btn" data-tab="chat">Chat</button>
+                    <button class="tab-btn" data-tab="query">Query</button>
+                </div>
+
+                <!-- Search Tab -->
+                <div class="tab-content active" id="search-tab">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="🔍 Search classes...">
+                    </div>
+                    <div class="class-list" id="class-list">
+                        <div class="loading">Loading classes...</div>
+                    </div>
+                </div>
+
+                <!-- Chat Tab -->
+                <div class="tab-content" id="chat-tab">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message assistant">
+                            <div class="message-content">
+                                Hello! I'm your ontology assistant. Ask me about schema design, relationships, or how to enhance your models.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Ask about schemas...">
+                        <button id="chat-send" class="send-btn">➤</button>
+                    </div>
+                </div>
+
+                <!-- Query Tab -->
+                <div class="tab-content" id="query-tab">
+                    <div class="query-container">
+                        <textarea id="cypher-input" placeholder="MATCH (n:owl__Class) RETURN n.rdfs__label LIMIT 10"></textarea>
+                        <button id="run-query" class="run-btn">▶ Run Query</button>
+                    </div>
+                    <div class="query-results" id="query-results">
+                        <div class="placeholder">Enter a Cypher query and click Run</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Middle Panel: Graph Visualization -->
+            <section class="graph-panel">
+                <div class="graph-toolbar">
+                    <button id="zoom-in" class="toolbar-btn" title="Zoom In">+</button>
+                    <button id="zoom-out" class="toolbar-btn" title="Zoom Out">−</button>
+                    <button id="fit-view" class="toolbar-btn" title="Fit to View">⊡</button>
+                    <button id="refresh-layout" class="toolbar-btn" title="Refresh Layout">↻</button>
+                </div>
+                <div id="graph-container"></div>
+                <div class="graph-placeholder" id="graph-placeholder">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">📊</div>
+                        <p>Select a class from the left panel to visualize its schema</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Properties -->
+            <aside class="right-panel">
+                <div class="panel-header">
+                    <h2>Properties</h2>
+                </div>
+                <div class="properties-content" id="properties-content">
+                    <div class="placeholder">
+                        <p>Select a node or relationship to view its properties</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="/static/js/graph.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
