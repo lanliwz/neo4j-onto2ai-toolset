@@ -6,39 +6,39 @@
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
     --bg-card: rgba(26, 26, 46, 0.8);
-    
+
     --accent-primary: #4f46e5;
     --accent-secondary: #7c3aed;
     --accent-gradient: linear-gradient(135deg, #4f46e5, #7c3aed);
-    
+
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    
+
     --border-color: rgba(255, 255, 255, 0.1);
     --border-glow: rgba(79, 70, 229, 0.3);
-    
+
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    
+
     /* Node Colors */
     --node-class: #4f46e5;
     --node-datatype: #10b981;
     --node-selected: #f59e0b;
-    
+
     /* Spacing */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
-    
+
     /* Border Radius */
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
-    
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
@@ -111,21 +111,70 @@ body {
 .left-panel,
 .right-panel {
     background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .left-panel {
     width: 280px;
-    min-width: 240px;
+    min-width: 180px;
+    max-width: 500px;
+    border-right: none;
 }
 
 .right-panel {
     width: 320px;
-    min-width: 280px;
-    border-right: none;
-    border-left: 1px solid var(--border-color);
+    min-width: 200px;
+    max-width: 500px;
+    border-left: none;
+}
+
+/* Splitter Styles */
+.splitter {
+    width: 6px;
+    background: var(--bg-tertiary);
+    cursor: col-resize;
+    flex-shrink: 0;
+    position: relative;
+    transition: background var(--transition-fast);
+    z-index: 10;
+}
+
+.splitter::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 40px;
+    background: var(--border-color);
+    border-radius: 1px;
+    transition: background var(--transition-fast);
+}
+
+.splitter:hover {
+    background: var(--accent-primary);
+}
+
+.splitter:hover::before {
+    background: white;
+}
+
+.splitter.dragging {
+    background: var(--accent-secondary);
+}
+
+/* Prevent text selection while dragging */
+body.resizing {
+    cursor: col-resize !important;
+    user-select: none;
+}
+
+body.resizing * {
+    cursor: col-resize !important;
 }
 
 /* Tab Navigation */
@@ -236,22 +285,120 @@ body {
 
 .chat-message {
     max-width: 90%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    line-height: 1.5;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    animation: message-fade-in 0.3s ease-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes message-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .chat-message.user {
     align-self: flex-end;
-    background: var(--accent-primary);
+    background: var(--accent-gradient);
     color: white;
+    border-bottom-right-radius: 4px;
 }
 
 .chat-message.assistant {
     align-self: flex-start;
-    background: var(--bg-tertiary);
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+    color: var(--text-primary);
+}
+
+.chat-message.assistant .message-content>*:first-child {
+    margin-top: 0;
+}
+
+.chat-message.assistant .message-content>*:last-child {
+    margin-bottom: 0;
+}
+
+/* Markdown Styles in Chat */
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+    margin: 1rem 0 0.5rem 0;
+    color: var(--accent-primary);
+}
+
+.message-content p {
+    margin-bottom: 0.75rem;
+}
+
+.message-content code {
+    background: var(--bg-tertiary);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+.message-content pre {
+    background: #0d1117;
+    /* GitHub Dark match */
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin: 0.75rem 0;
+}
+
+.message-content pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.message-content ul,
+.message-content ol {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+}
+
+.message-content li {
+    margin-bottom: 0.25rem;
+}
+
+.message-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+}
+
+.message-content th,
+.message-content td {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.message-content th {
+    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+}
+
+.chat-message.system {
+    align-self: center;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--success);
+    font-size: 0.75rem;
+    border-radius: 20px;
+    padding: 4px 12px;
 }
 
 .chat-input-container {
@@ -341,6 +488,46 @@ body {
     border-radius: var(--radius-md);
     overflow-x: auto;
     white-space: pre-wrap;
+}
+
+/* Query Results Table */
+.query-table-container {
+    overflow: auto;
+    max-height: 100%;
+}
+
+.query-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.query-results-table th,
+.query-results-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.query-results-table th {
+    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.query-results-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.query-results-table td {
+    color: var(--text-secondary);
 }
 
 /* Graph Panel */
@@ -538,16 +725,22 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
-    from { 
+    from {
         opacity: 0;
         transform: translateY(10px);
     }
-    to { 
+
+    to {
         opacity: 1;
         transform: translateY(0);
     }

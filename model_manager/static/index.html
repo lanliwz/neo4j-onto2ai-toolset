@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onto2AI Model Manager</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://unpkg.com/gojs/release/go.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -23,7 +28,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Left Panel: Search/Chat/Query -->
-            <aside class="left-panel">
+            <aside class="left-panel" id="left-panel">
                 <div class="panel-tabs">
                     <button class="tab-btn active" data-tab="search">Search</button>
                     <button class="tab-btn" data-tab="chat">Chat</button>
@@ -45,7 +50,8 @@
                     <div class="chat-messages" id="chat-messages">
                         <div class="chat-message assistant">
                             <div class="message-content">
-                                Hello! I'm your ontology assistant. Ask me about schema design, relationships, or how to enhance your models.
+                                Hello! I'm your ontology assistant. Ask me about schema design, relationships, or how to
+                                enhance your models.
                             </div>
                         </div>
                     </div>
@@ -58,7 +64,8 @@
                 <!-- Query Tab -->
                 <div class="tab-content" id="query-tab">
                     <div class="query-container">
-                        <textarea id="cypher-input" placeholder="MATCH (n:owl__Class) RETURN n.rdfs__label LIMIT 10"></textarea>
+                        <textarea id="cypher-input"
+                            placeholder="MATCH (n:owl__Class) RETURN n.rdfs__label LIMIT 10"></textarea>
                         <button id="run-query" class="run-btn">▶ Run Query</button>
                     </div>
                     <div class="query-results" id="query-results">
@@ -67,8 +74,11 @@
                 </div>
             </aside>
 
+            <!-- Left Splitter -->
+            <div class="splitter" id="left-splitter"></div>
+
             <!-- Middle Panel: Graph Visualization -->
-            <section class="graph-panel">
+            <section class="graph-panel" id="graph-panel">
                 <div class="graph-toolbar">
                     <button id="zoom-in" class="toolbar-btn" title="Zoom In">+</button>
                     <button id="zoom-out" class="toolbar-btn" title="Zoom Out">−</button>
@@ -84,8 +94,11 @@
                 </div>
             </section>
 
+            <!-- Right Splitter -->
+            <div class="splitter" id="right-splitter"></div>
+
             <!-- Right Panel: Properties -->
-            <aside class="right-panel">
+            <aside class="right-panel" id="right-panel">
                 <div class="panel-header">
                     <h2>Properties</h2>
                 </div>
@@ -101,4 +114,5 @@
     <script src="/static/js/graph.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
+
 </html>

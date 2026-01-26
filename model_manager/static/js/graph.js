@@ -384,9 +384,36 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+/**
+ * Load graph from data object (used by chat responses)
+ */
+function loadGraphFromData(data) {
+    if (!data || !data.nodes || data.nodes.length === 0) {
+        console.log('No graph data to display');
+        return;
+    }
+
+    // Set the model
+    myDiagram.model = new go.GraphLinksModel(data.nodes, data.links || []);
+
+    // Hide placeholder
+    document.getElementById('graph-placeholder').classList.add('hidden');
+
+    // Display the query in the Query tab if present
+    if (data.query) {
+        updateQueryDisplay(data.query);
+    }
+
+    // Fit to view after layout
+    setTimeout(() => {
+        myDiagram.zoomToFit();
+    }, 500);
+}
+
 // Export functions for global access
 window.initGraph = initGraph;
 window.loadGraphData = loadGraphData;
+window.loadGraphFromData = loadGraphFromData;
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 window.fitView = fitView;

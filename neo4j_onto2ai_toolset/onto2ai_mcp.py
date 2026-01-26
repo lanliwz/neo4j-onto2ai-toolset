@@ -260,9 +260,16 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
     labels = [label.strip() for label in class_names]
     
     query = """
-    MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    // Match the requested class
+    MATCH (c:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
-    MATCH (parent)-[r]->(target)
+    
+    // Optional inheritance chain - make rdfs__subClassOf optional
+    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    WITH c, coalesce(parent, c) AS classNode
+    
+    // Get materialized relationships to owl__Class targets
+    MATCH (classNode)-[r]->(target:owl__Class)
     WHERE r.materialized = true
     RETURN DISTINCT
       c.rdfs__label AS SourceClassLabel,
@@ -277,6 +284,33 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
+    
+    UNION
+    
+    // Match the requested class again for rdfs__Datatype targets
+    MATCH (c:owl__Class)
+    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+    
+    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    WITH c, coalesce(parent, c) AS classNode
+    
+    // Get materialized relationships to rdfs__Datatype targets
+    MATCH (classNode)-[r]->(target:rdfs__Datatype)
+    WHERE r.materialized = true
+    RETURN DISTINCT
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
+      r.cardinality AS Cardinality,
+      r.requirement AS Requirement,
+      r.property_type AS PropMetaType,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    
     ORDER BY SourceClassLabel, RelType
     """
     

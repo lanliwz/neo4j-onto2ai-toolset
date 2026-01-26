@@ -38,10 +38,18 @@ class ChatRequest(BaseModel):
     context: Optional[Dict[str, Any]] = None
 
 
+class GraphData(BaseModel):
+    """Graph visualization data for GoJS."""
+    nodes: List[Dict[str, Any]] = Field(default_factory=list)
+    links: List[Dict[str, Any]] = Field(default_factory=list)
+    query: Optional[str] = None
+
+
 class ChatResponse(BaseModel):
     """Chat response model."""
     response: str
     suggestions: Optional[List[str]] = None
+    graph_data: Optional[GraphData] = None
 
 
 class CypherRequest(BaseModel):
@@ -51,9 +59,12 @@ class CypherRequest(BaseModel):
 
 
 class CypherResponse(BaseModel):
-    """Cypher query response."""
+    """Cypher query response with result type detection."""
     results: List[Dict[str, Any]]
     count: int
+    result_type: str = "table"  # "graph" or "table"
+    graph_data: Optional[GraphData] = None
+    table_columns: Optional[List[str]] = None
 
 
 class PropertyUpdate(BaseModel):

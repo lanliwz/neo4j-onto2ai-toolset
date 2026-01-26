@@ -10,8 +10,70 @@ document.addEventListener('DOMContentLoaded', () => {
     setupChat();
     setupQuery();
     setupToolbar();
+    setupSplitters();
     loadClasses();
 });
+
+/**
+ * Splitter resize functionality
+ */
+function setupSplitters() {
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    const leftSplitter = document.getElementById('left-splitter');
+    const rightSplitter = document.getElementById('right-splitter');
+
+    let isResizing = false;
+    let currentSplitter = null;
+
+    function startResize(e, splitter) {
+        isResizing = true;
+        currentSplitter = splitter;
+        document.body.classList.add('resizing');
+        splitter.classList.add('dragging');
+        e.preventDefault();
+    }
+
+    function doResize(e) {
+        if (!isResizing) return;
+
+        const containerRect = document.querySelector('.main-content').getBoundingClientRect();
+
+        if (currentSplitter === leftSplitter) {
+            // Resize left panel
+            let newWidth = e.clientX - containerRect.left;
+            newWidth = Math.max(180, Math.min(500, newWidth));
+            leftPanel.style.width = newWidth + 'px';
+        } else if (currentSplitter === rightSplitter) {
+            // Resize right panel
+            let newWidth = containerRect.right - e.clientX;
+            newWidth = Math.max(200, Math.min(500, newWidth));
+            rightPanel.style.width = newWidth + 'px';
+        }
+
+        // Trigger GoJS diagram resize
+        if (typeof myDiagram !== 'undefined' && myDiagram) {
+            myDiagram.requestUpdate();
+        }
+    }
+
+    function stopResize() {
+        if (isResizing) {
+            isResizing = false;
+            document.body.classList.remove('resizing');
+            if (currentSplitter) {
+                currentSplitter.classList.remove('dragging');
+            }
+            currentSplitter = null;
+        }
+    }
+
+    // Event listeners
+    leftSplitter.addEventListener('mousedown', (e) => startResize(e, leftSplitter));
+    rightSplitter.addEventListener('mousedown', (e) => startResize(e, rightSplitter));
+    document.addEventListener('mousemove', doResize);
+    document.addEventListener('mouseup', stopResize);
+}
 
 /**
  * Tab switching functionality
@@ -127,7 +189,23 @@ function setupChat() {
             // Replace loading with response
             const loadingEl = document.getElementById(loadingId);
             if (loadingEl) {
-                loadingEl.querySelector('.message-content').textContent = data.response;
+                const contentEl = loadingEl.querySelector('.message-content');
+                contentEl.innerHTML = formatMessageContent(data.response, 'assistant');
+
+                // Re-apply syntax highlighting to any new code blocks
+                if (typeof hljs !== 'undefined') {
+                    contentEl.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
+            }
+
+            // Check if response includes graph data and display it
+            if (data.graph_data && data.graph_data.nodes && data.graph_data.nodes.length > 0) {
+                loadGraphFromData(data.graph_data);
+
+                // Add a note that graph was displayed
+                addChatMessage('📊 Graph visualization updated in the center panel.', 'system');
             }
 
         } catch (error) {
@@ -147,23 +225,88 @@ function setupChat() {
 }
 
 /**
+ * Format message content based on role (Markdown/HTML for assistant)
+ */
+function formatMessageContent(content, role) {
+    if (role === 'user') {
+        return `<p>${escapeHtml(content)}</p>`;
+    }
+
+    if (role === 'system') {
+        return content;
+    }
+
+    // Role is assistant - try HTML or Markdown
+    const hasHtmlTags = /<[a-z][\s\S]*>/i.test(content);
+
+    if (hasHtmlTags) {
+        return content; // Direct HTML
+    }
+
+    try {
+        const m = typeof marked === 'object' && marked.marked ? marked.marked : marked;
+        if (typeof m === 'object' && typeof m.parse === 'function') {
+            return m.parse(content);
+        } else if (typeof m === 'function') {
+            return m(content);
+        }
+    } catch (e) {
+        console.error('Markdown parsing error:', e);
+    }
+
+    return content.replace(/\n/g, '<br>');
+}
+
+/**
  * Add a chat message to the container
  */
 function addChatMessage(content, role) {
     const container = document.getElementById('chat-messages');
     const id = `msg-${Date.now()}`;
 
+    const formattedContent = formatMessageContent(content, role);
+
     const msgHtml = `
         <div class="chat-message ${role}" id="${id}">
-            <div class="message-content">${escapeHtml(content)}</div>
+            <div class="message-content">${formattedContent}</div>
         </div>
     `;
 
     container.insertAdjacentHTML('beforeend', msgHtml);
     container.scrollTop = container.scrollHeight;
 
+    // Apply highlighting to code blocks if highlight.js is present
+    if (role === 'assistant' && typeof hljs !== 'undefined') {
+        const msgEl = document.getElementById(id);
+        msgEl.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
+
     return id;
 }
+
+// Configure marked.js for custom highlighting and styling
+function configureMarked() {
+    const m = typeof marked === 'object' && marked.marked ? marked.marked : marked;
+    if (typeof m === 'object' && typeof m.setOptions === 'function') {
+        m.setOptions({
+            highlight: function (code, lang) {
+                if (typeof hljs !== 'undefined') {
+                    if (lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return hljs.highlightAuto(code).value;
+                }
+                return code;
+            },
+            breaks: true,
+            gfm: true
+        });
+    }
+}
+configureMarked();
+
 
 /**
  * Cypher query functionality
@@ -172,6 +315,7 @@ function setupQuery() {
     const runBtn = document.getElementById('run-query');
     const queryInput = document.getElementById('cypher-input');
     const resultsContainer = document.getElementById('query-results');
+    const propertiesContent = document.getElementById('properties-content');
 
     runBtn.addEventListener('click', async () => {
         const query = queryInput.value.trim();
@@ -192,12 +336,41 @@ function setupQuery() {
                 throw new Error(data.detail || 'Query failed');
             }
 
-            resultsContainer.innerHTML = `
-                <div style="margin-bottom: 8px; color: var(--text-muted);">
-                    ${data.count} result(s)
-                </div>
-                <pre>${escapeHtml(JSON.stringify(data.results, null, 2))}</pre>
-            `;
+            // Check result type
+            if (data.result_type === 'graph' && data.graph_data && data.graph_data.nodes.length > 0) {
+                // Display graph in middle panel
+                loadGraphFromData(data.graph_data);
+
+                resultsContainer.innerHTML = `
+                    <div style="margin-bottom: 8px; color: var(--success);">
+                        📊 Graph displayed in center panel (${data.graph_data.nodes.length} nodes, ${data.graph_data.links.length} links)
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 0.8rem;">
+                        ${data.count} result row(s)
+                    </div>
+                `;
+            } else {
+                // Display table in right panel
+                if (data.results.length > 0 && data.table_columns) {
+                    displayTableResults(data.results, data.table_columns, propertiesContent);
+
+                    resultsContainer.innerHTML = `
+                        <div style="margin-bottom: 8px; color: var(--success);">
+                            📋 Table displayed in Properties panel
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">
+                            ${data.count} result row(s), ${data.table_columns.length} column(s)
+                        </div>
+                    `;
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div style="margin-bottom: 8px; color: var(--text-muted);">
+                            ${data.count} result(s)
+                        </div>
+                        <pre>${escapeHtml(JSON.stringify(data.results, null, 2))}</pre>
+                    `;
+                }
+            }
 
         } catch (error) {
             console.error('Query error:', error);
@@ -208,6 +381,63 @@ function setupQuery() {
             `;
         }
     });
+}
+
+/**
+ * Display tabular results in a panel
+ */
+function displayTableResults(results, columns, container) {
+    if (!results || results.length === 0) {
+        container.innerHTML = '<div class="placeholder">No results</div>';
+        return;
+    }
+
+    // Build table HTML
+    let tableHtml = `
+        <div class="query-table-container">
+            <table class="query-results-table">
+                <thead>
+                    <tr>
+                        ${columns.map(col => `<th>${escapeHtml(col)}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    for (const row of results) {
+        tableHtml += '<tr>';
+        for (const col of columns) {
+            let value = row[col];
+            if (value === null || value === undefined) {
+                value = '-';
+            } else if (typeof value === 'object') {
+                value = JSON.stringify(value);
+            }
+
+            const strValue = String(value);
+            const isHtml = /<[a-z][\s\S]*>/i.test(strValue);
+
+            // Truncate long values if not HTML
+            const displayValue = (!isHtml && strValue.length > 100)
+                ? strValue.substring(0, 100) + '...'
+                : strValue;
+
+            if (isHtml) {
+                tableHtml += `<td title="HTML Content">${displayValue}</td>`;
+            } else {
+                tableHtml += `<td title="${escapeHtml(strValue)}">${escapeHtml(displayValue)}</td>`;
+            }
+        }
+        tableHtml += '</tr>';
+    }
+
+    tableHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    container.innerHTML = tableHtml;
 }
 
 /**
