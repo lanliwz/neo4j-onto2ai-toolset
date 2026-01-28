@@ -252,7 +252,7 @@ async def chat(request: ChatRequest):
         import json
         
         client = openai.AsyncOpenAI()
-        model = os.getenv("GPT_MODEL_NAME", "gpt-4o")
+        model = os.getenv("GPT_MODEL_NAME", "gpt-5.2")
         
         # Define the function for schema queries
         tools = [
