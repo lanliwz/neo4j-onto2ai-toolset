@@ -9,7 +9,7 @@ from neo4j_onto2ai_toolset.onto2ai_utility import (
 from dataclasses import dataclass
 
 from neo4j_onto2ai_toolset.onto2ai_tool_config import (
-    graphdb,
+    get_graphdb,
     semanticdb)
 from langgraph.types import interrupt
 
@@ -66,7 +66,7 @@ def modify_model(content: str) -> str:
         statements = json.loads(content)
         for stmt in statements:
             try:
-                records.append(graphdb.query(stmt))
+                records.append(get_graphdb().query(stmt))
                 logger.debug(f'executed - {stmt}')
             except Exception as e:
                 records.append(e)
@@ -80,7 +80,7 @@ def modify_model(content: str) -> str:
         logger.debug(f'new content - {response}')
         stmt = response["new_content"]
         try:
-            records.append(graphdb.query(stmt))
+            records.append(get_graphdb().query(stmt))
             logger.debug(f'executed - {stmt}')
         except Exception as e:
             records.append(e)

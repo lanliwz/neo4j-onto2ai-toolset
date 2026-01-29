@@ -3,7 +3,7 @@ from langgraph.graph import END, START, StateGraph
 import operator
 
 # Internal project imports
-from neo4j_onto2ai_toolset.onto2ai_tool_config import neo4j_model, graphdb
+from neo4j_onto2ai_toolset.onto2ai_tool_config import neo4j_model, get_graphdb
 from neo4j_onto2ai_toolset.onto2ai_utility import (
     Neo4jDatabase, get_schema,
     OverallState, InputState, OutputState,

@@ -91,13 +91,44 @@ def get_llm():
     return _llm
 
 # Graph Database Config
-graphdb = Neo4jGraph(
-    url=neo4j_model.url,
-    username=neo4j_model.username,
-    password=neo4j_model.password,
-    database=neo4j_model.database,
-    enhanced_schema=True
-)
+_graphdb = None
+
+def get_graphdb():
+    """Lazy initialization of the Neo4jGraph."""
+    global _graphdb
+    if _graphdb is None:
+        logger.info(f"Initializing Neo4jGraph for database: {neo4j_model.database}")
+        from langchain_neo4j import Neo4jGraph
+        _graphdb = Neo4jGraph(
+            url=neo4j_model.url,
+            username=neo4j_model.username,
+            password=neo4j_model.password,
+            database=neo4j_model.database,
+            enhanced_schema=True
+        )
+    return _graphdb
+
+# Cleanup logic for clean shutdown
+import atexit
+
+def cleanup():
+    """Close global Neo4j connections during shutdown."""
+    if semanticdb:
+        try:
+            logger.info("Closing semanticdb connection...")
+            semanticdb.close()
+        except:
+            pass
+    if _graphdb:
+        try:
+            logger.info("Closing graphdb connection...")
+            # Neo4jGraph doesn't have a direct close, but it has a driver
+            if hasattr(_graphdb, "_driver"):
+                _graphdb._driver.close()
+        except:
+            pass
+
+atexit.register(cleanup)
 
 
 

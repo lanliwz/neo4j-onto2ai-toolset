@@ -1,5 +1,13 @@
 import json
+import sys
+import os
 from typing import List, Union, Optional, Dict, Any
+
+# Add project root to sys.path to allow running as a script
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from mcp.server.fastmcp import FastMCP
 from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm, get_staging_db
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger

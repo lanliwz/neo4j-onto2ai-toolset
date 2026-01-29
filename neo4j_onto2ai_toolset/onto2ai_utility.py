@@ -23,7 +23,7 @@ ontoToollogger = logging.getLogger("onto2ai-toolset")
 class Neo4jDatabase:
     """Interacts with a Neo4j database for schema-related operations."""
     def __init__(self, uri, user, password, database_name):
-        self._driver = GraphDatabase.driver(uri, auth=(user, password), database=database_name)
+        self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._database_name = database_name
 
     def close(self):
@@ -51,7 +51,7 @@ class Neo4jDatabase:
 
         start = time.time()
         try:
-            with self._driver.session() as session:
+            with self._driver.session(database=self._database_name) as session:
                 return session.execute_write(self._get_dataset, query, params)
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
@@ -77,7 +77,7 @@ class Neo4jDatabase:
             )
 
     def get_node2node_relationship(self, label=None):
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database_name) as session:
             query = query_cls2cls_relationship(label)
             ontoToollogger.debug(query)
             result = session.execute_read(self._get_dataset, query)
@@ -85,12 +85,12 @@ class Neo4jDatabase:
             return [f"(:{record['start_node']})-[:{record['relationship']}]->(:{record['end_node']})" for record in result]
 
     def get_node_dataproperty(self, label=None):
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database_name) as session:
             result = session.execute_read(self._get_dataset, query_dataproperty(label))
             return [f"(:{record['start_node']}) nodes have data property {record['relationship']}" for record in result]
 
     def get_nodes(self, label=None):
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database_name) as session:
             ontoToollogger.debug(query_start_nodes(label))
             result = session.execute_read(self._get_dataset, query_start_nodes(label))
             ontoToollogger.debug(result)
@@ -98,13 +98,13 @@ class Neo4jDatabase:
                     for record in result if record['start_node'] is not None]
 
     def get_end_nodes(self, label=None):
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database_name) as session:
             result = session.execute_read(self._get_dataset, query_end_nodes(label))
             return [f"(:{record['end_node']}) nodes have annotation properties {record['annotation_properties']}"
                     for record in result if record['end_node'] is not None]
 
     def get_relationships(self, label=None):
-        with (self._driver.session() as session):
+        with self._driver.session(database=self._database_name) as session:
             result = session.execute_read(self._get_dataset, query_relationships(label))
             return [f"[:{record['relationship']}] relationship has annotation properties  {record['annotation_properties']}" for record in result]
 
@@ -123,7 +123,7 @@ class Neo4jDatabase:
         tx.run(query)
 
     def create_node_and_relationship(self, node1_label, node1_properties, relationship_type, node2_label, node2_properties):
-        with self._driver.session() as session:
+        with self._driver.session(database=self._database_name) as session:
             session.execute_write(self._create_node_rel, node1_label, node1_properties, relationship_type, node2_label, node2_properties)
 
     @staticmethod
@@ -310,7 +310,7 @@ async def generate_cypher_node(state: OverallState, db: Neo4jDatabase) -> Dict[s
 
 async def execute_query_node(state: OverallState) -> Dict[str, Any]:
     """Executes generated Cypher (if it is a list of statements)."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import graphdb
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_graphdb
     
     stmt_str = state.get("cypher_statement", "[]")
     
@@ -323,7 +323,7 @@ async def execute_query_node(state: OverallState) -> Dict[str, Any]:
     for stmt in statements:
         if not stmt or len(stmt.strip()) < 5: continue
         try:
-            res = graphdb.query(stmt)
+            res = get_graphdb().query(stmt)
             records.append(res)
         except Exception as e:
             mylogger.error(f"Cypher Error: {e}")
@@ -337,12 +337,12 @@ async def execute_query_node(state: OverallState) -> Dict[str, Any]:
 
 async def del_dup_node(state: OverallState) -> Dict[str, Any]:
     """Cleans up duplicate classes and relationships."""
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import graphdb
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_graphdb
     from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels, del_dup_class
     
     for stmt in [del_dup_rels, del_dup_class]:
         try:
-            graphdb.query(stmt)
+            get_graphdb().query(stmt)
         except Exception as e:
             mylogger.error(f"Deduplication Error: {e}")
     return {"steps": ["delete_duplicates"]}
