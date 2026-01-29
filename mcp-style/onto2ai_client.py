@@ -1,12 +1,34 @@
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 import asyncio
 import os
 import sys
 
+def get_model():
+    """Retrieve the LLM based on environment variables or defaults."""
+    # Default to gemini-2.0-flash (per user request for Gemini 3 Flash / latest)
+    model_name = os.getenv("LLM_MODEL_NAME", "gemini-3-flash-preview")
+    
+    if "gemini" in model_name.lower():
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            print("WARNING: GOOGLE_API_KEY not found. Defaulting to OpenAI (gpt-5.2).")
+            print("To use Gemini, please: export GOOGLE_API_KEY=your_key")
+            model_name = "gpt-5.2"
+        else:
+            print(f"Using Gemini model: {model_name}")
+
+            return ChatGoogleGenerativeAI(model=model_name, google_api_key=api_key)
+
+    # Default/Fallback to OpenAI
+    print(f"Using OpenAI model: {model_name}")
+    from langchain_openai import ChatOpenAI
+    return ChatOpenAI(model=model_name)
+    
 # Initialize the LLM with the new target model
-model = ChatOpenAI(model="gpt-5.2")
+model = get_model()
 
 async def main():
     # Define the onto2ai server path
