@@ -94,6 +94,19 @@ python neo4j_onto2ai_toolset/onto2ai_mcp.py http 8082
 > [!NOTE]
 > The default port is `8082`. When running in HTTP mode, clients (like Claude or your own custom integration) should point to `http://localhost:8082/sse`.
 
+### Development Mode (with Auto-Reload)
+
+For active development, use the `fastmcp dev` command. This automatically watches your files for changes, restarts the server, and provides a built-in **MCP Inspector** UI.
+
+```bash
+# Start the server with auto-reload and Inspector
+export NEO4J_MODEL_DB_PASSWORD=your_password
+fastmcp dev --server-port 8082 neo4j_onto2ai_toolset/onto2ai_mcp.py
+```
+
+- **Server (SSE)**: `http://localhost:8082/sse`
+- **Inspector UI**: `http://localhost:3000` (by default)
+
 ---
 
 ## Configuring Antigravity / AI Desktop
