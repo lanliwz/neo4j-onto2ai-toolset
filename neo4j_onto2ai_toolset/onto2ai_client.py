@@ -31,8 +31,9 @@ def get_model():
 model = get_model()
 
 async def main():
-    # Define the onto2ai server path
-    server_path = "/Users/weizhang/github/neo4j-onto2ai-toolset/neo4j_onto2ai_toolset/onto2ai_mcp.py"
+    # Define the onto2ai server path dynamically relative to this script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    server_path = os.path.join(current_dir, "onto2ai_mcp.py")
     
     # Pre-connection check: ensure required Neo4j credentials are in the environment
     if not os.getenv("NEO4J_MODEL_DB_PASSWORD"):
