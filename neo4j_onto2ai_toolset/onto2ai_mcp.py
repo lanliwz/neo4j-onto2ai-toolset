@@ -765,6 +765,25 @@ async def staging_materialized_schema(
         return {"status": "error", "error": str(e)}
 
 if __name__ == "__main__":
-    # By default, run using stdio for MCP integration
-    mcp.run()
+    # Support HTTP transport if requested via command line
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "http":
+        port = 8082
+        if len(sys.argv) > 2:
+            try:
+                port = int(sys.argv[2])
+            except ValueError:
+                pass
+        
+        # FastMCP.run() doesn't support host/port as kwargs.
+        # Since the mcp object is already initialized at the top level,
+        # we update its settings directly.
+        mcp.settings.port = port
+        mcp.settings.host = "localhost"
+        
+        print(f"Starting Onto2AI MCP Server on HTTP port {port}...", file=sys.stderr)
+        mcp.run(transport="sse")
+    else:
+        # By default, run using stdio for MCP integration
+        mcp.run()
 
