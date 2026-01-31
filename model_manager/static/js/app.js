@@ -11,8 +11,54 @@ document.addEventListener('DOMContentLoaded', () => {
     setupQuery();
     setupToolbar();
     setupSplitters();
+    setupLLM();
     loadClasses();
 });
+
+/**
+ * LLM Switching functionality
+ */
+async function setupLLM() {
+    const selector = document.getElementById('llm-selector');
+    if (!selector) return;
+
+    // Fetch initial status
+    try {
+        const response = await fetch('/api/llm');
+        if (response.ok) {
+            const data = await response.json();
+            selector.value = data.current_llm;
+        }
+    } catch (e) {
+        console.error('Error fetching LLM status:', e);
+    }
+
+    // Handle change
+    selector.addEventListener('change', async () => {
+        const newLLM = selector.value;
+        const previousValue = selector.value; // In case of failure
+
+        try {
+            const response = await fetch('/api/llm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ llm_name: newLLM })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`LLM switched to ${data.current_llm}`);
+                addChatMessage(`🔄 Switched to **${newLLM}** model.`, 'system');
+            } else {
+                selector.value = previousValue;
+                throw new Error('Failed to update LLM');
+            }
+        } catch (e) {
+            console.error('Error updating LLM:', e);
+            addChatMessage(`❌ Error switching LLM: ${e.message}`, 'system');
+        }
+    });
+}
 
 /**
  * Splitter resize functionality

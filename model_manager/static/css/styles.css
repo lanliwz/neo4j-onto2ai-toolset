@@ -100,6 +100,38 @@ body {
     color: var(--success);
 }
 
+.llm-selector-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--bg-tertiary);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.llm-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.llm-select {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    padding-right: 4px;
+}
+
+.llm-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
 /* Main Content */
 .main-content {
     display: flex;

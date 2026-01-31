@@ -12,7 +12,7 @@ from .models import (
     ClassInfo, ClassSchema, RelationshipInfo,
     ChatRequest, ChatResponse, GraphData,
     CypherRequest, CypherResponse,
-    ClassUpdateRequest
+    ClassUpdateRequest, LLMStatus, LLMUpdateRequest
 )
 
 router = APIRouter(tags=["schemas"])
@@ -20,6 +20,10 @@ logger = logging.getLogger("onto2ai-toolset")
 
 # Lazy database connection
 _db_connection = None
+
+# LLM State
+AVAILABLE_LLMS = ["gemini-3-flash-preview", "gpt-5.2"]
+_current_llm = os.getenv("LLM_MODEL_NAME") or os.getenv("GPT_MODEL_NAME") or "gemini-3-flash-preview"
 
 def get_db():
     """Get or create the staging database connection."""
@@ -252,7 +256,10 @@ async def chat(request: ChatRequest):
         import json
         
         client = openai.AsyncOpenAI()
-        model = os.getenv("GPT_MODEL_NAME", "gpt-5.2")
+        model = _current_llm
+        
+        # Determine if we should use Google GenAI or OpenAI
+        # (Though this specific endpoint uses the openai library which supports many backends)
         
         # Define the function for schema queries
         tools = [
@@ -867,3 +874,27 @@ async def get_node_focus_data(node_label: str):
     except Exception as e:
         logger.error(f"Error getting node focus data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/llm", response_model=LLMStatus)
+async def get_llm_status():
+    """Get the current LLM and available options."""
+    return LLMStatus(
+        current_llm=_current_llm,
+        available_llms=AVAILABLE_LLMS
+    )
+
+
+@router.post("/llm", response_model=LLMStatus)
+async def update_llm(request: LLMUpdateRequest):
+    """Switch the current LLM."""
+    global _current_llm
+    if request.llm_name not in AVAILABLE_LLMS:
+        raise HTTPException(status_code=400, detail=f"Invalid LLM: {request.llm_name}")
+    
+    _current_llm = request.llm_name
+    logger.info(f"Switched LLM to: {_current_llm}")
+    return LLMStatus(
+        current_llm=_current_llm,
+        available_llms=AVAILABLE_LLMS
+    )

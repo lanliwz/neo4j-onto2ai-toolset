@@ -76,3 +76,12 @@ class PropertyUpdate(BaseModel):
 class ClassUpdateRequest(BaseModel):
     """Request to update class properties."""
     updates: List[PropertyUpdate]
+class LLMStatus(BaseModel):
+    """Current LLM status."""
+    current_llm: str
+    available_llms: List[str]
+
+
+class LLMUpdateRequest(BaseModel):
+    """Request to change the current LLM."""
+    llm_name: str
