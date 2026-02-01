@@ -18,6 +18,17 @@ from .models import (
 router = APIRouter(tags=["schemas"])
 logger = logging.getLogger("onto2ai-toolset")
 
+# Onto2AI MCP Client (Lazy Initialization)
+from neo4j_onto2ai_toolset.onto2ai_client import Onto2AIClient
+_onto2ai_client = None
+
+async def get_onto2ai_client():
+    global _onto2ai_client
+    if _onto2ai_client is None:
+        _onto2ai_client = Onto2AIClient()
+        await _onto2ai_client.connect()
+    return _onto2ai_client
+
 # Lazy database connection
 _db_connection = None
 
@@ -249,177 +260,138 @@ async def get_class_schema(class_name: str):
 async def chat(request: ChatRequest):
     """
     Chat interface for AI-assisted schema review.
-    Uses GPT-5.2 with function calling to detect schema queries and return graph data.
+    Uses the Onto2AI MCP client to leverage ontology tools.
     """
     try:
-        import openai
-        import json
+        client = await get_onto2ai_client()
         
-        client = openai.AsyncOpenAI()
-        model = _current_llm
+        # Call the MCP-powered agent
+        response_text = await client.chat(request.message)
         
-        # Determine if we should use Google GenAI or OpenAI
-        # (Though this specific endpoint uses the openai library which supports many backends)
-        
-        # Define the function for schema queries
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_class_schema",
-                    "description": "Get the schema and graph visualization for a specific ontology class from the staging database. Use this when the user asks about a class, schema, or wants to see/visualize a class.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "class_name": {
-                                "type": "string",
-                                "description": "The name of the class to retrieve (e.g., 'person', 'account', 'payment', 'currency')"
-                            }
-                        },
-                        "required": ["class_name"]
-                    }
-                }
-            }
-        ]
-        
-        # First API call with function calling
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": """You are an ontology expert helping users understand and enhance database schemas. 
-The user is working with FIBO (Financial Industry Business Ontology) schemas in a staging database.
-When users ask about a specific class or want to see a schema, use the get_class_schema function.
-Provide helpful, concise guidance about schema design, relationships, and best practices."""},
-                {"role": "user", "content": request.message}
-            ],
-            tools=tools,
-            tool_choice="auto"
-        )
-        
-        assistant_message = response.choices[0].message
+        # Ensure response_text is a string (defensive check)
+        if not isinstance(response_text, str):
+            logger.warning(f"Response text is not a string (type: {type(response_text)}). Converting to string.")
+            response_text = str(response_text)
+
+        # Smart Visualization: If the AI mentions a class, try to fetch its graph
         graph_data = None
         
-        # Check if the model wants to call a function
-        if assistant_message.tool_calls:
-            tool_call = assistant_message.tool_calls[0]
-            if tool_call.function.name == "get_class_schema":
-                # Parse the function arguments
-                args = json.loads(tool_call.function.arguments)
-                class_name = args.get("class_name", "").lower()
-                
-                # Fetch graph data from stagingdb
-                db = get_db()
-                query = """
-                MATCH (c:owl__Class)
-                WHERE toLower(c.rdfs__label) = toLower($label) OR c.uri = $label
-                OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
-                WITH DISTINCT coalesce(parent, c) AS classNode, c
-                
-                OPTIONAL MATCH (classNode)-[r_out]->(target)
-                WHERE r_out.materialized = true
-                
-                OPTIONAL MATCH (source)-[r_in]->(classNode)
-                WHERE r_in.materialized = true
-                
-                WITH c, classNode,
-                     collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
-                     collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
-                
-                UNWIND (outRels + inRels) AS relData
-                WITH c, classNode, relData
-                WHERE relData.rel IS NOT NULL
-                
-                RETURN DISTINCT
-                  coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
-                  classNode.uri AS SourceURI,
-                  classNode.skos__definition AS SourceDef,
-                  type(relData.rel) AS RelType,
-                  relData.rel.uri AS RelURI,
-                  relData.rel.skos__definition AS RelDef,
-                  relData.rel.cardinality AS Cardinality,
-                  relData.rel.requirement AS Requirement,
-                  relData.rel.property_type AS PropType,
-                  coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
-                  relData.other.uri AS TargetURI,
-                  relData.other.skos__definition AS TargetDef,
-                  relData.dir AS Direction
-                ORDER BY SourceLabel, RelType
-                """
-                results = db.execute_cypher(query, params={"label": class_name}, name="chat_get_graph_data")
-                
-                nodes = {}
-                links = []
-                
-                for row in results:
-                    src_label = row["SourceLabel"]
-                    tgt_label = row["TargetLabel"]
-                    
-                    # Add source node
-                    if src_label not in nodes:
-                        nodes[src_label] = {
-                            "key": src_label,
-                            "label": src_label,
-                            "uri": row["SourceURI"],
-                            "definition": row.get("SourceDef"),
-                            "category": "class",
-                            "isCenter": True
-                        }
-                    
-                    # Add target node
-                    if tgt_label not in nodes:
-                        is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
-                        nodes[tgt_label] = {
-                            "key": tgt_label,
-                            "label": tgt_label,
-                            "uri": row.get("TargetURI"),
-                            "definition": row.get("TargetDef"),
-                            "category": "datatype" if is_datatype else "class"
-                        }
-                    
-                    # Add link
-                    links.append({
-                        "from": src_label,
-                        "to": tgt_label,
-                        "relationship": row["RelType"],
-                        "uri": row.get("RelURI"),
-                        "definition": row.get("RelDef"),
-                        "cardinality": row.get("Cardinality"),
-                        "requirement": row.get("Requirement")
-                    })
-                
-                if nodes:
-                    graph_data = GraphData(
-                        nodes=list(nodes.values()),
-                        links=links,
-                        query=query.replace("$label", f"'{class_name}'").strip()
-                    )
-                
-                # Make a second API call to get the response with function result
-                function_result = f"Found schema for '{class_name}' with {len(nodes)} classes and {len(links)} relationships."
-                
-                response2 = await client.chat.completions.create(
-                    model=model,
-                    messages=[
-                        {"role": "system", "content": """You are an ontology expert helping users understand and enhance database schemas. 
-The user is working with FIBO (Financial Industry Business Ontology) schemas in a staging database.
-Provide helpful, concise guidance about schema design, relationships, and best practices."""},
-                        {"role": "user", "content": request.message},
-                        assistant_message,
-                        {"role": "tool", "tool_call_id": tool_call.id, "content": function_result}
-                    ]
-                )
-                
-                return ChatResponse(
-                    response=response2.choices[0].message.content,
-                    suggestions=None,
-                    graph_data=graph_data
-                )
+        # Extract potential class names (simple heuristic: common ontology terms or capitalized words)
+        # We'll check the stagingdb to see if any of these are actual classes
+        import re
+        # Look for quoted strings or capitalised words that might be class names
+        potential_classes = re.findall(r"['\"]([^'\"]+)['\"]", response_text)
         
-        # No function call - just return the text response
+        # Also check for common classes if they appear in the text
+        db = get_db()
+        # Get all classes currently in staging
+        class_query = "MATCH (c:owl__Class) RETURN c.rdfs__label as label"
+        staging_classes = {row["label"].lower() for row in db.execute_cypher(class_query) if row["label"]}
+        
+        detected_class = None
+        # Check if any identified potential classes are in staging
+        for p in potential_classes:
+            if p.lower() in staging_classes:
+                detected_class = p
+                break
+        
+        # If no quoted class found, look for any staging class mentioned in text
+        if not detected_class:
+            words = set(re.findall(r'\b\w+\b', response_text.lower()))
+            common_mentions = words.intersection(staging_classes)
+            if common_mentions:
+                # Pick the most likely one (e.g. the one appearing first or just a stable pick)
+                detected_class = list(common_mentions)[0]
+
+        if detected_class:
+            logger.info(f"Smart visualization detected class: {detected_class}")
+            # Fetch graph data for the detected class
+            query = """
+            MATCH (c:owl__Class)
+            WHERE toLower(c.rdfs__label) = toLower($label) OR c.uri = $label
+            OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
+            WITH DISTINCT coalesce(parent, c) AS classNode, c
+            
+            OPTIONAL MATCH (classNode)-[r_out]->(target)
+            WHERE r_out.materialized = true
+            
+            OPTIONAL MATCH (source)-[r_in]->(classNode)
+            WHERE r_in.materialized = true
+            
+            WITH c, classNode,
+                    collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
+                    collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
+            
+            UNWIND (outRels + inRels) AS relData
+            WITH c, classNode, relData
+            WHERE relData.rel IS NOT NULL
+            
+            RETURN DISTINCT
+                coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
+                classNode.uri AS SourceURI,
+                classNode.skos__definition AS SourceDef,
+                type(relData.rel) AS RelType,
+                relData.rel.uri AS RelURI,
+                relData.rel.skos__definition AS RelDef,
+                relData.rel.cardinality AS Cardinality,
+                relData.rel.requirement AS Requirement,
+                relData.rel.property_type AS PropType,
+                coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
+                relData.other.uri AS TargetURI,
+                relData.other.skos__definition AS TargetDef,
+                relData.dir AS Direction
+            ORDER BY SourceLabel, RelType
+            """
+            results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
+            
+            nodes = {}
+            links = []
+            
+            for row in results:
+                src_label = row["SourceLabel"]
+                tgt_label = row["TargetLabel"]
+                
+                if src_label not in nodes:
+                    nodes[src_label] = {
+                        "key": src_label,
+                        "label": src_label,
+                        "uri": row["SourceURI"],
+                        "definition": row.get("SourceDef"),
+                        "category": "class",
+                        "isCenter": src_label.lower() == detected_class.lower()
+                    }
+                
+                if tgt_label not in nodes:
+                    is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
+                    nodes[tgt_label] = {
+                        "key": tgt_label,
+                        "label": tgt_label,
+                        "uri": row.get("TargetURI"),
+                        "definition": row.get("TargetDef"),
+                        "category": "datatype" if is_datatype else "class"
+                    }
+                
+                links.append({
+                    "from": src_label,
+                    "to": tgt_label,
+                    "relationship": row["RelType"],
+                    "uri": row.get("RelURI"),
+                    "definition": row.get("RelDef"),
+                    "cardinality": row.get("Cardinality"),
+                    "requirement": row.get("Requirement")
+                })
+            
+            if nodes:
+                graph_data = GraphData(
+                    nodes=list(nodes.values()),
+                    links=links,
+                    query=query.replace("$label", f"'{detected_class}'").strip()
+                )
+
         return ChatResponse(
-            response=assistant_message.content,
+            response=response_text,
             suggestions=None,
-            graph_data=None
+            graph_data=graph_data
         )
     except Exception as e:
         logger.error(f"Error in chat: {e}")
@@ -888,12 +860,16 @@ async def get_llm_status():
 @router.post("/llm", response_model=LLMStatus)
 async def update_llm(request: LLMUpdateRequest):
     """Switch the current LLM."""
-    global _current_llm
+    global _current_llm, _onto2ai_client
     if request.llm_name not in AVAILABLE_LLMS:
         raise HTTPException(status_code=400, detail=f"Invalid LLM: {request.llm_name}")
     
     _current_llm = request.llm_name
     logger.info(f"Switched LLM to: {_current_llm}")
+    
+    # Reset onto2ai client to use the new LLM
+    _onto2ai_client = None
+    
     return LLMStatus(
         current_llm=_current_llm,
         available_llms=AVAILABLE_LLMS
