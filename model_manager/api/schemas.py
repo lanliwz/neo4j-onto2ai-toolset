@@ -256,6 +256,67 @@ async def get_class_schema(class_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def data_model_to_graph_data(dm: dict) -> GraphData:
+    """Convert a DataModel (from extract_data_model tool) to GraphData format."""
+    nodes = {}  # Use dict to avoid duplicates
+    links = []
+    
+    # Process nodes (Classes and their Datatype Properties)
+    for node in dm.get("nodes", []):
+        src_label = node.get("label")
+        if src_label not in nodes:
+            nodes[src_label] = {
+                "key": src_label,
+                "label": src_label,
+                "uri": node.get("uri"),
+                "definition": node.get("description"),
+                "category": "class"
+            }
+        
+        # Datatype properties as separate nodes for visualization consistency
+        for prop in node.get("properties", []):
+            tgt_label = prop.get("type", "Resource")
+            if tgt_label not in nodes:
+                nodes[tgt_label] = {
+                    "key": tgt_label,
+                    "label": tgt_label,
+                    "uri": prop.get("uri"),
+                    "definition": prop.get("description"),
+                    "category": "datatype"
+                }
+            
+            links.append({
+                "from": src_label,
+                "to": tgt_label,
+                "relationship": prop.get("name"),
+                "uri": prop.get("uri"),
+                "definition": prop.get("description"),
+                "cardinality": prop.get("cardinality"),
+                "requirement": "Mandatory" if prop.get("mandatory") else "Optional"
+            })
+        
+    # Process relationships (Object Properties)
+    for rel in dm.get("relationships", []):
+        src_label = rel.get("start_node_label")
+        tgt_label = rel.get("end_node_label")
+        
+        # Ensure nodes exist
+        if src_label not in nodes:
+            nodes[src_label] = {"key": src_label, "label": src_label, "category": "class"}
+        if tgt_label not in nodes:
+            nodes[tgt_label] = {"key": tgt_label, "label": tgt_label, "category": "class"}
+            
+        links.append({
+            "from": src_label,
+            "to": tgt_label,
+            "relationship": rel.get("type"),
+            "uri": rel.get("uri"),
+            "definition": rel.get("description")
+        })
+        
+    return GraphData(nodes=list(nodes.values()), links=links)
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
@@ -266,127 +327,135 @@ async def chat(request: ChatRequest):
         client = await get_onto2ai_client()
         
         # Call the MCP-powered agent
-        response_text = await client.chat(request.message)
+        client_res = await client.chat(request.message)
+        response_text = client_res.get("response", "")
+        extracted_dm = client_res.get("data_model")
         
         # Ensure response_text is a string (defensive check)
         if not isinstance(response_text, str):
             logger.warning(f"Response text is not a string (type: {type(response_text)}). Converting to string.")
             response_text = str(response_text)
 
-        # Smart Visualization: If the AI mentions a class, try to fetch its graph
         graph_data = None
-        
-        # Extract potential class names (simple heuristic: common ontology terms or capitalized words)
-        # We'll check the stagingdb to see if any of these are actual classes
-        import re
-        # Look for quoted strings or capitalised words that might be class names
-        potential_classes = re.findall(r"['\"]([^'\"]+)['\"]", response_text)
-        
-        # Also check for common classes if they appear in the text
-        db = get_db()
-        # Get all classes currently in staging
-        class_query = "MATCH (c:owl__Class) RETURN c.rdfs__label as label"
-        staging_classes = {row["label"].lower() for row in db.execute_cypher(class_query) if row["label"]}
-        
-        detected_class = None
-        # Check if any identified potential classes are in staging
-        for p in potential_classes:
-            if p.lower() in staging_classes:
-                detected_class = p
-                break
-        
-        # If no quoted class found, look for any staging class mentioned in text
-        if not detected_class:
-            words = set(re.findall(r'\b\w+\b', response_text.lower()))
-            common_mentions = words.intersection(staging_classes)
-            if common_mentions:
-                # Pick the most likely one (e.g. the one appearing first or just a stable pick)
-                detected_class = list(common_mentions)[0]
 
-        if detected_class:
-            logger.info(f"Smart visualization detected class: {detected_class}")
-            # Fetch graph data for the detected class
-            query = """
-            MATCH (c:owl__Class)
-            WHERE toLower(c.rdfs__label) = toLower($label) OR c.uri = $label
-            OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
-            WITH DISTINCT coalesce(parent, c) AS classNode, c
+        # 1. Use explicitly extracted data model if available
+        if extracted_dm:
+            logger.info("Using explicitly extracted data model from tool results.")
+            graph_data = data_model_to_graph_data(extracted_dm)
+        
+        # 2. Fallback to Smart Visualization if no data model extracted
+        if not graph_data:
+            # Extract potential class names (simple heuristic: common ontology terms or capitalized words)
+            # We'll check the stagingdb to see if any of these are actual classes
+            import re
+            # Look for quoted strings or capitalised words that might be class names
+            potential_classes = re.findall(r"['\"]([^'\"]+)['\"]", response_text)
             
-            OPTIONAL MATCH (classNode)-[r_out]->(target)
-            WHERE r_out.materialized = true
+            # Also check for common classes if they appear in the text
+            db = get_db()
+            # Get all classes currently in staging
+            class_query = "MATCH (c:owl__Class) RETURN c.rdfs__label as label"
+            staging_classes = {row["label"].lower() for row in db.execute_cypher(class_query) if row["label"]}
             
-            OPTIONAL MATCH (source)-[r_in]->(classNode)
-            WHERE r_in.materialized = true
+            detected_class = None
+            # Check if any identified potential classes are in staging
+            for p in potential_classes:
+                if p.lower() in staging_classes:
+                    detected_class = p
+                    break
             
-            WITH c, classNode,
-                    collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
-                    collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
-            
-            UNWIND (outRels + inRels) AS relData
-            WITH c, classNode, relData
-            WHERE relData.rel IS NOT NULL
-            
-            RETURN DISTINCT
-                coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
-                classNode.uri AS SourceURI,
-                classNode.skos__definition AS SourceDef,
-                type(relData.rel) AS RelType,
-                relData.rel.uri AS RelURI,
-                relData.rel.skos__definition AS RelDef,
-                relData.rel.cardinality AS Cardinality,
-                relData.rel.requirement AS Requirement,
-                relData.rel.property_type AS PropType,
-                coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
-                relData.other.uri AS TargetURI,
-                relData.other.skos__definition AS TargetDef,
-                relData.dir AS Direction
-            ORDER BY SourceLabel, RelType
-            """
-            results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
-            
-            nodes = {}
-            links = []
-            
-            for row in results:
-                src_label = row["SourceLabel"]
-                tgt_label = row["TargetLabel"]
+            # If no quoted class found, look for any staging class mentioned in text
+            if not detected_class:
+                words = set(re.findall(r'\b\w+\b', response_text.lower()))
+                common_mentions = words.intersection(staging_classes)
+                if common_mentions:
+                    # Pick the most likely one (e.g. the one appearing first or just a stable pick)
+                    detected_class = list(common_mentions)[0]
+
+            if detected_class:
+                logger.info(f"Smart visualization detected class: {detected_class}")
+                # Fetch graph data for the detected class
+                query = """
+                MATCH (c:owl__Class)
+                WHERE toLower(c.rdfs__label) = toLower($label) OR c.uri = $label
+                OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
+                WITH DISTINCT coalesce(parent, c) AS classNode, c
                 
-                if src_label not in nodes:
-                    nodes[src_label] = {
-                        "key": src_label,
-                        "label": src_label,
-                        "uri": row["SourceURI"],
-                        "definition": row.get("SourceDef"),
-                        "category": "class",
-                        "isCenter": src_label.lower() == detected_class.lower()
-                    }
+                OPTIONAL MATCH (classNode)-[r_out]->(target)
+                WHERE r_out.materialized = true
                 
-                if tgt_label not in nodes:
-                    is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
-                    nodes[tgt_label] = {
-                        "key": tgt_label,
-                        "label": tgt_label,
-                        "uri": row.get("TargetURI"),
-                        "definition": row.get("TargetDef"),
-                        "category": "datatype" if is_datatype else "class"
-                    }
+                OPTIONAL MATCH (source)-[r_in]->(classNode)
+                WHERE r_in.materialized = true
                 
-                links.append({
-                    "from": src_label,
-                    "to": tgt_label,
-                    "relationship": row["RelType"],
-                    "uri": row.get("RelURI"),
-                    "definition": row.get("RelDef"),
-                    "cardinality": row.get("Cardinality"),
-                    "requirement": row.get("Requirement")
-                })
-            
-            if nodes:
-                graph_data = GraphData(
-                    nodes=list(nodes.values()),
-                    links=links,
-                    query=query.replace("$label", f"'{detected_class}'").strip()
-                )
+                WITH c, classNode,
+                        collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
+                        collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
+                
+                UNWIND (outRels + inRels) AS relData
+                WITH c, classNode, relData
+                WHERE relData.rel IS NOT NULL
+                
+                RETURN DISTINCT
+                    coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
+                    classNode.uri AS SourceURI,
+                    classNode.skos__definition AS SourceClassDef,
+                    type(relData.rel) AS RelType,
+                    relData.rel.uri AS RelURI,
+                    relData.rel.skos__definition AS RelDef,
+                    relData.rel.cardinality AS Cardinality,
+                    relData.rel.requirement AS Requirement,
+                    relData.rel.property_type AS PropType,
+                    coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
+                    relData.other.uri AS TargetURI,
+                    relData.other.skos__definition AS TargetDef,
+                    relData.dir AS Direction
+                ORDER BY SourceLabel, RelType
+                """
+                results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
+                
+                nodes = {}
+                links = []
+                
+                for row in results:
+                    src_label = row["SourceLabel"]
+                    tgt_label = row["TargetLabel"]
+                    
+                    if src_label not in nodes:
+                        nodes[src_label] = {
+                            "key": src_label,
+                            "label": src_label,
+                            "uri": row["SourceURI"],
+                            "definition": row.get("SourceClassDef"),
+                            "category": "class",
+                            "isCenter": src_label.lower() == detected_class.lower()
+                        }
+                    
+                    if tgt_label not in nodes:
+                        is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
+                        nodes[tgt_label] = {
+                            "key": tgt_label,
+                            "label": tgt_label,
+                            "uri": row.get("TargetURI"),
+                            "definition": row.get("TargetDef"),
+                            "category": "datatype" if is_datatype else "class"
+                        }
+                    
+                    links.append({
+                        "from": src_label,
+                        "to": tgt_label,
+                        "relationship": row["RelType"],
+                        "uri": row.get("RelURI"),
+                        "definition": row.get("RelDef"),
+                        "cardinality": row.get("Cardinality"),
+                        "requirement": row.get("Requirement")
+                    })
+                
+                if nodes:
+                    graph_data = GraphData(
+                        nodes=list(nodes.values()),
+                        links=links,
+                        query=query.replace("$label", f"'{detected_class}'").strip()
+                    )
 
         return ChatResponse(
             response=response_text,

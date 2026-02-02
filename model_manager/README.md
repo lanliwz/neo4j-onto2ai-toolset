@@ -11,8 +11,8 @@ A premium, interactive web application designed to review, visualize, and enhanc
 
 ## ✨ Features
 
--   **🧠 Advanced AI Chat**: Context-aware assistance using GPT-5.2. Includes "Chat-to-Graph" functionality—ask about a class, and the graph automatically updates.
--   **🔍 Intelligent Query Workspace**: Execute Cypher queries with automatic visualization. Results are intelligently rendered as interactive graphs or sortable tables.
+-   **🧠 Extractive AI Chat**: Powered by GPT-2.0-Flash. Includes true "Chat-to-Graph" extraction—when the AI uses schema tools, the resulting structured data is captured and rendered with high fidelity.
+-   **🎨 High-Fidelity Visualization**: Interactive graph powered by GoJS. Automatically visualizes both classes and datatype properties as separate nodes for a complete semantic view.
 -   **🎨 Interactive Graph Visualization**: Powered by GoJS. Features custom styling for classes and datatypes, smooth animations, and automatic layout.
 -   **🌓 Modern Dark UI**: Slick, resizable three-panel interface designed for deep focus.
 -   **📋 Property Inspector**: Deep-dive into node and relationship metadata with a dedicated inspection panel.

@@ -64,8 +64,11 @@ class Onto2AIClient:
         self.agent = create_agent(self.llm, self.tools)
         return self
 
-    async def chat(self, message: str):
-        """Send a message to the agent and get a response."""
+    async def chat(self, message: str) -> dict:
+        """
+        Send a message to the agent and get a response.
+        Returns a dict with 'response' (text) and optional 'data_model' (dict).
+        """
         if not self.agent:
             await self.connect()
         
@@ -74,17 +77,63 @@ class Onto2AIClient:
             {"messages": [("user", message)]},
             config={"callbacks": callbacks}
         )
-        content = response["messages"][-1].content
+        
+        # 1. Extract the final text response
+        last_message = response["messages"][-1]
+        content = last_message.content
+        text_response = ""
+        
         if isinstance(content, list):
-            # Join text parts if it's a multi-part message (common with some models)
+            # Join text parts if it's a multi-part message
             text_parts = []
             for part in content:
                 if isinstance(part, str):
                     text_parts.append(part)
                 elif isinstance(part, dict) and part.get("type") == "text":
                     text_parts.append(part.get("text", ""))
-            return "".join(text_parts)
-        return str(content or "")
+            text_response = "".join(text_parts)
+        else:
+            text_response = str(content or "")
+            
+        # 2. Extract DataModel if any tool called it
+        data_model = None
+        # Iterate backwards to find the latest tool output
+        for msg in reversed(response["messages"]):
+            print(f"DEBUG: Message type: {type(msg)}, Name: {getattr(msg, 'name', 'N/A')}")
+            
+            # More robust check: look for specific tool output
+            if getattr(msg, "name", None) == "extract_data_model" or \
+               (hasattr(msg, "tool_call_id") and getattr(msg, "name", None) == "onto2ai:extract_data_model"):
+                try:
+                    raw_content = msg.content
+                    
+                    if isinstance(raw_content, str):
+                        data_model = json.loads(raw_content)
+                    elif isinstance(raw_content, dict):
+                        data_model = raw_content
+                    elif isinstance(raw_content, list):
+                        # MCP often returns a list of blocks
+                        for block in raw_content:
+                            if isinstance(block, dict) and block.get("type") == "text":
+                                try:
+                                    data_model = json.loads(block.get("text", "{}"))
+                                    break
+                                except:
+                                    continue
+                            elif isinstance(block, str):
+                                try:
+                                    data_model = json.loads(block)
+                                    break
+                                except:
+                                    continue
+                    break
+                except Exception:
+                    continue
+
+        return {
+            "response": text_response,
+            "data_model": data_model
+        }
 
     async def close(self):
         """Close the MCP client connection."""

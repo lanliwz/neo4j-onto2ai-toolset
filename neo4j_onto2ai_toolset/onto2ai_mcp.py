@@ -15,6 +15,60 @@ from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Rela
 
 mcp = FastMCP("Onto2AI")
 
+MATERIALIZED_SCHEMA_QUERY = """
+    // Match the requested class
+    MATCH (c:owl__Class)
+    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+    
+    // Optional inheritance chain
+    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    WITH c, coalesce(parent, c) AS classNode
+    
+    // Path 1: Materialized relationships to owl__Class targets
+    MATCH (classNode)-[r]->(target:owl__Class)
+    WHERE r.materialized = true
+    RETURN DISTINCT
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
+      r.cardinality AS Cardinality,
+      r.requirement AS Requirement,
+      r.property_type AS PropMetaType,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    
+    UNION
+    
+    // Path 2: Materialized relationships to rdfs__Datatype targets
+    MATCH (c:owl__Class)
+    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+    
+    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+    WITH c, coalesce(parent, c) AS classNode
+    
+    MATCH (classNode)-[r]->(target:rdfs__Datatype)
+    WHERE r.materialized = true
+    RETURN DISTINCT
+      c.rdfs__label AS SourceClassLabel,
+      c.uri AS SourceClassURI,
+      c.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
+      r.cardinality AS Cardinality,
+      r.requirement AS Requirement,
+      r.property_type AS PropMetaType,
+      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      target.uri AS TargetClassURI,
+      target.skos__definition AS TargetClassDef
+    
+    ORDER BY SourceClassLabel, RelType
+"""
+
 @mcp.tool()
 async def get_materialized_schema(
     class_names: Union[str, List[str]], 
@@ -47,29 +101,9 @@ async def get_materialized_schema(
     # Use specified database or default to semanticdb
     db = get_staging_db(database) if database else semanticdb
     
-    query = """
-    MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
-    MATCH (parent)-[r]->(target)
-    WHERE r.materialized = true
-    RETURN DISTINCT
-      c.rdfs__label AS SourceClassLabel,
-      c.uri AS SourceClassURI,
-      c.skos__definition AS SourceClassDef,
-      type(r) AS RelType,
-      r.uri AS RelURI,
-      r.skos__definition AS RelDef,
-      r.cardinality AS Cardinality,
-      r.requirement AS Requirement,
-      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
-      target.uri AS TargetClassURI,
-      target.skos__definition AS TargetClassDef
-    ORDER BY SourceClassLabel, RelType
-    """
-    
     logger.info(f"Fetching enhanced materialized schema for: {labels} from database: {database or 'default'}")
     try:
-        results = db.execute_cypher(query, params={"labels": labels}, name="get_materialized_schema_tool")
+        results = db.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="get_materialized_schema_tool")
         
         classes_section = {}
         relationships_section = []
@@ -260,70 +294,19 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str
         logger.error(f"Error fetching enhanced ontological schema: {e}")
         return {"error": str(e)}
 
-async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
-    """Internal helper to extract a DataModel from the ontology."""
+@mcp.tool()
+async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
+    """
+    Extract a structured DataModel (JSON) from the ontology for the specified classes.
+    Includes nodes, properties, relationships, and metadata.
+    """
     if isinstance(class_names, str):
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
     
-    query = """
-    // Match the requested class
-    MATCH (c:owl__Class)
-    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
-    
-    // Optional inheritance chain - make rdfs__subClassOf optional
-    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-    WITH c, coalesce(parent, c) AS classNode
-    
-    // Get materialized relationships to owl__Class targets
-    MATCH (classNode)-[r]->(target:owl__Class)
-    WHERE r.materialized = true
-    RETURN DISTINCT
-      c.rdfs__label AS SourceClassLabel,
-      c.uri AS SourceClassURI,
-      c.skos__definition AS SourceClassDef,
-      type(r) AS RelType,
-      r.uri AS RelURI,
-      r.skos__definition AS RelDef,
-      r.cardinality AS Cardinality,
-      r.requirement AS Requirement,
-      r.property_type AS PropMetaType,
-      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
-      target.uri AS TargetClassURI,
-      target.skos__definition AS TargetClassDef
-    
-    UNION
-    
-    // Match the requested class again for rdfs__Datatype targets
-    MATCH (c:owl__Class)
-    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
-    
-    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-    WITH c, coalesce(parent, c) AS classNode
-    
-    // Get materialized relationships to rdfs__Datatype targets
-    MATCH (classNode)-[r]->(target:rdfs__Datatype)
-    WHERE r.materialized = true
-    RETURN DISTINCT
-      c.rdfs__label AS SourceClassLabel,
-      c.uri AS SourceClassURI,
-      c.skos__definition AS SourceClassDef,
-      type(r) AS RelType,
-      r.uri AS RelURI,
-      r.skos__definition AS RelDef,
-      r.cardinality AS Cardinality,
-      r.requirement AS Requirement,
-      r.property_type AS PropMetaType,
-      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
-      target.uri AS TargetClassURI,
-      target.skos__definition AS TargetClassDef
-    
-    ORDER BY SourceClassLabel, RelType
-    """
-    
     try:
-        results = semanticdb.execute_cypher(query, params={"labels": labels}, name="internal_extract_data_model")
+        results = semanticdb.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="internal_extract_data_model")
         
         nodes_dict = {}
         relationships = []
@@ -366,7 +349,7 @@ async def _extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
             metadata={"source_classes": labels, "engine": "Onto2AI-Materialized"}
         )
     except Exception as e:
-        logger.error(f"Error in internal extraction: {e}")
+        logger.error(f"Error in extract_data_model: {e}")
         raise
 
 @mcp.tool()
@@ -376,7 +359,7 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
     Returns the updated DataModel (JSON).
     """
     try:
-        data_model = await _extract_data_model(class_names)
+        data_model = await extract_data_model(class_names)
         
         prompt = f"""
         You are a data architect. Modify the following Neo4j DataModel based on these instructions: "{instructions}"
@@ -417,7 +400,7 @@ async def generate_schema_code(
         if instructions:
             data_model = await enhance_schema(class_names, instructions)
         else:
-            data_model = await _extract_data_model(class_names)
+            data_model = await extract_data_model(class_names)
             
         # 2. Generate code
         prompt = f"""
@@ -466,7 +449,7 @@ async def generate_shacl_for_modelling(
         if instructions:
             data_model = await enhance_schema(class_names, instructions)
         else:
-            data_model = await _extract_data_model(class_names)
+            data_model = await extract_data_model(class_names)
             
         prompt = f"""
         You are a semantic modeling expert. Generate SHACL code in Turtle format for the following DataModel.

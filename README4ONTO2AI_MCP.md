@@ -5,6 +5,7 @@ This project provides a powerful **Model Context Protocol (MCP)** server and an 
 ## Features
 
 - **Materialized Schema Retrieval**: Flattened, production-ready views of ontology classes.
+- **Data Model Extraction**: High-fidelity structured JSON extraction (classes, attributes, relationships).
 - **AI Enhancement**: On-the-fly schema refinement using GPT models.
 - **SHACL Generation**: Modeling-ready SHACL files for ontology-driven data validation.
 - **Multi-Model Support**: Seamlessly switch between **Gemini 2.0 Flash** and **GPT-5.2 (OpenAI)**.
@@ -157,6 +158,7 @@ Use this if the server is already running independently on port 8082.
 | Tool Name | Description |
 |-----------|-------------|
 | `get_materialized_schema` | Returns classes and relationships as Markdown tables. |
+| `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels). |
 | `get_ontological_schema` | Returns the raw meta-model view of an ontology class. |
 | `enhance_schema` | AI-driven schema enhancement based on custom instructions. |
 | `generate_shacl_for_modelling` | Generates official SHACL files for class-based validation. |

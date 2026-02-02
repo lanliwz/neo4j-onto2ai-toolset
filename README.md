@@ -99,10 +99,23 @@ pip install dist/neo4j_onto2ai_toolset-0.2.0-py3-none-any.whl
 pip uninstall dist/neo4j_onto2ai_toolset-0.2.0-py3-none-any.whl
 ```
 
-### MCP - Model Context Protocol
-The repository includes a comprehensive MCP Server providing ontology interrogation and AI-powered schema management tools (SQL, Pydantic, Neo4j generation).
+### Applications & Tools
+The repository includes several ways to interact with the ontology:
 
-For detailed documentation, see [MCP_README.md](./MCP_README.md).
+#### 1. 🌌 Onto2AI Model Manager (Web UI)
+A premium web application for reviewing, visualizing, and enhancing ontology schemas.
+- **Run**: `python -m uvicorn model_manager.main:app --host localhost --port 8180`
+- **Features**: Highly-fidelity 3-panel UI, AI chat with "Chat-to-Graph" extraction, and GoJS interactive visualizations.
+- **Documentation**: [model_manager/README.md](./model_manager/README.md)
+
+#### 2. 💬 Onto2Schema Chatbot (CLI)
+An interactive CLI tool for schema interrogation.
+- **Run**: `python main.py`
+
+### 🛠 MCP - Model Context Protocol
+The repository includes a comprehensive MCP Server providing ontology interrogation and AI-powered schema management tools (SQL, Pydantic, Neo4j generation).
+- **Tool Discovery**: Use the `Onto2AIClient` or any MCP-compatible client.
+- **Detailed Documentation**: [MCP_README.md](./MCP_README.md)
 
 ### FIBO Ontology Dependency Tree
 The following diagram illustrates the high-level dependencies within the FIBO ontology and its reliance on external standards:
