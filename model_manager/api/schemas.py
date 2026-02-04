@@ -25,7 +25,7 @@ _onto2ai_client = None
 async def get_onto2ai_client():
     global _onto2ai_client
     if _onto2ai_client is None:
-        _onto2ai_client = Onto2AIClient()
+        _onto2ai_client = Onto2AIClient(model_name=_current_llm)
         await _onto2ai_client.connect()
     return _onto2ai_client
 
@@ -33,8 +33,8 @@ async def get_onto2ai_client():
 _db_connection = None
 
 # LLM State
-AVAILABLE_LLMS = ["gemini-3-flash-preview", "gpt-5.2"]
-_current_llm = os.getenv("LLM_MODEL_NAME") or os.getenv("GPT_MODEL_NAME") or "gemini-3-flash-preview"
+AVAILABLE_LLMS = ["gemini-2.0-flash-exp", "gpt-4o-2024-05-13"]
+_current_llm = os.getenv("LLM_MODEL_NAME") or "gemini-2.0-flash-exp"
 
 def get_db():
     """Get or create the staging database connection."""
@@ -388,28 +388,16 @@ async def chat(request: ChatRequest):
                 WHERE r_in.materialized = true
                 
                 WITH c, classNode,
-                        collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
-                        collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
-                
-                UNWIND (outRels + inRels) AS relData
-                WITH c, classNode, relData
-                WHERE relData.rel IS NOT NULL
+                        collect(DISTINCT {rel: r_out, other: target}) AS outgoing,
+                        collect(DISTINCT {rel: r_in, other: source}) AS incoming
                 
                 RETURN DISTINCT
+                    classNode,
                     coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
                     classNode.uri AS SourceURI,
                     classNode.skos__definition AS SourceClassDef,
-                    type(relData.rel) AS RelType,
-                    relData.rel.uri AS RelURI,
-                    relData.rel.skos__definition AS RelDef,
-                    relData.rel.cardinality AS Cardinality,
-                    relData.rel.requirement AS Requirement,
-                    relData.rel.property_type AS PropType,
-                    coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
-                    relData.other.uri AS TargetURI,
-                    relData.other.skos__definition AS TargetDef,
-                    relData.dir AS Direction
-                ORDER BY SourceLabel, RelType
+                    outgoing,
+                    incoming
                 """
                 results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
                 
@@ -417,38 +405,75 @@ async def chat(request: ChatRequest):
                 links = []
                 
                 for row in results:
-                    src_label = row["SourceLabel"]
-                    tgt_label = row["TargetLabel"]
-                    
-                    if src_label not in nodes:
-                        nodes[src_label] = {
-                            "key": src_label,
-                            "label": src_label,
+                    # Center node info
+                    center_label = row["SourceLabel"]
+                    if center_label not in nodes:
+                        nodes[center_label] = {
+                            "key": center_label,
+                            "label": center_label,
                             "uri": row["SourceURI"],
                             "definition": row.get("SourceClassDef"),
                             "category": "class",
-                            "isCenter": src_label.lower() == detected_class.lower()
+                            "isCenter": center_label.lower() == detected_class.lower(),
+                            "properties": dict(row.get("classNode", {})) if "classNode" in row else {}
                         }
                     
-                    if tgt_label not in nodes:
-                        is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
-                        nodes[tgt_label] = {
-                            "key": tgt_label,
-                            "label": tgt_label,
-                            "uri": row.get("TargetURI"),
-                            "definition": row.get("TargetDef"),
-                            "category": "datatype" if is_datatype else "class"
-                        }
-                    
-                    links.append({
-                        "from": src_label,
-                        "to": tgt_label,
-                        "relationship": row["RelType"],
-                        "uri": row.get("RelURI"),
-                        "definition": row.get("RelDef"),
-                        "cardinality": row.get("Cardinality"),
-                        "requirement": row.get("Requirement")
-                    })
+                    # Process outgoing
+                    for item in row["outgoing"]:
+                        if not item.get("rel") or not item.get("other"): continue
+                        rel = item["rel"]
+                        target = item["other"]
+                        tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
+                        
+                        if tgt_label not in nodes:
+                            is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
+                            nodes[tgt_label] = {
+                                "key": tgt_label,
+                                "label": tgt_label,
+                                "uri": target.get("uri"),
+                                "definition": target.get("skos__definition"),
+                                "category": "datatype" if is_datatype else "class",
+                                "properties": dict(target) if target else {}
+                            }
+                        
+                        links.append({
+                            "from": center_label,
+                            "to": tgt_label,
+                            "relationship": rel.get("_rel_type") or "relates_to",
+                            "uri": rel.get("uri"),
+                            "definition": rel.get("skos__definition"),
+                            "cardinality": rel.get("cardinality"),
+                            "requirement": rel.get("requirement"),
+                            "properties": dict(rel) if rel else {}
+                        })
+                        
+                    # Process incoming
+                    for item in row["incoming"]:
+                        if not item.get("rel") or not item.get("other"): continue
+                        rel = item["rel"]
+                        source = item["other"]
+                        src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
+                        
+                        if src_label not in nodes:
+                            nodes[src_label] = {
+                                "key": src_label,
+                                "label": src_label,
+                                "uri": source.get("uri"),
+                                "definition": source.get("skos__definition"),
+                                "category": "class",
+                                "properties": dict(source) if source else {}
+                            }
+                        
+                        links.append({
+                            "from": src_label,
+                            "to": center_label,
+                            "relationship": rel.get("_rel_type") or "relates_to",
+                            "uri": rel.get("uri"),
+                            "definition": rel.get("skos__definition"),
+                            "cardinality": rel.get("cardinality"),
+                            "requirement": rel.get("requirement"),
+                            "properties": dict(rel) if rel else {}
+                        })
                 
                 if nodes:
                     graph_data = GraphData(
@@ -712,7 +737,7 @@ async def get_graph_data(class_name: str):
         MATCH (c:owl__Class)
         WHERE c.rdfs__label = $label OR c.uri = $label
         OPTIONAL MATCH (c)-[:owl__subClassOf*0..]->(parent:owl__Class)
-        WITH coalesce(parent, c) AS classNode, c
+        WITH DISTINCT coalesce(parent, c) AS classNode, c
         
         // Outbound relationships
         OPTIONAL MATCH (classNode)-[r_out]->(target)
@@ -723,28 +748,16 @@ async def get_graph_data(class_name: str):
         WHERE r_in.materialized = true
         
         WITH c, classNode,
-             collect(DISTINCT {rel: r_out, other: target, dir: 'out'}) AS outRels,
-             collect(DISTINCT {rel: r_in, other: source, dir: 'in'}) AS inRels
+             collect(DISTINCT {rel: r_out, other: target}) AS outgoing,
+             collect(DISTINCT {rel: r_in, other: source}) AS incoming
         
-        UNWIND (outRels + inRels) AS relData
-        WITH c, classNode, relData
-        WHERE relData.rel IS NOT NULL
-        
-        RETURN DISTINCT
-          c.rdfs__label AS SourceLabel,
-          c.uri AS SourceURI,
-          c.skos__definition AS SourceDef,
-          type(relData.rel) AS RelType,
-          relData.rel.uri AS RelURI,
-          relData.rel.skos__definition AS RelDef,
-          relData.rel.cardinality AS Cardinality,
-          relData.rel.requirement AS Requirement,
-          relData.rel.property_type AS PropType,
-          coalesce(relData.other.rdfs__label, relData.other.uri, 'Resource') AS TargetLabel,
-          relData.other.uri AS TargetURI,
-          relData.other.skos__definition AS TargetDef,
-          relData.dir AS Direction
-        ORDER BY SourceLabel, RelType
+        RETURN 
+          classNode,
+          coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
+          classNode.uri AS SourceURI,
+          classNode.skos__definition AS SourceDef,
+          outgoing,
+          incoming
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data")
         
@@ -752,40 +765,76 @@ async def get_graph_data(class_name: str):
         links = []
         
         for row in results:
-            src_label = row["SourceLabel"]
-            tgt_label = row["TargetLabel"]
+            center_label = row["SourceLabel"]
             
-            # Add source node
-            if src_label not in nodes:
-                nodes[src_label] = {
-                    "key": src_label,
-                    "label": src_label,
+            # Add center node
+            if center_label not in nodes:
+                nodes[center_label] = {
+                    "key": center_label,
+                    "label": center_label,
                     "uri": row["SourceURI"],
                     "definition": row.get("SourceDef"),
-                    "category": "class"
+                    "category": "class",
+                    "isCenter": center_label.lower() == class_name.lower(),
+                    "properties": dict(row["classNode"]) if "classNode" in row else {}
                 }
             
-            # Add target node
-            if tgt_label not in nodes:
-                is_datatype = row.get("PropType") == "owl__DatatypeProperty" or "XMLSchema" in (row.get("TargetURI") or "")
-                nodes[tgt_label] = {
-                    "key": tgt_label,
-                    "label": tgt_label,
-                    "uri": row.get("TargetURI"),
-                    "definition": row.get("TargetDef"),
-                    "category": "datatype" if is_datatype else "class"
-                }
+            # Add outgoing
+            for item in row["outgoing"]:
+                if not item.get("rel") or not item.get("other"): continue
+                rel = item["rel"]
+                target = item["other"]
+                tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
+                
+                if tgt_label not in nodes:
+                    is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
+                    nodes[tgt_label] = {
+                        "key": tgt_label,
+                        "label": tgt_label,
+                        "uri": target.get("uri"),
+                        "definition": target.get("skos__definition"),
+                        "category": "datatype" if is_datatype else "class",
+                        "properties": dict(target) if target else {}
+                    }
+                
+                links.append({
+                    "from": center_label,
+                    "to": tgt_label,
+                    "relationship": rel.get("_rel_type") or "relates_to",
+                    "uri": rel.get("uri"),
+                    "definition": rel.get("skos__definition"),
+                    "cardinality": rel.get("cardinality"),
+                    "requirement": rel.get("requirement"),
+                    "properties": dict(rel) if rel else {}
+                })
             
-            # Add link
-            links.append({
-                "from": src_label,
-                "to": tgt_label,
-                "relationship": row["RelType"],
-                "uri": row.get("RelURI"),
-                "definition": row.get("RelDef"),
-                "cardinality": row.get("Cardinality"),
-                "requirement": row.get("Requirement")
-            })
+            # Add incoming
+            for item in row["incoming"]:
+                if not item.get("rel") or not item.get("other"): continue
+                rel = item["rel"]
+                source = item["other"]
+                src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
+                
+                if src_label not in nodes:
+                    nodes[src_label] = {
+                        "key": src_label,
+                        "label": src_label,
+                        "uri": source.get("uri"),
+                        "definition": source.get("skos__definition"),
+                        "category": "class",
+                        "properties": dict(source) if source else {}
+                    }
+                
+                links.append({
+                    "from": src_label,
+                    "to": center_label,
+                    "relationship": rel.get("_rel_type") or "relates_to",
+                    "uri": rel.get("uri"),
+                    "definition": rel.get("skos__definition"),
+                    "cardinality": rel.get("cardinality"),
+                    "requirement": rel.get("requirement"),
+                    "properties": dict(rel) if rel else {}
+                })
         
         # Include query for display in Query tab
         display_query = query.replace("$label", f"'{class_name}'")
@@ -846,7 +895,8 @@ async def get_node_focus_data(node_label: str):
             "uri": center.get("uri"),
             "definition": center.get("skos__definition"),
             "category": "class",
-            "isCenter": True
+            "isCenter": True,
+            "properties": dict(center) if center else {}
         }
         
         # Process outgoing relationships
@@ -864,7 +914,8 @@ async def get_node_focus_data(node_label: str):
                     "label": tgt_label,
                     "uri": target.get("uri"),
                     "definition": target.get("skos__definition"),
-                    "category": "datatype" if is_datatype else "class"
+                    "category": "datatype" if is_datatype else "class",
+                    "properties": dict(target) if target else {}
                 }
             
             links.append({
@@ -874,7 +925,8 @@ async def get_node_focus_data(node_label: str):
                 "uri": rel.get("uri"),
                 "definition": rel.get("skos__definition"),
                 "cardinality": rel.get("cardinality"),
-                "requirement": rel.get("requirement")
+                "requirement": rel.get("requirement"),
+                "properties": dict(rel) if rel else {}
             })
         
         # Process incoming relationships
@@ -891,7 +943,8 @@ async def get_node_focus_data(node_label: str):
                     "label": src_label,
                     "uri": source.get("uri"),
                     "definition": source.get("skos__definition"),
-                    "category": "class"
+                    "category": "class",
+                    "properties": dict(source) if source else {}
                 }
             
             links.append({
@@ -901,7 +954,8 @@ async def get_node_focus_data(node_label: str):
                 "uri": rel.get("uri"),
                 "definition": rel.get("skos__definition"),
                 "cardinality": rel.get("cardinality"),
-                "requirement": rel.get("requirement")
+                "requirement": rel.get("requirement"),
+                "properties": dict(rel) if rel else {}
             })
         
         # Include query for display in Query tab

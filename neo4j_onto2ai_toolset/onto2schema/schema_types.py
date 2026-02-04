@@ -11,6 +11,7 @@ class Property(BaseModel):
 
 class Node(BaseModel):
     label: str
+    type: str = "owl__Class"
     properties: List[Property] = []
     description: Optional[str] = None
     uri: Optional[str] = None

@@ -164,6 +164,7 @@ Use this if the server is already running independently on port 8082.
 | `generate_shacl_for_modelling` | Generates official SHACL files for class-based validation. |
 | `generate_schema_code` | Generates SQL, Pydantic, or Neo4j code for ontology classes. |
 | `staging_materialized_schema` | Copies materialized schema components to a staging database. |
+| `consolidate_staging_db` | Consolidates classes in stagingdb by converting them to datatypes. |
 
 ---
 

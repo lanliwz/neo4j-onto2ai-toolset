@@ -104,8 +104,8 @@ The repository includes several ways to interact with the ontology:
 
 #### 1. 🌌 Onto2AI Model Manager (Web UI)
 A premium web application for reviewing, visualizing, and enhancing ontology schemas.
-- **Run**: `python -m uvicorn model_manager.main:app --host localhost --port 8180`
-- **Features**: Highly-fidelity 3-panel UI, AI chat with "Chat-to-Graph" extraction, and GoJS interactive visualizations.
+- **Run**: `cd model_manager && python main.py --model gemini`
+- **Features**: Highly-fidelity 3-panel UI, AI chat with "Chat-to-Graph" extraction, and GoJS interactive visualizations. Now with CLI model selection and runtime switching.
 - **Documentation**: [model_manager/README.md](./model_manager/README.md)
 
 #### 2. 💬 Onto2Schema Chatbot (CLI)

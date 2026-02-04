@@ -261,34 +261,67 @@ async function onNodeDoubleClick(node) {
 /**
  * Display node properties in the right panel
  */
+/**
+ * Display node properties in the right panel
+ */
 function showNodeProperties(data) {
     const container = document.getElementById('properties-content');
+    const props = data.properties || {};
 
-    container.innerHTML = `
+    // Standard fields we want to show first
+    let html = `
         <div class="property-section">
-            <h3>Class Information</h3>
-            <div class="property-item">
-                <div class="property-label">Label</div>
-                <div class="property-value">${escapeHtml(data.label)}</div>
+            <h3 class="${data.category === 'datatype' ? 'text-emerald-400' : 'text-indigo-400'}">
+                ${data.category === 'datatype' ? 'Datatype' : 'Class'}: ${escapeHtml(data.label)}
+            </h3>
+    `;
+
+    // Filtered properties (exclude already shown or technical)
+    const technicalFields = ['key', 'category', 'isCenter', '__gohashid', 'materialized', 'rdfs__label', 'uri', 'skos__definition'];
+
+    // Core fields
+    html += `
+        <div class="property-item">
+            <div class="property-label">URI</div>
+            <div class="property-value">
+                <a href="${escapeHtml(data.uri)}" target="_blank" class="text-blue-400 hover:underline break-all">${escapeHtml(data.uri)}</a>
             </div>
-            <div class="property-item">
-                <div class="property-label">URI</div>
-                <div class="property-value">
-                    <a href="${escapeHtml(data.uri)}" target="_blank">${escapeHtml(data.uri)}</a>
-                </div>
-            </div>
-            ${data.definition ? `
+        </div>
+    `;
+
+    if (data.definition) {
+        html += `
             <div class="property-item">
                 <div class="property-label">Definition</div>
                 <div class="property-value">${escapeHtml(data.definition)}</div>
             </div>
-            ` : ''}
+        `;
+    }
+
+    // Dynamic fields from data.properties
+    let dynamicFieldsHtml = '';
+    for (const [key, value] of Object.entries(props)) {
+        if (technicalFields.includes(key)) continue;
+
+        dynamicFieldsHtml += `
             <div class="property-item">
-                <div class="property-label">Type</div>
-                <div class="property-value">${data.category === 'datatype' ? 'Datatype' : 'Class'}</div>
+                <div class="property-label">${escapeHtml(key)}</div>
+                <div class="property-value">${escapeHtml(String(value))}</div>
             </div>
-        </div>
-    `;
+        `;
+    }
+
+    if (dynamicFieldsHtml) {
+        html += `
+            <div class="mt-4 pt-2 border-t border-slate-700">
+                <h4 class="text-xs uppercase text-slate-500 font-bold mb-2">Metadata / Flattened Properties</h4>
+                ${dynamicFieldsHtml}
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
 }
 
 /**
@@ -296,14 +329,11 @@ function showNodeProperties(data) {
  */
 function showLinkProperties(data) {
     const container = document.getElementById('properties-content');
+    const props = data.properties || {};
 
-    container.innerHTML = `
+    let html = `
         <div class="property-section">
-            <h3>Relationship</h3>
-            <div class="property-item">
-                <div class="property-label">Type</div>
-                <div class="property-value">${escapeHtml(data.relationship)}</div>
-            </div>
+            <h3 class="text-amber-400">Relationship: ${escapeHtml(data.relationship)}</h3>
             <div class="property-item">
                 <div class="property-label">From</div>
                 <div class="property-value">${escapeHtml(data.from)}</div>
@@ -312,34 +342,54 @@ function showLinkProperties(data) {
                 <div class="property-label">To</div>
                 <div class="property-value">${escapeHtml(data.to)}</div>
             </div>
-            ${data.uri ? `
+    `;
+
+    const technicalFields = ['from', 'to', 'relationship', 'uri', 'skos__definition', 'materialized', 'materialized_path', '_rel_type', '__gohashid'];
+
+    if (data.uri) {
+        html += `
             <div class="property-item">
                 <div class="property-label">URI</div>
                 <div class="property-value">
-                    <a href="${escapeHtml(data.uri)}" target="_blank">${escapeHtml(data.uri)}</a>
+                    <a href="${escapeHtml(data.uri)}" target="_blank" class="text-blue-400 hover:underline break-all">${escapeHtml(data.uri)}</a>
                 </div>
             </div>
-            ` : ''}
-            ${data.definition ? `
+        `;
+    }
+
+    if (data.definition) {
+        html += `
             <div class="property-item">
                 <div class="property-label">Definition</div>
                 <div class="property-value">${escapeHtml(data.definition)}</div>
             </div>
-            ` : ''}
-            ${data.cardinality ? `
+        `;
+    }
+
+    // Dynamic fields from data.properties
+    let dynamicFieldsHtml = '';
+    for (const [key, value] of Object.entries(props)) {
+        if (technicalFields.includes(key)) continue;
+
+        dynamicFieldsHtml += `
             <div class="property-item">
-                <div class="property-label">Cardinality</div>
-                <div class="property-value">${escapeHtml(data.cardinality)}</div>
+                <div class="property-label">${escapeHtml(key)}</div>
+                <div class="property-value">${escapeHtml(String(value))}</div>
             </div>
-            ` : ''}
-            ${data.requirement ? `
-            <div class="property-item">
-                <div class="property-label">Requirement</div>
-                <div class="property-value">${escapeHtml(data.requirement)}</div>
+        `;
+    }
+
+    if (dynamicFieldsHtml) {
+        html += `
+            <div class="mt-4 pt-2 border-t border-slate-700">
+                <h4 class="text-xs uppercase text-slate-500 font-bold mb-2">Attributes</h4>
+                ${dynamicFieldsHtml}
             </div>
-            ` : ''}
-        </div>
-    `;
+        `;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
 }
 
 /**

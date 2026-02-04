@@ -34,6 +34,9 @@ app.add_middleware(
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+import argparse
+import uvicorn
+
 # Include API routers
 app.include_router(schemas_router, prefix="/api")
 
@@ -48,3 +51,41 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy", "app": "Onto2AI Model Manager"}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Start the Onto2AI Model Manager")
+    parser.add_argument(
+        "--model", "-m",
+        type=str,
+        help="LLM model to use (gemini, gpt, or full model name)"
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="Host to bind to"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8180,
+        help="Port to bind to"
+    )
+    
+    args = parser.parse_args()
+    
+    # Handle shorthand model names
+    if args.model:
+        model_name = args.model
+        if model_name.lower() == "gemini":
+            model_name = "gemini-2.0-flash-exp"
+        elif model_name.lower() == "gpt":
+            model_name = "gpt-4o-2024-05-13"
+            
+        print(f"🚀 Starting Model Manager with model: {model_name}")
+        os.environ["LLM_MODEL_NAME"] = model_name
+    else:
+        print(f"🚀 Starting Model Manager with default model")
+
+    uvicorn.run(app, host=args.host, port=args.port)

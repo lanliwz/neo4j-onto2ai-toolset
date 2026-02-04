@@ -48,7 +48,7 @@ NEO4J_STAGING_DB_NAME=stagingdb
 
 # AI configuration
 OPENAI_API_KEY=your_api_key
-GPT_MODEL_NAME=gpt-5.2
+GPT_MODEL_NAME=gpt-4o-2024-05-13
 ```
 
 ### Execution
@@ -56,8 +56,11 @@ GPT_MODEL_NAME=gpt-5.2
 Launch the backend server:
 
 ```bash
-cd model_manager
-python -m uvicorn main:app --host localhost --port 8180
+# Start with Gemini (default)
+python main.py --model gemini
+
+# Or start with GPT
+python main.py --model gpt
 ```
 
 Access the application at: **[http://localhost:8180](http://localhost:8180)**

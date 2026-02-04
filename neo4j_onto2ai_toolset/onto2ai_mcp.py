@@ -15,6 +15,28 @@ from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Rela
 
 mcp = FastMCP("Onto2AI")
 
+# --- UTILITIES ---
+def to_camel_case(text):
+    if not text: return text
+    import re
+    text_str = str(text)
+    
+    # Check for all caps
+    if text_str.isupper():
+        # Just split by underscore or non-word chars
+        parts = [p.lower() for p in re.split(r'[^a-zA-Z0-9]+', text_str) if p]
+    else:
+        # Mixed case: Transition from lowercase/number to uppercase
+        s = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', text_str)
+        # Split and lowercase
+        parts = [p.lower() for p in re.split(r'[^a-zA-Z0-9]+', s) if p]
+        
+    if not parts: return text_str
+    # Return camelCase
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+
+# --- MCP TOOLS ---
+
 MATERIALIZED_SCHEMA_QUERY = """
     // Match the requested class
     MATCH (c:owl__Class)
@@ -367,9 +389,53 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
         Current DataModel (JSON):
         {data_model.model_dump_json(indent=2)}
         
-        Return ONLY a valid JSON object matching the DataModel schema. 
-        Ensure PascalCase for labels and SCREAMING_SNAKE_CASE for relationship types if adding new ones.
-        Do not include markdown fences or any explanation.
+        Return ONLY a JSON object. NO EXPLANATIONS.
+        
+        Example Structure:
+        {{
+          "nodes": [
+            {{
+              "label": "mailing address",
+              "type": "owl__Class",
+              "uri": "https://model.onto2ai.com/schema/mailingAddress",
+              "properties": [{{
+                "name": "cityName",
+                "type": "string",
+                "uri": "https://model.onto2ai.com/schema/cityName",
+                "mandatory": false,
+                "cardinality": "0..1"
+              }}]
+            }},
+            {{
+              "label": "postal code",
+              "type": "rdfs__Datatype",
+              "uri": "https://model.onto2ai.com/schema/postalCode",
+              "properties": []
+            }}
+          ],
+          "relationships": [
+            {{
+              "type": "isPlayedBy",
+              "start_node_label": "mailing address",
+              "end_node_label": "party",
+              "uri": "https://model.onto2ai.com/schema/isPlayedBy"
+            }}
+          ]
+        }}
+
+        MANDATORY RULES (ZERO TOLERANCE):
+        1. Node Type: Every node MUST have a 'type' field set to either 'owl__Class' or 'rdfs__Datatype'.
+        2. Node Labels: MUST be lowercase with spaces (e.g. 'account holder'). FORBIDDEN: 'AccountHolder', 'ACCOUNT_HOLDER'.
+        3. Relationship Types: MUST be camelCase only (e.g. 'isPlayedBy'). FORBIDDEN: 'IS_PLAYED_BY', 'has_amount'.
+        4. Property Names: MUST be camelCase only (e.g. 'cityName').
+        5. URIs: MUST start with 'https://model.onto2ai.com/schema/' followed by the name in camelCase.
+           Note: Even if the label has spaces, the URI suffix MUST be camelCase.
+           Example: label 'mailing address' -> URI 'https://model.onto2ai.com/schema/mailingAddress'
+           FORBIDDEN: 'fibo...', 'cmns...', 'omg...', etc. REPLACE ALL OF THEM.
+
+        Constraint: EVERY property in the 'properties' list MUST be an OBJECT (not a string).
+        
+        Do not include markdown fences.
         """
         
         response = await get_llm().ainvoke(prompt)
@@ -380,6 +446,53 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
             content = content.split("```")[1].split("```")[0].strip()
             
         updated_model_dict = json.loads(content)
+        
+        # Robustness: Fix common AI mistakes
+        def fix_model(obj_list, is_node=True):
+            for item in obj_list:
+                # 1. Fix Labels (lowercase with space if node)
+                if is_node and 'label' in item:
+                    item['label'] = str(item['label']).lower().strip()
+                
+                # 2. Fix Relationship types (camelCase)
+                if not is_node and 'type' in item:
+                    item['type'] = to_camel_case(str(item['type']))
+
+                # 3. Fix properties (objects instead of strings)
+                if 'properties' in item and isinstance(item['properties'], list):
+                    item['properties'] = [
+                        {
+                            "name": to_camel_case(p), 
+                            "type": "STRING", 
+                            "uri": f"https://model.onto2ai.com/schema/{to_camel_case(p)}",
+                            "mandatory": False,
+                            "cardinality": "0..1"
+                        } 
+                        if isinstance(p, str) else p 
+                        for p in item['properties']
+                    ]
+                    # Also fix existing property names and URIs
+                    for p in item['properties']:
+                        if isinstance(p, dict):
+                            if 'name' in p:
+                                p['name'] = to_camel_case(p['name'])
+                            if 'uri' not in p or not p['uri'] or 'model.onto2ai.com' not in p['uri']:
+                                p['uri'] = f"https://model.onto2ai.com/schema/{p['name']}"
+
+                # 4. Fix URIs (enforce mandatory prefix and camelCase name)
+                name = item.get('label') if is_node else item.get('type')
+                if name:
+                    item['uri'] = f"https://model.onto2ai.com/schema/{to_camel_case(str(name))}"
+                
+                # 5. Fix Node Types
+                if is_node and ('type' not in item or not item['type']):
+                    item['type'] = "owl__Class"
+
+        if 'nodes' in updated_model_dict:
+            fix_model(updated_model_dict['nodes'], is_node=True)
+        if 'relationships' in updated_model_dict:
+            fix_model(updated_model_dict['relationships'], is_node=False)
+            
         return DataModel(**updated_model_dict)
     except Exception as e:
         logger.error(f"Error enhancing schema: {e}")
@@ -591,7 +704,7 @@ async def staging_materialized_schema(
             if src_uri not in classes:
                 classes[src_uri] = {
                     "uri": src_uri,
-                    "label": src_label,
+                    "label": str(src_label).lower().strip(),
                     "definition": row['SourceClassDef']
                 }
             
@@ -605,7 +718,7 @@ async def staging_materialized_schema(
                             short_label = tgt_uri.split('#')[-1] if '#' in tgt_uri else tgt_uri.split('/')[-1]
                             label = f"xsd:{short_label}"
                         else:
-                            label = tgt_label
+                            label = str(tgt_label).lower().strip()
                         datatypes[tgt_uri] = {
                             "uri": tgt_uri,
                             "label": label,
@@ -615,7 +728,7 @@ async def staging_materialized_schema(
                     if tgt_uri not in named_individuals:
                         named_individuals[tgt_uri] = {
                             "uri": tgt_uri,
-                            "label": tgt_label,
+                            "label": str(tgt_label).lower().strip(),
                             "definition": row['TargetClassDef']
                         }
                 else:
@@ -623,15 +736,20 @@ async def staging_materialized_schema(
                     if tgt_uri not in classes:
                         classes[tgt_uri] = {
                             "uri": tgt_uri,
-                            "label": tgt_label,
+                            "label": str(tgt_label).lower().strip(),
                             "definition": row['TargetClassDef']
                         }
             
+            # Normalize relationship type (except for rdfs__subClassOf)
+            normalized_rel_type = rel_type
+            if rel_type != "rdfs__subClassOf":
+                normalized_rel_type = to_camel_case(rel_type)
+
             # Collect relationship
             relationships.append({
                 "source_uri": src_uri,
                 "target_uri": tgt_uri,
-                "rel_type": rel_type,
+                "rel_type": normalized_rel_type,
                 "rel_uri": row['RelURI'],
                 "definition": row['RelDef'],
                 "cardinality": row['Cardinality'],
@@ -724,6 +842,88 @@ async def staging_materialized_schema(
         logger.error(f"Error staging materialized schema: {e}")
         return {"status": "error", "error": str(e)}
 
+@mcp.tool()
+async def consolidate_staging_db(
+    transformations: List[Dict[str, str]],
+    staging_db_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Consolidate classes in the staging database by converting them into datatypes.
+    
+    Args:
+        transformations: List of dicts with keys:
+            - 'old_label': The current label of the class (e.g., 'card verification code or value')
+            - 'new_label': The simplified label (e.g., 'cvc')
+            - 'xsd_type': The technical XSD type (e.g., 'xsd:string' or 'xsd:date')
+        staging_db_name: Optional target database name. Defaults to the staging database.
+    
+    Returns:
+        Summary of transformations applied.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db
+    
+    db = get_staging_db(staging_db_name)
+    logger.info(f"Consolidating staging database: {staging_db_name or 'default'} with {len(transformations)} transformations")
+    
+    try:
+        # We perform everything in a single session/transaction conceptually if possible, 
+        # but here we execute sequentially via the db wrapper.
+        results = []
+        for t in transformations:
+            old_label = t.get('old_label')
+            new_label = t.get('new_label')
+            xsd_type = t.get('xsd_type', 'xsd:string')
+            
+            if not old_label or not new_label:
+                results.append({"old_label": old_label, "status": "error", "message": "Missing old_label or new_label"})
+                continue
+                
+            query = """
+            MATCH (n:owl__Class {rdfs__label: $old_label})
+            
+            // 1. Tag incoming relationships as datatype properties for visualization
+            WITH n
+            OPTIONAL MATCH ()-[r]->(n)
+            SET r.property_type = 'owl__DatatypeProperty'
+            
+            // 2. Transform the class node into a datatype node
+            WITH n
+            REMOVE n:owl__Class
+            SET n:rdfs__Datatype,
+                n.rdfs__label = $new_label,
+                n.xsd_type = $xsd_type
+                
+            RETURN n.uri as uri, count(n) as count
+            """
+            
+            res = db.execute_cypher(query, params={
+                "old_label": old_label,
+                "new_label": new_label,
+                "xsd_type": xsd_type
+            }, name="consolidate_transform")
+            
+            if res:
+                results.append({
+                    "old_label": old_label,
+                    "new_label": new_label,
+                    "uri": res[0].get("uri"),
+                    "status": "success",
+                    "nodes_affected": res[0].get("count", 1)
+                })
+            else:
+                results.append({"old_label": old_label, "status": "not_found"})
+                
+        return {
+            "status": "success",
+            "database": staging_db_name or "stagingdb",
+            "transformations": results
+        }
+    except Exception as e:
+        logger.error(f"Error during consolidation: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     # Support HTTP transport if requested via command line
     import sys
@@ -735,9 +935,6 @@ if __name__ == "__main__":
             except ValueError:
                 pass
         
-        # FastMCP.run() doesn't support host/port as kwargs.
-        # Since the mcp object is already initialized at the top level,
-        # we update its settings directly.
         mcp.settings.port = port
         mcp.settings.host = "localhost"
         
