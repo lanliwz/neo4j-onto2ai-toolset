@@ -113,9 +113,22 @@ An interactive CLI tool for schema interrogation.
 - **Run**: `python main.py`
 
 ### 🛠 MCP - Model Context Protocol
-The repository includes a comprehensive MCP Server providing ontology interrogation and AI-powered schema management tools (SQL, Pydantic, Neo4j generation).
+The repository includes a comprehensive MCP Server providing ontology interrogation, AI-powered schema management, and staging database tools.
+
+| Tool | Description |
+|------|-------------|
+| `get_materialized_schema` | Returns flattened, production-ready views of ontology classes as Markdown tables |
+| `get_ontological_schema` | Returns raw ontological meta-model view with restrictions and logic |
+| `extract_data_model` | Extracts high-fidelity structured JSON (nodes, properties, relationships) |
+| `enhance_schema` | AI-driven schema enhancement based on natural language instructions |
+| `generate_schema_code` | Generates production-ready code (SQL, Pydantic, Neo4j) |
+| `generate_shacl_for_modelling` | Generates SHACL files for ontology-driven data validation |
+| `staging_materialized_schema` | Copies materialized schema to a staging Neo4j database |
+| `consolidate_inheritance` | Flattens inherited relationships directly onto specified classes |
+| `consolidate_staging_db` | Consolidates staging classes by converting them to datatypes |
+
 - **Tool Discovery**: Use the `Onto2AIClient` or any MCP-compatible client.
-- **Detailed Documentation**: [MCP_README.md](./MCP_README.md)
+- **Detailed Documentation**: [README4ONTO2AI_MCP.md](./README4ONTO2AI_MCP.md)
 
 ### FIBO Ontology Dependency Tree
 The following diagram illustrates the high-level dependencies within the FIBO ontology and its reliance on external standards:

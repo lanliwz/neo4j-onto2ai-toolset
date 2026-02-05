@@ -597,7 +597,8 @@ async def generate_shacl_for_modelling(
 @mcp.tool()
 async def staging_materialized_schema(
     class_names: Union[str, List[str]],
-    staging_db_name: Optional[str] = None
+    staging_db_name: Optional[str] = None,
+    flatten_inheritance: bool = False
 ) -> Dict[str, Any]:
     """
     Extract materialized schema for one or more ontology classes and copy 
@@ -606,6 +607,9 @@ async def staging_materialized_schema(
     Args:
         class_names: One or more class labels to extract (e.g., "person" or ["person", "account"])
         staging_db_name: Target database name. Defaults to NEO4J_STAGING_DB_NAME env var.
+        flatten_inheritance: If True, copy inherited relationships from parent classes 
+                           directly to the requested classes. This makes each class 
+                           self-contained without needing to traverse parent hierarchy.
     
     Returns:
         Summary of copied classes and relationships with counts.
@@ -618,35 +622,52 @@ async def staging_materialized_schema(
     labels = [label.strip() for label in class_names]
     
     # Step 1: Extract materialized schema AND subclass hierarchy from source database
-    # This query first finds all classes in scope (requested labels + ranges of their properties)
-    # and then extracts the full hierarchy and materialized properties for all of them.
+    # This query finds all classes in scope and extracts their full hierarchy and properties.
+    # Key fix: We need to capture relationships for the ORIGINAL requested classes too,
+    # not just from ancestors. We collect all classes (requested + ancestors + ranges)
+    # and get ALL their materialized relationships.
     query = """
+    // Start with requested classes
     MATCH (start:owl__Class)
     WHERE start.rdfs__label IN $labels OR start.uri IN $labels
     
-    // Find all classes that are ranges of materialized properties of the starting classes
-    OPTIONAL MATCH (start)-[r_init]->(tgt_init:owl__Class)
-    WHERE r_init.materialized = true
+    // Find the full ancestor chain for each starting class
+    OPTIONAL MATCH (start)-[:rdfs__subClassOf*0..]->(ancestor:owl__Class)
     
-    // Combine start classes and their property targets into a single scope
-    WITH collect(DISTINCT start) + collect(DISTINCT tgt_init) AS initialScope
-    UNWIND initialScope AS c
+    // Collect all classes in scope (start classes and their ancestors)
+    WITH collect(DISTINCT start) + collect(DISTINCT ancestor) AS classScope
     
-    // For every class in scope, find its ancestors and ALL their materialized/subclass links
-    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(ancestor:owl__Class)
-    WITH DISTINCT ancestor
-    MATCH (ancestor)-[r]->(target)
+    // Now find all materialized relationships from classes in scope
+    UNWIND classScope AS scopeClass
+    OPTIONAL MATCH (scopeClass)-[r]->(target)
     WHERE r.materialized = true OR type(r) = "rdfs__subClassOf"
     
+    // Also find any additional target classes that need to be included
+    WITH scopeClass, r, target
+    WHERE target IS NOT NULL
+    
+    // For class targets, also include THEIR ancestors and relationships
+    OPTIONAL MATCH (target)-[:rdfs__subClassOf*0..]->(targetAncestor:owl__Class)
+    WHERE target:owl__Class
+    
+    // Collect all relationships and targets
+    WITH 
+      scopeClass,
+      r, 
+      target,
+      collect(DISTINCT targetAncestor) AS targetAncestors
+    
+    // Return the relationships
     RETURN DISTINCT
-      ancestor.rdfs__label AS SourceClassLabel,
-      ancestor.uri AS SourceClassURI,
-      ancestor.skos__definition AS SourceClassDef,
+      scopeClass.rdfs__label AS SourceClassLabel,
+      scopeClass.uri AS SourceClassURI,
+      scopeClass.skos__definition AS SourceClassDef,
       type(r) AS RelType,
       r.uri AS RelURI,
       r.skos__definition AS RelDef,
       r.cardinality AS Cardinality,
       r.requirement AS Requirement,
+      r.property_type AS PropertyType,
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef,
@@ -754,6 +775,7 @@ async def staging_materialized_schema(
                 "definition": row['RelDef'],
                 "cardinality": row['Cardinality'],
                 "requirement": row['Requirement'],
+                "property_type": row.get('PropertyType'),
                 "target_labels": tgt_labels
             })
         
@@ -810,7 +832,8 @@ async def staging_materialized_schema(
                 SET r.uri = $rel_uri,
                     r.skos__definition = $definition,
                     r.cardinality = $cardinality,
-                    r.requirement = $requirement
+                    r.requirement = $requirement,
+                    r.property_type = $property_type
                 """
                 # Only set materialized if it's NOT a subClassOf link (hierarchy is intrinsic)
                 if rel_type != "rdfs__subClassOf":
@@ -821,11 +844,48 @@ async def staging_materialized_schema(
             
             logger.info(f"Inserted {len(relationships)} relationships into staging database")
             
+            # Step 6: Flatten inheritance if requested
+            inherited_relationships_copied = 0
+            if flatten_inheritance:
+                logger.info(f"Flattening inheritance for requested classes: {labels}")
+                
+                # For each originally requested class, copy relationships from its ancestors
+                flatten_query = """
+                // Find the requested class
+                MATCH (requested:owl__Class)
+                WHERE toLower(requested.rdfs__label) = toLower($label)
+                
+                // Find all its ancestors
+                MATCH (requested)-[:rdfs__subClassOf*1..]->(parent:owl__Class)
+                
+                // Find all materialized relationships from parents
+                MATCH (parent)-[r]->(target)
+                WHERE r.materialized = true
+                
+                // Create a copy on the requested class with the same type
+                WITH requested, parent, r, target, type(r) AS relType,
+                     apoc.map.merge(properties(r), {inherited_from: parent.rdfs__label}) AS props
+                CALL apoc.create.relationship(requested, relType, props, target) YIELD rel
+                
+                RETURN count(rel) AS copied
+                """
+                
+                for label in labels:
+                    result = staging_db.execute_cypher(
+                        flatten_query, 
+                        params={"label": label}, 
+                        name="flatten_inheritance"
+                    )
+                    if result and len(result) > 0:
+                        copied = result[0].get("copied", 0)
+                        inherited_relationships_copied += copied
+                        logger.info(f"Copied {copied} inherited relationships to '{label}'")
+            
         finally:
             staging_db.close()
         
         # Return summary
-        return {
+        result = {
             "status": "success",
             "staging_database": staging_db_name or "stagingdb",
             "classes_copied": len(classes),
@@ -838,9 +898,112 @@ async def staging_materialized_schema(
             "relationship_types": list(rel_types_created)
         }
         
+        if flatten_inheritance:
+            result["inherited_relationships_copied"] = inherited_relationships_copied
+        
+        return result
+        
     except Exception as e:
         logger.error(f"Error staging materialized schema: {e}")
         return {"status": "error", "error": str(e)}
+
+
+@mcp.tool()
+async def consolidate_inheritance(
+    class_names: Union[str, List[str]],
+    staging_db_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Consolidate inherited relationships by copying them directly to specified classes.
+    This makes each class self-contained without needing to traverse parent hierarchy.
+    
+    Use this tool when you have already staged classes and want to flatten their 
+    inheritance after the fact, rather than re-staging with flatten_inheritance=True.
+    
+    Args:
+        class_names: One or more class labels to consolidate (e.g., "cardholder")
+        staging_db_name: Target database name. Defaults to NEO4J_STAGING_DB_NAME env var.
+    
+    Returns:
+        Summary of inherited relationships copied to each class.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db
+    
+    if isinstance(class_names, str):
+        class_names = [class_names]
+    
+    labels = [label.strip() for label in class_names]
+    staging_db = get_staging_db(staging_db_name)
+    
+    try:
+        results_by_class = {}
+        total_copied = 0
+        
+        # Query to copy inherited relationships
+        flatten_query = """
+        // Find the requested class
+        MATCH (requested:owl__Class)
+        WHERE toLower(requested.rdfs__label) = toLower($label)
+        
+        // Find all its ancestors
+        MATCH (requested)-[:rdfs__subClassOf*1..]->(parent:owl__Class)
+        
+        // Find all materialized relationships from parents
+        MATCH (parent)-[r]->(target)
+        WHERE r.materialized = true
+        
+        // Create a copy on the requested class with the same type
+        WITH requested, parent, r, target, type(r) AS relType,
+             apoc.map.merge(properties(r), {inherited_from: parent.rdfs__label}) AS props
+        CALL apoc.create.relationship(requested, relType, props, target) YIELD rel
+        
+        RETURN parent.rdfs__label AS parentClass, type(rel) AS relType, count(rel) AS count
+        """
+        
+        for label in labels:
+            result = staging_db.execute_cypher(
+                flatten_query, 
+                params={"label": label}, 
+                name="consolidate_inheritance"
+            )
+            
+            if result:
+                class_details = []
+                class_total = 0
+                for row in result:
+                    copied = row.get("count", 0)
+                    class_total += copied
+                    class_details.append({
+                        "parent_class": row.get("parentClass"),
+                        "relationship_type": row.get("relType"),
+                        "count": copied
+                    })
+                
+                results_by_class[label] = {
+                    "relationships_copied": class_total,
+                    "details": class_details
+                }
+                total_copied += class_total
+                logger.info(f"Copied {class_total} inherited relationships to '{label}'")
+            else:
+                results_by_class[label] = {
+                    "relationships_copied": 0,
+                    "message": "No inherited relationships found or class not found"
+                }
+        
+        return {
+            "status": "success",
+            "database": staging_db_name or "stagingdb",
+            "total_relationships_copied": total_copied,
+            "classes": results_by_class
+        }
+        
+    except Exception as e:
+        logger.error(f"Error consolidating inheritance: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        staging_db.close()
+
 
 @mcp.tool()
 async def consolidate_staging_db(
