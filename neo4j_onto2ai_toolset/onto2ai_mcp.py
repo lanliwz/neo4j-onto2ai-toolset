@@ -851,9 +851,9 @@ async def staging_materialized_schema(
                 
                 # For each originally requested class, copy relationships from its ancestors
                 flatten_query = """
-                // Find the requested class
+                // Find the requested class (handle label as string or array)
                 MATCH (requested:owl__Class)
-                WHERE toLower(requested.rdfs__label) = toLower($label)
+                WHERE any(lbl IN apoc.coll.flatten([requested.rdfs__label]) WHERE toLower(lbl) = toLower($label))
                 
                 // Find all its ancestors
                 MATCH (requested)-[:rdfs__subClassOf*1..]->(parent:owl__Class)
@@ -862,9 +862,13 @@ async def staging_materialized_schema(
                 MATCH (parent)-[r]->(target)
                 WHERE r.materialized = true
                 
-                // Create a copy on the requested class with the same type
+                // Extract parent label as string (handle array case)
                 WITH requested, parent, r, target, type(r) AS relType,
-                     apoc.map.merge(properties(r), {inherited_from: parent.rdfs__label}) AS props
+                     CASE WHEN parent.rdfs__label IS :: STRING THEN parent.rdfs__label ELSE head(parent.rdfs__label) END AS parentLabel
+                
+                // Create a copy on the requested class with the same type
+                WITH requested, parent, r, target, relType, parentLabel,
+                     apoc.map.merge(properties(r), {inherited_from: parentLabel}) AS props
                 CALL apoc.create.relationship(requested, relType, props, target) YIELD rel
                 
                 RETURN count(rel) AS copied
@@ -941,9 +945,9 @@ async def consolidate_inheritance(
         
         # Query to copy inherited relationships
         flatten_query = """
-        // Find the requested class
+        // Find the requested class (handle label as string or array)
         MATCH (requested:owl__Class)
-        WHERE toLower(requested.rdfs__label) = toLower($label)
+        WHERE any(lbl IN CASE WHEN requested.rdfs__label IS :: LIST<ANY> THEN requested.rdfs__label ELSE [requested.rdfs__label] END WHERE toLower(lbl) = toLower($label))
         
         // Find all its ancestors
         MATCH (requested)-[:rdfs__subClassOf*1..]->(parent:owl__Class)
@@ -952,12 +956,16 @@ async def consolidate_inheritance(
         MATCH (parent)-[r]->(target)
         WHERE r.materialized = true
         
-        // Create a copy on the requested class with the same type
+        // Extract parent label as string (handle array case)
         WITH requested, parent, r, target, type(r) AS relType,
-             apoc.map.merge(properties(r), {inherited_from: parent.rdfs__label}) AS props
+             CASE WHEN parent.rdfs__label IS :: STRING THEN parent.rdfs__label ELSE head(parent.rdfs__label) END AS parentLabel
+        
+        // Create a copy on the requested class with the same type
+        WITH requested, parent, r, target, relType, parentLabel,
+             apoc.map.merge(properties(r), {inherited_from: parentLabel}) AS props
         CALL apoc.create.relationship(requested, relType, props, target) YIELD rel
         
-        RETURN parent.rdfs__label AS parentClass, type(rel) AS relType, count(rel) AS count
+        RETURN parentLabel AS parentClass, type(rel) AS relType, count(rel) AS count
         """
         
         for label in labels:
