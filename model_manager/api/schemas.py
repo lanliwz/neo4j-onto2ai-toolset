@@ -388,8 +388,8 @@ async def chat(request: ChatRequest):
                 WHERE r_in.materialized = true
                 
                 WITH c, classNode,
-                        collect(DISTINCT {rel: r_out, other: target}) AS outgoing,
-                        collect(DISTINCT {rel: r_in, other: source}) AS incoming
+                        collect(DISTINCT {rel: properties(r_out), relType: type(r_out), other: target}) AS outgoing,
+                        collect(DISTINCT {rel: properties(r_in), relType: type(r_in), other: source}) AS incoming
                 
                 RETURN DISTINCT
                     classNode,
@@ -439,7 +439,7 @@ async def chat(request: ChatRequest):
                         links.append({
                             "from": center_label,
                             "to": tgt_label,
-                            "relationship": rel.get("_rel_type") or "relates_to",
+                            "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                             "uri": rel.get("uri"),
                             "definition": rel.get("skos__definition"),
                             "cardinality": rel.get("cardinality"),
@@ -467,7 +467,7 @@ async def chat(request: ChatRequest):
                         links.append({
                             "from": src_label,
                             "to": center_label,
-                            "relationship": rel.get("_rel_type") or "relates_to",
+                            "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                             "uri": rel.get("uri"),
                             "definition": rel.get("skos__definition"),
                             "cardinality": rel.get("cardinality"),
@@ -748,8 +748,8 @@ async def get_graph_data(class_name: str):
         WHERE r_in.materialized = true
         
         WITH c, classNode,
-             collect(DISTINCT {rel: r_out, other: target}) AS outgoing,
-             collect(DISTINCT {rel: r_in, other: source}) AS incoming
+             collect(DISTINCT {rel: properties(r_out), relType: type(r_out), other: target}) AS outgoing,
+             collect(DISTINCT {rel: properties(r_in), relType: type(r_in), other: source}) AS incoming
         
         RETURN 
           classNode,
@@ -800,7 +800,7 @@ async def get_graph_data(class_name: str):
                 links.append({
                     "from": center_label,
                     "to": tgt_label,
-                    "relationship": rel.get("_rel_type") or "relates_to",
+                    "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                     "uri": rel.get("uri"),
                     "definition": rel.get("skos__definition"),
                     "cardinality": rel.get("cardinality"),
@@ -828,7 +828,7 @@ async def get_graph_data(class_name: str):
                 links.append({
                     "from": src_label,
                     "to": center_label,
-                    "relationship": rel.get("_rel_type") or "relates_to",
+                    "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                     "uri": rel.get("uri"),
                     "definition": rel.get("skos__definition"),
                     "cardinality": rel.get("cardinality"),
@@ -866,12 +866,14 @@ async def get_node_focus_data(node_label: str):
         WHERE r_in.materialized = true
         WITH center, 
              collect(DISTINCT {
-                rel: r_out, 
+                rel: properties(r_out), 
+                relType: type(r_out),
                 node: target, 
                 direction: 'out'
              }) AS outgoing,
              collect(DISTINCT {
-                rel: r_in, 
+                rel: properties(r_in), 
+                relType: type(r_in),
                 node: source, 
                 direction: 'in'
              }) AS incoming
@@ -921,7 +923,7 @@ async def get_node_focus_data(node_label: str):
             links.append({
                 "from": center_label,
                 "to": tgt_label,
-                "relationship": rel.type if hasattr(rel, 'type') else str(type(rel).__name__),
+                "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                 "uri": rel.get("uri"),
                 "definition": rel.get("skos__definition"),
                 "cardinality": rel.get("cardinality"),
@@ -950,7 +952,7 @@ async def get_node_focus_data(node_label: str):
             links.append({
                 "from": src_label,
                 "to": center_label,
-                "relationship": rel.type if hasattr(rel, 'type') else str(type(rel).__name__),
+                "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
                 "uri": rel.get("uri"),
                 "definition": rel.get("skos__definition"),
                 "cardinality": rel.get("cardinality"),

@@ -883,11 +883,16 @@ async def consolidate_staging_db(
             
             // 1. Tag incoming relationships as datatype properties for visualization
             WITH n
-            OPTIONAL MATCH ()-[r]->(n)
-            SET r.property_type = 'owl__DatatypeProperty'
+            OPTIONAL MATCH ()-[r_in]->(n)
+            SET r_in.property_type = 'owl__DatatypeProperty'
+
+            // 2. Remove outgoing (reversed) relationships
+            WITH DISTINCT n
+            OPTIONAL MATCH (n)-[r_out]->()
+            DELETE r_out
             
-            // 2. Transform the class node into a datatype node
-            WITH n
+            // 3. Transform the class node into a datatype node
+            WITH DISTINCT n
             REMOVE n:owl__Class
             SET n:rdfs__Datatype,
                 n.rdfs__label = $new_label,
@@ -912,6 +917,44 @@ async def consolidate_staging_db(
                 })
             else:
                 results.append({"old_label": old_label, "status": "not_found"})
+
+        # --- CLEANUP STEP: Remove duplicates ---
+        logger.info("Performing final de-duplication and cleanup in staging database")
+        
+        cleanup_queries = [
+            # 1. Merge nodes with SAME URI (Absolute duplicates)
+            """
+            MATCH (n)
+            WHERE n.uri IS NOT NULL
+            WITH n.uri AS uri, collect(n) AS nodes
+            WHERE size(nodes) > 1
+            CALL apoc.refactor.mergeNodes(nodes, {properties: 'combine', mergeRels: true}) YIELD node
+            RETURN count(node)
+            """,
+            # 2. Merge DATATYPES with SAME LABEL (Application-level consolidation)
+            """
+            MATCH (n:rdfs__Datatype)
+            WHERE n.rdfs__label IS NOT NULL
+            WITH n.rdfs__label AS label, collect(n) AS nodes
+            WHERE size(nodes) > 1
+            CALL apoc.refactor.mergeNodes(nodes, {properties: 'combine', mergeRels: true}) YIELD node
+            RETURN count(node)
+            """,
+            # 3. Merge identical relationships (Same type, source, target)
+            """
+            MATCH (a)-[r]->(b)
+            WITH a, b, type(r) AS t, collect(r) AS rels
+            WHERE size(rels) > 1
+            CALL apoc.refactor.mergeRelationships(rels, {properties: 'combine'}) YIELD rel
+            RETURN count(rel)
+            """
+        ]
+        
+        for cq in cleanup_queries:
+            try:
+                db.execute_cypher(cq, name="consolidate_cleanup")
+            except Exception as cleanup_err:
+                logger.warning(f"Cleanup query failed (possibly missing APOC or permissions): {cleanup_err}")
                 
         return {
             "status": "success",
