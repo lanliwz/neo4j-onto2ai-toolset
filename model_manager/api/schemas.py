@@ -3,7 +3,7 @@ Schema API endpoints for the Onto2AI Model Manager.
 """
 import os
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from functools import lru_cache
 from fastapi import APIRouter, HTTPException
 from neo4j import GraphDatabase
@@ -145,6 +145,130 @@ class Neo4jDatabaseSimple:
         return {key: serialize_value(value) for key, value in dict(record).items()}
 
 
+def results_to_graph_data(results: List[Dict[str, Any]], query: Optional[str] = None) -> GraphData:
+    """
+    Robust helper to extract nodes and links from Cypher results.
+    Uses Neo4j element IDs for de-duplication and consistent key resolution.
+    """
+    if not results:
+        return GraphData(nodes=[], links=[], query=query)
+
+    nodes_by_id = {}  # element_id -> node_data
+    rels_by_id = {}   # element_id -> rel_data
+
+    # Pass 1: Collect all distinct nodes and relationships from any column/structure
+    def inspect(item):
+        if not isinstance(item, dict):
+            return
+        
+        item_type = item.get("_type")
+        item_id = item.get("_id")
+        if not item_id:
+            return
+            
+        if item_type == "node":
+            if item_id not in nodes_by_id:
+                nodes_by_id[item_id] = item
+        elif item_type == "relationship":
+            if item_id not in rels_by_id:
+                rels_by_id[item_id] = item
+        elif item_type == "path":
+            for n in item.get("nodes", []):
+                inspect(n)
+            for r in item.get("relationships", []):
+                inspect(r)
+
+    for row in results:
+        for val in row.values():
+            if isinstance(val, list):
+                for v in val:
+                    inspect(v)
+            else:
+                inspect(val)
+
+    # Pass 2: Establish stable keys and create node objects
+    nodes_out = {}    # key -> node_viz_obj
+    id_to_key = {}    # element_id -> key
+    
+    # Sort IDs for stable key assignment (for collisions)
+    for eid in sorted(nodes_by_id.keys()):
+        node = nodes_by_id[eid]
+        labels = node.get("_labels", [])
+        
+        # Get a human-friendly label
+        raw_label = node.get("rdfs__label") or node.get("label") or (labels[0] if labels else eid[-8:])
+        if isinstance(raw_label, list):
+            label = str(raw_label[0]) if raw_label else "Unknown"
+        else:
+            label = str(raw_label)
+            
+        # Handle key collisions for distinct nodes with same name
+        key = label
+        if key in nodes_out:
+            key = f"{label} ({eid[-4:]})"
+            
+        category = "class"
+        if "rdfs__Datatype" in labels or "XMLSchema" in (node.get("uri") or ""):
+            category = "datatype"
+        elif "owl__NamedIndividual" in labels:
+            category = "individual"
+            
+        node_obj = {
+            "key": key,
+            "label": label,
+            "uri": node.get("uri"),
+            "definition": node.get("skos__definition"),
+            "category": category,
+            "properties": {k: v for k, v in node.items() if not k.startswith("_")},
+            "_id": eid
+        }
+        
+        nodes_out[key] = node_obj
+        id_to_key[eid] = key
+
+    # Pass 3: Process relationships into unique links
+    links_out = []
+    seen_links = set() # (from, to, type) de-duplication
+    
+    # Sort by relationship ID for stability
+    for rid in sorted(rels_by_id.keys()):
+        rel = rels_by_id[rid]
+        start_id = rel.get("_start")
+        end_id = rel.get("_end")
+        rel_type = rel.get("_rel_type", "relates_to")
+        
+        # Resolve node keys, using placeholders only if node was missing (shouldn't happen)
+        from_key = id_to_key.get(start_id)
+        if not from_key:
+            from_key = f"Node-{start_id[-8:]}"
+            if from_key not in nodes_out:
+                nodes_out[from_key] = {"key": from_key, "label": from_key, "category": "class"}
+        
+        to_key = id_to_key.get(end_id)
+        if not to_key:
+            to_key = f"Node-{end_id[-8:]}"
+            if to_key not in nodes_out:
+                nodes_out[to_key] = {"key": to_key, "label": to_key, "category": "class"}
+
+        # De-duplicate links between the same node pair of the same type
+        # This prevents redundant lines for identical logical relationships
+        link_id = (from_key, to_key, rel_type)
+        if link_id in seen_links:
+            continue
+        seen_links.add(link_id)
+
+        links_out.append({
+            "from": from_key,
+            "to": to_key,
+            "relationship": rel_type,
+            "uri": rel.get("uri"),
+            "definition": rel.get("skos__definition"),
+            "properties": {k: v for k, v in rel.items() if not k.startswith("_")}
+        })
+
+    return GraphData(nodes=list(nodes_out.values()), links=links_out, query=query)
+
+
 @router.get("/classes", response_model=List[ClassInfo])
 async def list_classes():
     """
@@ -192,7 +316,7 @@ async def get_class_schema(class_name: str):
     try:
         query = """
         MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-        WHERE c.rdfs__label = $label OR c.uri = $label
+        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
         MATCH (parent)-[r]->(target)
         WHERE r.materialized = true
         RETURN DISTINCT
@@ -374,113 +498,30 @@ async def chat(request: ChatRequest):
 
             if detected_class:
                 logger.info(f"Smart visualization detected class: {detected_class}")
-                # Fetch graph data for the detected class
+                # Fetch graph data for the detected class using a more robust pattern
                 query = """
                 MATCH (c:owl__Class)
-                WHERE toLower(c.rdfs__label) = toLower($label) OR c.uri = $label
+                WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+                
                 OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
                 WITH DISTINCT coalesce(parent, c) AS classNode, c
                 
-                OPTIONAL MATCH (classNode)-[r_out]->(target)
-                WHERE r_out.materialized = true
+                OPTIONAL MATCH (classNode)-[r]-(target)
+                WHERE r.materialized = true
                 
-                OPTIONAL MATCH (source)-[r_in]->(classNode)
-                WHERE r_in.materialized = true
-                
-                WITH c, classNode,
-                        collect(DISTINCT {rel: properties(r_out), relType: type(r_out), other: target}) AS outgoing,
-                        collect(DISTINCT {rel: properties(r_in), relType: type(r_in), other: source}) AS incoming
-                
-                RETURN DISTINCT
-                    classNode,
-                    coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
-                    classNode.uri AS SourceURI,
-                    classNode.skos__definition AS SourceClassDef,
-                    outgoing,
-                    incoming
+                RETURN DISTINCT c, classNode, r, target
                 """
                 results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
+                graph_data = results_to_graph_data(results, query=query.replace("$label", f"'{detected_class}'").strip())
                 
-                nodes = {}
-                links = []
-                
-                for row in results:
-                    # Center node info
-                    center_label = row["SourceLabel"]
-                    if center_label not in nodes:
-                        nodes[center_label] = {
-                            "key": center_label,
-                            "label": center_label,
-                            "uri": row["SourceURI"],
-                            "definition": row.get("SourceClassDef"),
-                            "category": "class",
-                            "isCenter": center_label.lower() == detected_class.lower(),
-                            "properties": dict(row.get("classNode", {})) if "classNode" in row else {}
-                        }
-                    
-                    # Process outgoing
-                    for item in row["outgoing"]:
-                        if not item.get("rel") or not item.get("other"): continue
-                        rel = item["rel"]
-                        target = item["other"]
-                        tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
-                        
-                        if tgt_label not in nodes:
-                            is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
-                            nodes[tgt_label] = {
-                                "key": tgt_label,
-                                "label": tgt_label,
-                                "uri": target.get("uri"),
-                                "definition": target.get("skos__definition"),
-                                "category": "datatype" if is_datatype else "class",
-                                "properties": dict(target) if target else {}
-                            }
-                        
-                        links.append({
-                            "from": center_label,
-                            "to": tgt_label,
-                            "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                            "uri": rel.get("uri"),
-                            "definition": rel.get("skos__definition"),
-                            "cardinality": rel.get("cardinality"),
-                            "requirement": rel.get("requirement"),
-                            "properties": dict(rel) if rel else {}
-                        })
-                        
-                    # Process incoming
-                    for item in row["incoming"]:
-                        if not item.get("rel") or not item.get("other"): continue
-                        rel = item["rel"]
-                        source = item["other"]
-                        src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
-                        
-                        if src_label not in nodes:
-                            nodes[src_label] = {
-                                "key": src_label,
-                                "label": src_label,
-                                "uri": source.get("uri"),
-                                "definition": source.get("skos__definition"),
-                                "category": "class",
-                                "properties": dict(source) if source else {}
-                            }
-                        
-                        links.append({
-                            "from": src_label,
-                            "to": center_label,
-                            "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                            "uri": rel.get("uri"),
-                            "definition": rel.get("skos__definition"),
-                            "cardinality": rel.get("cardinality"),
-                            "requirement": rel.get("requirement"),
-                            "properties": dict(rel) if rel else {}
-                        })
-                
-                if nodes:
-                    graph_data = GraphData(
-                        nodes=list(nodes.values()),
-                        links=links,
-                        query=query.replace("$label", f"'{detected_class}'").strip()
-                    )
+                # Mark original class as center
+                if graph_data and graph_data.nodes:
+                    for node in graph_data.nodes:
+                        # Case-insensitive comparison for stable labeling
+                        if node["label"].lower() == detected_class.lower():
+                            node["isCenter"] = True
+                        elif node["uri"] == detected_class:
+                            node["isCenter"] = True
 
         return ChatResponse(
             response=response_text,
@@ -567,157 +608,45 @@ async def execute_cypher(request: CypherRequest):
                 is_pattern_graph = True
                 break
         
-        # If we have Neo4j nodes or relationships, build graph from them
-        if has_nodes or has_relationships:
+        # Determine if this query returns graph data
+        has_graph_items = False
+        for row in results:
+            for val in row.values():
+                if isinstance(val, dict) and val.get("_type") in ["node", "relationship", "path"]:
+                    has_graph_items = True
+                    break
+                if isinstance(val, list) and any(isinstance(v, dict) and v.get("_type") in ["node", "relationship"] for v in val):
+                    has_graph_items = True
+                    break
+            if has_graph_items: break
+
+        graph_data = None
+        result_type = "table"
+
+        if has_graph_items:
+            graph_data = results_to_graph_data(results, query=request.query)
+            result_type = "graph"
+        elif source_col and target_col:
+            # Table-based graph fallback
             nodes = {}
             links = []
-            
             for row in results:
-                # Process nodes
-                for col in node_columns:
-                    node_data = row.get(col)
-                    if isinstance(node_data, dict) and node_data.get("_type") == "node":
-                        node_id = node_data.get("_id", "")
-                        labels = node_data.get("_labels", [])
-                        label = node_data.get("rdfs__label") or node_data.get("label") or (labels[0] if labels else node_id[-8:])
-                        
-                        if node_id and node_id not in nodes:
-                            # Determine category from labels
-                            category = "class"
-                            if "rdfs__Datatype" in labels:
-                                category = "datatype"
-                            elif "owl__NamedIndividual" in labels:
-                                category = "individual"
-                            
-                            nodes[node_id] = {
-                                "key": label,
-                                "label": label,
-                                "uri": node_data.get("uri"),
-                                "definition": node_data.get("skos__definition"),
-                                "category": category,
-                                "_id": node_id
-                            }
-                
-                # Process relationships and create nodes from start/end if needed
-                for col in rel_columns:
-                    rel_data = row.get(col)
-                    if isinstance(rel_data, dict) and rel_data.get("_type") == "relationship":
-                        start_id = rel_data.get("_start")
-                        end_id = rel_data.get("_end")
-                        rel_type = rel_data.get("_rel_type", "relates_to")
-                        
-                        if start_id and end_id:
-                            # Create placeholder nodes if they don't exist
-                            if start_id not in nodes:
-                                placeholder_label = f"Node-{start_id[-8:]}"
-                                nodes[start_id] = {
-                                    "key": placeholder_label,
-                                    "label": placeholder_label,
-                                    "uri": None,
-                                    "definition": None,
-                                    "category": "class",
-                                    "_id": start_id
-                                }
-                                
-                            if end_id not in nodes:
-                                placeholder_label = f"Node-{end_id[-8:]}"
-                                nodes[end_id] = {
-                                    "key": placeholder_label,
-                                    "label": placeholder_label,
-                                    "uri": None,
-                                    "definition": None,
-                                    "category": "class",
-                                    "_id": end_id
-                                }
-                            
-                            # Find node labels for start and end
-                            start_label = nodes[start_id]["label"]
-                            end_label = nodes[end_id]["label"]
-                            
-                            links.append({
-                                "from": start_label,
-                                "to": end_label,
-                                "relationship": rel_type,
-                                "uri": rel_data.get("uri")
-                            })
-            
-            return CypherResponse(
-                results=results,
-                count=len(results),
-                result_type="graph",
-                graph_data=GraphData(
-                    nodes=list(nodes.values()),
-                    links=links,
-                    query=request.query
-                ),
-                table_columns=columns
-            )
-        
-        elif is_pattern_graph:
-            # Build graph data from column patterns
-            nodes = {}
-            links = []
-            
-            for row in results:
-                src_label = row.get(source_col)
-                tgt_label = row.get(target_col)
-                
-                # Add source node
-                if src_label and src_label not in nodes:
-                    nodes[src_label] = {
-                        "key": src_label,
-                        "label": src_label,
-                        "uri": row.get("SourceClassURI") or row.get("source_uri"),
-                        "definition": row.get("SourceClassDef") or row.get("source_def"),
-                        "category": "class",
-                        "isCenter": True
-                    }
-                
-                # Add target node
-                if tgt_label and tgt_label not in nodes:
-                    target_uri = row.get("TargetClassURI") or row.get("target_uri") or ""
-                    prop_type = row.get("PropMetaType") or row.get("property_type") or ""
-                    is_datatype = "Datatype" in prop_type or "XMLSchema" in target_uri
-                    
-                    nodes[tgt_label] = {
-                        "key": tgt_label,
-                        "label": tgt_label,
-                        "uri": target_uri,
-                        "definition": row.get("TargetClassDef") or row.get("target_def"),
-                        "category": "datatype" if is_datatype else "class"
-                    }
-                
-                # Add link
-                if src_label and tgt_label:
-                    links.append({
-                        "from": src_label,
-                        "to": tgt_label,
-                        "relationship": row.get(rel_col) if rel_col else "relates_to",
-                        "uri": row.get("RelURI") or row.get("rel_uri"),
-                        "definition": row.get("RelDef") or row.get("rel_def"),
-                        "cardinality": row.get("Cardinality") or row.get("cardinality"),
-                        "requirement": row.get("Requirement") or row.get("requirement")
-                    })
-            
-            return CypherResponse(
-                results=results,
-                count=len(results),
-                result_type="graph",
-                graph_data=GraphData(
-                    nodes=list(nodes.values()),
-                    links=links,
-                    query=request.query
-                ),
-                table_columns=columns
-            )
-        else:
-            # Tabular result
-            return CypherResponse(
-                results=results,
-                count=len(results),
-                result_type="table",
-                table_columns=columns
-            )
+                s = str(row.get(source_col, "Unknown"))
+                t = str(row.get(target_col, "Unknown"))
+                r = str(row.get(rel_col, "relates_to")) if rel_col else "relates_to"
+                if s not in nodes: nodes[s] = {"key": s, "label": s, "category": "class"}
+                if t not in nodes: nodes[t] = {"key": t, "label": t, "category": "class"}
+                links.append({"from": s, "to": t, "relationship": r})
+            graph_data = GraphData(nodes=list(nodes.values()), links=links, query=request.query)
+            result_type = "graph"
+
+        return CypherResponse(
+            results=results,
+            count=len(results),
+            result_type=result_type,
+            graph_data=graph_data,
+            table_columns=columns
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -728,122 +657,40 @@ async def execute_cypher(request: CypherRequest):
 @router.get("/graph-data/{class_name}")
 async def get_graph_data(class_name: str):
     """
-    Get graph data formatted for GoJS visualization.
-    Returns nodes and links arrays.
+    Get graph data formatted for GoJS visualization using inheritance exploration.
+    Uses the requested Cypher pattern to show base and superclass relationships.
     """
     db = get_db()
     try:
+        # Optimized inheritance-aware query pattern
         query = """
         MATCH (c:owl__Class)
-        WHERE c.rdfs__label = $label OR c.uri = $label
+        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        
         OPTIONAL MATCH (c)-[:owl__subClassOf*0..]->(parent:owl__Class)
-        WITH DISTINCT coalesce(parent, c) AS classNode, c
+        WITH DISTINCT coalesce(parent, c) AS classNode, c       
         
-        // Outbound relationships
-        OPTIONAL MATCH (classNode)-[r_out]->(target)
-        WHERE r_out.materialized = true
+        // super class (inherited) relationships
+        OPTIONAL MATCH (classNode)-[r1]-(target)
+        WHERE r1.materialized = true        
         
-        // Inbound relationships
-        OPTIONAL MATCH (source)-[r_in]->(classNode)
-        WHERE r_in.materialized = true
+        // base class (direct) relationships
+        OPTIONAL MATCH (c)-[r2]-(target1)
+        WHERE r2.materialized = true
         
-        WITH c, classNode,
-             collect(DISTINCT {rel: properties(r_out), relType: type(r_out), other: target}) AS outgoing,
-             collect(DISTINCT {rel: properties(r_in), relType: type(r_in), other: source}) AS incoming
-        
-        RETURN 
-          classNode,
-          coalesce(classNode.rdfs__label, classNode.uri, 'Unknown') AS SourceLabel,
-          classNode.uri AS SourceURI,
-          classNode.skos__definition AS SourceDef,
-          outgoing,
-          incoming
+        RETURN DISTINCT c, classNode, target, r1, target1, r2
         """
-        results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data")
+        results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data_enhanced")
         
-        nodes = {}
-        links = []
+        # Build graph data from results
+        graph = results_to_graph_data(results, query=query.replace("$label", f"'{class_name}'").strip())
         
-        for row in results:
-            center_label = row["SourceLabel"]
-            
-            # Add center node
-            if center_label not in nodes:
-                nodes[center_label] = {
-                    "key": center_label,
-                    "label": center_label,
-                    "uri": row["SourceURI"],
-                    "definition": row.get("SourceDef"),
-                    "category": "class",
-                    "isCenter": center_label.lower() == class_name.lower(),
-                    "properties": dict(row["classNode"]) if "classNode" in row else {}
-                }
-            
-            # Add outgoing
-            for item in row["outgoing"]:
-                if not item.get("rel") or not item.get("other"): continue
-                rel = item["rel"]
-                target = item["other"]
-                tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
-                
-                if tgt_label not in nodes:
-                    is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
-                    nodes[tgt_label] = {
-                        "key": tgt_label,
-                        "label": tgt_label,
-                        "uri": target.get("uri"),
-                        "definition": target.get("skos__definition"),
-                        "category": "datatype" if is_datatype else "class",
-                        "properties": dict(target) if target else {}
-                    }
-                
-                links.append({
-                    "from": center_label,
-                    "to": tgt_label,
-                    "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                    "uri": rel.get("uri"),
-                    "definition": rel.get("skos__definition"),
-                    "cardinality": rel.get("cardinality"),
-                    "requirement": rel.get("requirement"),
-                    "properties": dict(rel) if rel else {}
-                })
-            
-            # Add incoming
-            for item in row["incoming"]:
-                if not item.get("rel") or not item.get("other"): continue
-                rel = item["rel"]
-                source = item["other"]
-                src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
-                
-                if src_label not in nodes:
-                    nodes[src_label] = {
-                        "key": src_label,
-                        "label": src_label,
-                        "uri": source.get("uri"),
-                        "definition": source.get("skos__definition"),
-                        "category": "class",
-                        "properties": dict(source) if source else {}
-                    }
-                
-                links.append({
-                    "from": src_label,
-                    "to": center_label,
-                    "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                    "uri": rel.get("uri"),
-                    "definition": rel.get("skos__definition"),
-                    "cardinality": rel.get("cardinality"),
-                    "requirement": rel.get("requirement"),
-                    "properties": dict(rel) if rel else {}
-                })
+        # Mark center node
+        for node in graph.nodes:
+            if node["label"].lower() == class_name.lower():
+                node["isCenter"] = True
         
-        # Include query for display in Query tab
-        display_query = query.replace("$label", f"'{class_name}'")
-        
-        return {
-            "nodes": list(nodes.values()),
-            "links": links,
-            "query": display_query.strip()
-        }
+        return graph
     except Exception as e:
         logger.error(f"Error getting graph data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -859,7 +706,7 @@ async def get_node_focus_data(node_label: str):
     try:
         query = """
         MATCH (center:owl__Class)
-        WHERE center.rdfs__label = $label OR center.uri = $label
+        WHERE any(lbl IN CASE WHEN center.rdfs__label IS :: LIST<ANY> THEN center.rdfs__label ELSE [center.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR center.uri = $label
         OPTIONAL MATCH (center)-[r_out]->(target)
         WHERE r_out.materialized = true
         OPTIONAL MATCH (source)-[r_in]->(center)
@@ -881,93 +728,17 @@ async def get_node_focus_data(node_label: str):
         """
         results = db.execute_cypher(query, params={"label": node_label}, name="get_node_focus_data")
         
-        if not results:
-            return {"nodes": [], "links": []}
+        graph = results_to_graph_data(results, query=query.replace("$label", f"'{node_label}'").strip())
         
-        row = results[0]
-        nodes = {}
-        links = []
+        # Mark center node
+        if graph and graph.nodes:
+            for node in graph.nodes:
+                if node["label"].lower() == node_label.lower():
+                    node["isCenter"] = True
+                elif node["uri"] == node_label:
+                    node["isCenter"] = True
         
-        # Add center node
-        center = row["center"]
-        center_label = center.get("rdfs__label", node_label)
-        nodes[center_label] = {
-            "key": center_label,
-            "label": center_label,
-            "uri": center.get("uri"),
-            "definition": center.get("skos__definition"),
-            "category": "class",
-            "isCenter": True,
-            "properties": dict(center) if center else {}
-        }
-        
-        # Process outgoing relationships
-        for item in row["outgoing"]:
-            if item["rel"] is None or item["node"] is None:
-                continue
-            rel = item["rel"]
-            target = item["node"]
-            tgt_label = target.get("rdfs__label") or target.get("uri") or "Resource"
-            
-            if tgt_label not in nodes:
-                is_datatype = rel.get("property_type") == "owl__DatatypeProperty" or "XMLSchema" in (target.get("uri") or "")
-                nodes[tgt_label] = {
-                    "key": tgt_label,
-                    "label": tgt_label,
-                    "uri": target.get("uri"),
-                    "definition": target.get("skos__definition"),
-                    "category": "datatype" if is_datatype else "class",
-                    "properties": dict(target) if target else {}
-                }
-            
-            links.append({
-                "from": center_label,
-                "to": tgt_label,
-                "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                "uri": rel.get("uri"),
-                "definition": rel.get("skos__definition"),
-                "cardinality": rel.get("cardinality"),
-                "requirement": rel.get("requirement"),
-                "properties": dict(rel) if rel else {}
-            })
-        
-        # Process incoming relationships
-        for item in row["incoming"]:
-            if item["rel"] is None or item["node"] is None:
-                continue
-            rel = item["rel"]
-            source = item["node"]
-            src_label = source.get("rdfs__label") or source.get("uri") or "Resource"
-            
-            if src_label not in nodes:
-                nodes[src_label] = {
-                    "key": src_label,
-                    "label": src_label,
-                    "uri": source.get("uri"),
-                    "definition": source.get("skos__definition"),
-                    "category": "class",
-                    "properties": dict(source) if source else {}
-                }
-            
-            links.append({
-                "from": src_label,
-                "to": center_label,
-                "relationship": item.get("relType") or rel.get("_rel_type") or "relates_to",
-                "uri": rel.get("uri"),
-                "definition": rel.get("skos__definition"),
-                "cardinality": rel.get("cardinality"),
-                "requirement": rel.get("requirement"),
-                "properties": dict(rel) if rel else {}
-            })
-        
-        # Include query for display in Query tab
-        display_query = query.replace("$label", f"'{node_label}'")
-        
-        return {
-            "nodes": list(nodes.values()),
-            "links": links,
-            "query": display_query.strip()
-        }
+        return graph
     except Exception as e:
         logger.error(f"Error getting node focus data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
