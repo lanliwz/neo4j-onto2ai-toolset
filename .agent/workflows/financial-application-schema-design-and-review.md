@@ -13,7 +13,7 @@ description: financial application schema design and review
    - *Tip*: Set `flatten_inheritance=True` to automatically copy parent relationships if you want a self-contained model from the start.
 
 ---
-### Iterative Design Loop (Repeat Steps 4-7 until finalized)
+### Iterative Design Loop (Repeat Steps 4-8 until finalized)
 
 4. **Model Consolidation**
    Refine the model in the staging database:
@@ -34,14 +34,19 @@ description: financial application schema design and review
    - Generate Mermaid diagrams to represent the UML Class relationship.
    - Document key attributes and cardinalities.
 
-*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 8 only when the stagingdb model is finalized.*
+8. **Designer Acceptance (User-in-the-Loop)**
+   Share the visualization, validation results, and description of changes with the user.
+   - **Action**: Use `notify_user` with `PathsToReview` including the UML diagram and walkthrough.
+   - **Wait**: Do not proceed until the designer/user provides approval or requests further changes.
+
+*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 9 only after receiving Designer Acceptance.*
 ---
 
-8. **Code Generation**
+9. **Code Generation**
    Translate the validated schema into production code using `generate_schema_code`:
    - **Pydantic/SQLAlchemy**: For application backends.
    - **SQL DDL**: For relational databases.
    - **Cypher Scripts**: For graph database setup.
 
-9. **Data Model Archival**
-   Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema for documentation, peer review, or integration into external tools.
+10. **Data Model Archival**
+    Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema for documentation, peer review, or integration into external tools.
