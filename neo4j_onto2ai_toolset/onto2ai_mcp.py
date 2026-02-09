@@ -432,6 +432,8 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
            Note: Even if the label has spaces, the URI suffix MUST be camelCase.
            Example: label 'mailing address' -> URI 'https://model.onto2ai.com/schema/mailingAddress'
            FORBIDDEN: 'fibo...', 'cmns...', 'omg...', etc. REPLACE ALL OF THEM.
+        6. RELATIONSHIP-BASED ATTRIBUTES: Instead of primitive properties on class nodes, domain-specific attributes (e.g., money, rates, dates, codes, or statuses) MUST be modeled as RELATIONSHIPS to 'rdfs__Datatype' nodes or 'owl__Class' enumeration nodes.
+           Example: Instead of setting 'taxRate' as a property on 'tax authority', create a relationship 'hasTaxRate' from 'tax authority' to an 'rdfs__Datatype' node with label 'xsd:decimal'.
 
         Constraint: EVERY property in the 'properties' list MUST be an OBJECT (not a string).
         

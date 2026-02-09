@@ -11,7 +11,7 @@ Follow these rules when mapping OWL/RDF to Neo4j:
 - **Classes**: Map to Neo4j Node Labels (e.g., `owl__Class` -> `:owl__Class`).
 - **Individuals**: Map to Nodes with class labels.
 - **Object Properties**: Map to Relationships between nodes. Labels should be camelCase.
-- **Data Properties**: Map to Node Properties.
+- **Data Properties**: **DEPRECATED**. Map domain-specific attributes (rates, dates, money, statuses) as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes for ontological consistency.
 - **Annotations**: Map to Node Properties (e.g., `rdfs__label`, `skos__definition`).
 
 ## Best Practices

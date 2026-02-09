@@ -21,7 +21,8 @@ description: financial application schema design and review
    - **Datatype Consolidation**: Use `consolidate_staging_db` to convert structural classes (like `address` or `open date`) into flat properties with technical XSD types.
 
 5. **AI-Driven Schema Enhancement**
-   Apply specific business logic or simplifications using the `enhance_schema` tool. Provide clear instructions for modifications (e.g., "Flatten the balance structure into a single decimal field").
+   Apply specific business logic or simplifications using the `enhance_schema` tool. 
+   - **Ontological Consistency Standard**: All domain-specific attributes (rates, dates, money, statuses) MUST be modeled as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes. Avoid literal properties on class nodes.
 
 6. **Structural Review & Validation**
    Verify the integrity of the design:
