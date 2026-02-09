@@ -46,9 +46,11 @@ MATERIALIZED_SCHEMA_QUERY = """
     OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
     WITH c, coalesce(parent, c) AS classNode
     
-    // Path 1: Materialized relationships to owl__Class targets
-    MATCH (classNode)-[r]->(target:owl__Class)
-    WHERE r.materialized = true
+    // Path 1: Relationships to owl__Class or owl__NamedIndividual targets
+    MATCH (classNode)-[r]->(target)
+    WHERE (target:owl__Class OR target:owl__NamedIndividual)
+      AND (r.materialized = true OR r.materialized IS NULL) // Relaxed for stagingdb
+      AND type(r) <> "rdfs__subClassOf"
     RETURN DISTINCT
       c.rdfs__label AS SourceClassLabel,
       c.uri AS SourceClassURI,
@@ -58,14 +60,14 @@ MATERIALIZED_SCHEMA_QUERY = """
       r.skos__definition AS RelDef,
       r.cardinality AS Cardinality,
       r.requirement AS Requirement,
-      r.property_type AS PropMetaType,
+      coalesce(r.property_type, "owl__ObjectProperty") AS PropMetaType, // Default to ObjectProperty
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
     
     UNION
     
-    // Path 2: Materialized relationships to rdfs__Datatype targets
+    // Path 2: Relationships to rdfs__Datatype targets
     MATCH (c:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
     
@@ -73,7 +75,7 @@ MATERIALIZED_SCHEMA_QUERY = """
     WITH c, coalesce(parent, c) AS classNode
     
     MATCH (classNode)-[r]->(target:rdfs__Datatype)
-    WHERE r.materialized = true
+    WHERE (r.materialized = true OR r.materialized IS NULL) // Relaxed for stagingdb
     RETURN DISTINCT
       c.rdfs__label AS SourceClassLabel,
       c.uri AS SourceClassURI,
@@ -83,7 +85,7 @@ MATERIALIZED_SCHEMA_QUERY = """
       r.skos__definition AS RelDef,
       r.cardinality AS Cardinality,
       r.requirement AS Requirement,
-      r.property_type AS PropMetaType,
+      coalesce(r.property_type, "owl__DatatypeProperty") AS PropMetaType, // Default to DatatypeProperty
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
