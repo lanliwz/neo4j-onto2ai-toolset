@@ -31,8 +31,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Static files path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 import argparse
 import uvicorn
@@ -44,7 +48,7 @@ app.include_router(schemas_router, prefix="/api")
 @app.get("/")
 async def root():
     """Serve the main application page."""
-    return FileResponse("static/index.html")
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 
 @app.get("/health")

@@ -269,6 +269,99 @@ def results_to_graph_data(results: List[Dict[str, Any]], query: Optional[str] = 
     return GraphData(nodes=list(nodes_out.values()), links=links_out, query=query)
 
 
+def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = None) -> GraphData:
+    """
+    Heavily flattens Neo4j results for UML/Pydantic box visualization.
+    Datatype properties and Enumeration relationships are pulled INSIDE the class boxes.
+    """
+    if not results:
+        return GraphData(nodes=[], links=[], query=query)
+
+    classes = {}  # element_id -> class_data
+    attributes_by_class = {} # element_id -> list of attributes
+    links = []
+    seen_links = set()
+
+    for row in results:
+        # Extract source class
+        src = row.get("c") or row.get("center")
+        if not src:
+            continue
+            
+        src_id = src.get("element_id") or src.get("_id")
+        if not src_id:
+            continue
+            
+        if src_id not in classes:
+            classes[src_id] = {
+                "key": src_id,
+                "label": src.get("rdfs__label") or src.get("label") or "Class",
+                "uri": src.get("uri"),
+                "definition": src.get("skos__definition"),
+                "category": "class",
+                "attributes": []
+            }
+            attributes_by_class[src_id] = []
+
+        # Extract relationship and target
+        rel = row.get("r") or row.get("r_out")
+        tgt = row.get("target")
+        
+        if not rel or not tgt:
+            continue
+
+        tgt_labels = tgt.get("_labels", []) or tgt.get("labels", [])
+        is_attribute = "rdfs__Datatype" in tgt_labels or "owl__NamedIndividual" in tgt_labels or "XMLSchema" in (tgt.get("uri") or "")
+        
+        rel_type = rel.get("_rel_type") or rel.get("type") or "relates_to"
+        tgt_label = tgt.get("rdfs__label") or tgt.get("label") or "Resource"
+
+        if is_attribute:
+            # Flatten into class as attribute
+            cardinality = rel.get("cardinality") or "0..1"
+            attributes_by_class[src_id].append({
+                "name": rel_type,
+                "type": tgt_label,
+                "cardinality": cardinality,
+                "definition": rel.get("skos__definition")
+            })
+        else:
+            # Keep as edge to another class
+            tgt_id = tgt.get("element_id") or tgt.get("_id")
+            if not tgt_id:
+                continue
+                
+            if tgt_id not in classes:
+                 classes[tgt_id] = {
+                    "key": tgt_id,
+                    "label": tgt_label,
+                    "uri": tgt.get("uri"),
+                    "definition": tgt.get("skos__definition"),
+                    "category": "class",
+                    "attributes": []
+                }
+                 attributes_by_class[tgt_id] = attributes_by_class.get(tgt_id, [])
+
+            link_key = (src_id, tgt_id, rel_type)
+            if link_key not in seen_links:
+                links.append({
+                    "from": src_id,
+                    "to": tgt_id,
+                    "relationship": rel_type,
+                    "uri": rel.get("uri"),
+                    "definition": rel.get("skos__definition")
+                })
+                seen_links.add(link_key)
+
+    # Attach attributes to classes
+    final_nodes = []
+    for cid, cdata in classes.items():
+        cdata["attributes"] = attributes_by_class.get(cid, [])
+        final_nodes.append(cdata)
+
+    return GraphData(nodes=final_nodes, links=links, query=query)
+
+
 @router.get("/classes", response_model=List[ClassInfo])
 async def list_classes():
     """
@@ -315,10 +408,17 @@ async def get_class_schema(class_name: str):
     db = get_db()
     try:
         query = """
-        MATCH (c:owl__Class)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        MATCH (c:owl__Class)
         WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
-        MATCH (parent)-[r]->(target)
-        WHERE r.materialized = true
+        
+        OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        WITH c, coalesce(parent, c) AS classNode
+        
+        MATCH (classNode)-[r]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND (r.materialized = true OR r.materialized IS NULL)
+          AND type(r) <> "rdfs__subClassOf"
+        
         RETURN DISTINCT
           c.rdfs__label AS SourceClassLabel,
           c.uri AS SourceClassURI,
@@ -326,7 +426,7 @@ async def get_class_schema(class_name: str):
           type(r) AS RelType,
           r.uri AS RelURI,
           r.skos__definition AS RelDef,
-          r.cardinality AS Cardinality,
+          coalesce(r.cardinality, "0..1") AS Cardinality,
           r.requirement AS Requirement,
           coalesce(target.rdfs__label, target.uri, 'Resource') AS TargetClassLabel,
           target.uri AS TargetClassURI,
@@ -503,11 +603,14 @@ async def chat(request: ChatRequest):
                 MATCH (c:owl__Class)
                 WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
                 
-                OPTIONAL MATCH (c)-[:owl__subClassOf*0..2]->(parent:owl__Class)
-                WITH DISTINCT coalesce(parent, c) AS classNode, c
+                OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+                WITH DISTINCT c, coalesce(parent, c) AS classNode
                 
-                OPTIONAL MATCH (classNode)-[r]-(target)
-                WHERE r.materialized = true
+                // Materialized relationships (including inherited)
+                OPTIONAL MATCH (classNode)-[r]->(target)
+                WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+                  AND (r.materialized = true OR r.materialized IS NULL)
+                  AND type(r) <> "rdfs__subClassOf"
                 
                 RETURN DISTINCT c, classNode, r, target
                 """
@@ -662,23 +765,21 @@ async def get_graph_data(class_name: str):
     """
     db = get_db()
     try:
-        # Optimized inheritance-aware query pattern
+        # Optimized inheritance-aware query pattern matching get_materialized_schema logic
         query = """
         MATCH (c:owl__Class)
         WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
         
-        OPTIONAL MATCH (c)-[:owl__subClassOf*0..]->(parent:owl__Class)
-        WITH DISTINCT coalesce(parent, c) AS classNode, c       
+        OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        WITH DISTINCT c, coalesce(parent, c) AS classNode
         
-        // super class (inherited) relationships
-        OPTIONAL MATCH (classNode)-[r1]-(target)
-        WHERE r1.materialized = true        
+        // Materialized relationships (including inherited)
+        OPTIONAL MATCH (classNode)-[r]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND (r.materialized = true OR r.materialized IS NULL)
+          AND type(r) <> "rdfs__subClassOf"
         
-        // base class (direct) relationships
-        OPTIONAL MATCH (c)-[r2]-(target1)
-        WHERE r2.materialized = true
-        
-        RETURN DISTINCT c, classNode, target, r1, target1, r2
+        RETURN DISTINCT c, classNode, r, target
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data_enhanced")
         
@@ -704,27 +805,28 @@ async def get_node_focus_data(node_label: str):
     """
     db = get_db()
     try:
+        # Query aligned with get_materialized_schema logic + incoming focus
         query = """
         MATCH (center:owl__Class)
         WHERE any(lbl IN CASE WHEN center.rdfs__label IS :: LIST<ANY> THEN center.rdfs__label ELSE [center.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR center.uri = $label
-        OPTIONAL MATCH (center)-[r_out]->(target)
-        WHERE r_out.materialized = true
+        
+        // Inheritance for outgoing properties
+        OPTIONAL MATCH (center)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        WITH center, coalesce(parent, center) AS classNode
+        
+        // Outgoing materialized relationships (including inherited)
+        OPTIONAL MATCH (classNode)-[r_out]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND (r_out.materialized = true OR r_out.materialized IS NULL)
+          AND type(r_out) <> "rdfs__subClassOf"
+        
+        // Incoming relationships (to the focal class itself)
         OPTIONAL MATCH (source)-[r_in]->(center)
-        WHERE r_in.materialized = true
-        WITH center, 
-             collect(DISTINCT {
-                rel: properties(r_out), 
-                relType: type(r_out),
-                node: target, 
-                direction: 'out'
-             }) AS outgoing,
-             collect(DISTINCT {
-                rel: properties(r_in), 
-                relType: type(r_in),
-                node: source, 
-                direction: 'in'
-             }) AS incoming
-        RETURN center, outgoing, incoming
+        WHERE (source:owl__Class OR source:owl__NamedIndividual)
+          AND (r_in.materialized = true OR r_in.materialized IS NULL)
+          AND type(r_in) <> "rdfs__subClassOf"
+        
+        RETURN center, classNode, r_out, target, source, r_in
         """
         results = db.execute_cypher(query, params={"label": node_label}, name="get_node_focus_data")
         
@@ -741,6 +843,47 @@ async def get_node_focus_data(node_label: str):
         return graph
     except Exception as e:
         logger.error(f"Error getting node focus data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/uml-data/{class_name}")
+async def get_uml_data(class_name: str):
+    """
+    Get graph data optimized for UML/Pydantic box visualization.
+    Datatypes are flattened into attributes of the class node.
+    """
+    db = get_db()
+    try:
+        # Robust query pattern matching get_materialized_schema logic
+        query = """
+        MATCH (c:owl__Class)
+        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        
+        OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        WITH DISTINCT c, coalesce(parent, c) AS classNode
+        
+        // Materialized relationships (including inherited)
+        OPTIONAL MATCH (classNode)-[r]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND (r.materialized = true OR r.materialized IS NULL)
+          AND type(r) <> "rdfs__subClassOf"
+        
+        RETURN DISTINCT c, classNode, r, target
+        """
+        results = db.execute_cypher(query, params={"label": class_name}, name="get_uml_data")
+        
+        # Build UML data (flattened)
+        uml_graph = results_to_uml_data(results, query=query.replace("$label", f"'{class_name}'").strip())
+        
+        # Mark center node
+        for node in uml_graph.nodes:
+            # In UML data, keys are element IDs, but we might still want to check labels
+            if node["label"].lower() == class_name.lower():
+                node["isCenter"] = True
+                
+        return uml_graph
+    except Exception as e:
+        logger.error(f"Error getting UML data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

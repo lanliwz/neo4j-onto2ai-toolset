@@ -38,7 +38,8 @@ description: financial application schema design and review
 8. **Architectural Visualization**
    Create visual documentation:
    - Generate Mermaid diagrams to represent the Class relationships.
-   - **Comprehensive Coverage Principle**: Ensure all classes included in the diagram are fully populated with their properties and core relationships. Avoid "empty box" placeholders for neighbor entities like `Party` or `Jurisdiction`.
+   - **Comprehensive Coverage Principle**: Ensure all classes in the diagram are fully populated with their properties and core relationships.
+   - **Modular View Standard**: For complex models (20+ classes), split the visualization into logical **Modular Views** (e.g., Core Domain, Foundation, Regulatory) using a **Carousel** format to maintain readability and font size.
    - **Rendering Rules**:
      - Render **Datatype and Enumeration relationships** (e.g., `hasTaxRate`, `hasStatus`) as **Properties** within the class boxes.
      - Render **Core Functional relationships** (e.g., `provides`, `filedBy`) as explicit **Arrows**.

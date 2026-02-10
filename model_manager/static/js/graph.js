@@ -63,7 +63,7 @@ function initGraph() {
         )
     );
 
-    // Node template for datatypes
+    // Node template for datatypes (Classic Graph only)
     myDiagram.nodeTemplateMap.add("datatype",
         $(go.Node, "Auto",
             {
@@ -84,6 +84,122 @@ function initGraph() {
                     stroke: "white"
                 },
                     new go.Binding("text", "label"))
+            )
+        )
+    );
+
+    // UML Style Template
+    const umlPropertyTemplate = $(go.Panel, "Horizontal",
+        $(go.TextBlock, {
+            font: "11px Inter, sans-serif",
+            stroke: "#34d399",
+            margin: new go.Margin(0, 5, 0, 0)
+        }, new go.Binding("text", "name", (n) => `+ ${n}`)),
+        $(go.TextBlock, {
+            font: "11px Inter, sans-serif",
+            stroke: "#94a3b8"
+        }, new go.Binding("text", "type", (t) => `: ${t}`))
+    );
+
+    myDiagram.nodeTemplateMap.add("uml",
+        $(go.Node, "Auto",
+            {
+                selectionAdorned: true,
+                cursor: "pointer",
+                click: (e, node) => onNodeClick(node),
+                doubleClick: (e, node) => onNodeDoubleClick(node)
+            },
+            $(go.Shape, "Rectangle", {
+                fill: "#1a1a2e",
+                stroke: "#4f46e5",
+                strokeWidth: 2
+            },
+                new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#1e1b4b" : "#1a1a2e"),
+                new go.Binding("stroke", "isCenter", (isCenter) => isCenter ? "#7c3aed" : "#4f46e5")),
+            $(go.Panel, "Vertical",
+                { stretch: go.GraphObject.Fill, margin: 1 },
+                // Header
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal },
+                    $(go.Shape, "Rectangle", { fill: "#4f46e5", stroke: null },
+                        new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#7c3aed" : "#4f46e5")),
+                    $(go.TextBlock, {
+                        font: "bold 13px Inter, sans-serif",
+                        stroke: "white",
+                        margin: 8,
+                        alignment: go.Spot.Center
+                    }, new go.Binding("text", "label"))
+                ),
+                // Attributes
+                $(go.Panel, "Vertical",
+                    {
+                        stretch: go.GraphObject.Horizontal,
+                        background: "rgba(0,0,0,0.3)",
+                        padding: 8,
+                        itemTemplate: umlPropertyTemplate
+                    },
+                    new go.Binding("itemArray", "attributes")
+                )
+            )
+        )
+    );
+
+    // Pydantic Style Template (Code-like)
+    const pydanticPropertyTemplate = $(go.Panel, "Horizontal",
+        $(go.TextBlock, {
+            font: "italic 11px 'Fira Code', monospace",
+            stroke: "#f1f5f9",
+            margin: new go.Margin(0, 4, 0, 0)
+        }, new go.Binding("text", "name")),
+        $(go.TextBlock, {
+            font: "11px 'Fira Code', monospace",
+            stroke: "#a78bfa"
+        }, new go.Binding("text", "type", (t) => `: Optional[${t}] = None`))
+    );
+
+    myDiagram.nodeTemplateMap.add("pydantic",
+        $(go.Node, "Auto",
+            {
+                selectionAdorned: true,
+                cursor: "pointer",
+                click: (e, node) => onNodeClick(node)
+            },
+            $(go.Shape, "Rectangle", {
+                fill: "#0d1117",
+                stroke: "#30363d",
+                strokeWidth: 1
+            },
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#30363d").ofObject()),
+            $(go.Panel, "Vertical",
+                { stretch: go.GraphObject.Fill, margin: 1 },
+                // Class definition line
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal, margin: new go.Margin(4, 8, 4, 8) },
+                    $(go.TextBlock, {
+                        font: "bold 13px 'Fira Code', monospace",
+                        stroke: "#ff7b72"
+                    }, new go.Binding("text", "label", (l) => `class ${l.replace(/\s+/g, '')}(BaseModel):`))
+                ),
+                // Docstring
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal, margin: new go.Margin(0, 16, 8, 16) },
+                    $(go.TextBlock, {
+                        font: "italic 11px 'Fira Code', monospace",
+                        stroke: "#8b949e",
+                        maxSize: new go.Size(200, NaN),
+                        wrap: go.TextBlock.WrapFit
+                    }, new go.Binding("text", "definition", (d) => d ? `\"\"\"\n${d}\n\"\"\"` : ""))
+                ),
+                // Fields
+                $(go.Panel, "Vertical",
+                    {
+                        stretch: go.GraphObject.Horizontal,
+                        padding: new go.Margin(4, 16, 8, 16),
+                        itemTemplate: pydanticPropertyTemplate,
+                        alignment: go.Spot.Left
+                    },
+                    new go.Binding("itemArray", "attributes")
+                )
             )
         )
     );
@@ -460,10 +576,68 @@ function loadGraphFromData(data) {
     }, 500);
 }
 
+/**
+ * Change visualization mode (graph, uml, pydantic)
+ */
+function changeVizMode(mode) {
+    if (!myDiagram) return;
+
+    // Change category of all class nodes in the current model
+    myDiagram.model.commit(m => {
+        m.nodeDataArray.forEach(node => {
+            if (node.category === 'class' || node.category === 'uml' || node.category === 'pydantic') {
+                m.setCategoryForNodeData(node, mode === 'graph' ? 'class' : mode);
+            }
+        });
+    }, "change viz mode");
+
+    // Re-layout
+    myDiagram.layoutDiagram(true);
+}
+
+/**
+ * Load UML or Pydantic data (flattened)
+ */
+async function loadUmlData(className, mode) {
+    try {
+        const response = await fetch(`/api/uml-data/${encodeURIComponent(className)}`);
+        if (!response.ok) throw new Error('Failed to load UML data');
+
+        const data = await response.json();
+
+        // Apply specialized category to all nodes except datatypes
+        const nodes = data.nodes.map(n => ({
+            ...n,
+            category: mode // 'uml' or 'pydantic'
+        }));
+
+        // Set the model
+        myDiagram.model = new go.GraphLinksModel(nodes, data.links);
+
+        // Hide placeholder
+        document.getElementById('graph-placeholder').classList.add('hidden');
+
+        // Display the query in the Query tab
+        if (data.query) {
+            updateQueryDisplay(data.query);
+        }
+
+        // Fit to view after layout
+        setTimeout(() => {
+            myDiagram.zoomToFit();
+        }, 500);
+
+    } catch (error) {
+        console.error('Error loading UML/Pydantic data:', error);
+    }
+}
+
 // Export functions for global access
 window.initGraph = initGraph;
 window.loadGraphData = loadGraphData;
+window.loadUmlData = loadUmlData;
 window.loadGraphFromData = loadGraphFromData;
+window.changeVizMode = changeVizMode;
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 window.fitView = fitView;

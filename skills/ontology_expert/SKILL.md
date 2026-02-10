@@ -16,6 +16,7 @@ Follow these rules when mapping OWL/RDF to Neo4j:
 
 ## 2. Architectural Visualization (UML)
 - **Comprehensive Coverage Principle**: All classes involved in the model MUST be fully populated with their properties and core relationships. Avoid shell classes or "empty boxes".
+- **Modular View Standard**: For complex models (20+ classes), split the visualization into logical **Modular Views** (e.g., Core Domain, Foundation, Regulatory) using a **Carousel** format. This ensures diagrams remain readable and font sizes are legible.
 - **Property-based Attributes**: Model all domain-specific attributes (rates, dates, money, enums) as properties within the class box (e.g., `+hasTaxRate: xsd:decimal`).
 - **Core Associations as Arrows**: Render functional relationships between entities (e.g., `provides`, `filedBy`) as explicit arrows/relationships.
 

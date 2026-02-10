@@ -210,34 +210,50 @@ body.resizing * {
 }
 
 /* Tab Navigation */
-.panel-tabs {
+.panel-tabs,
+.panel-viz-tabs {
     display: flex;
     border-bottom: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
 }
 
-.tab-btn {
+.panel-viz-tabs {
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.tab-btn,
+.viz-tab-btn {
     flex: 1;
     padding: var(--spacing-md);
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.825rem;
+    font-weight: 600;
     cursor: pointer;
     transition: var(--transition-fast);
     position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.tab-btn:hover {
+.tab-btn:hover,
+.viz-tab-btn:hover {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.05);
 }
 
-.tab-btn.active {
+.tab-btn.active,
+.viz-tab-btn.active {
     color: var(--accent-primary);
+    background: rgba(79, 70, 229, 0.05);
 }
 
-.tab-btn.active::after {
+.tab-btn.active::after,
+.viz-tab-btn.active::after {
     content: '';
     position: absolute;
     bottom: 0;

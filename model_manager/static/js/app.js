@@ -2,10 +2,14 @@
  * Onto2AI Model Manager - Main Application Logic
  */
 
+let currentClassName = null;
+let currentVizMode = 'graph';
+
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize
     initGraph();
     setupTabs();
+    setupVizTabs();
     setupSearch();
     setupChat();
     setupQuery();
@@ -160,29 +164,65 @@ async function loadClasses() {
         const classes = await response.json();
 
         listContainer.innerHTML = classes.map((cls, index) => `
-            <div class="class-item" 
+            <div class="class-item"
                  data-label="${escapeHtml(cls.label)}"
                  style="animation-delay: ${index * 30}ms">
                 ${escapeHtml(cls.label)}
             </div>
         `).join('');
 
-        // Add click handlers
-        listContainer.querySelectorAll('.class-item').forEach(item => {
-            item.addEventListener('click', () => {
+        // Use event delegation for class item clicks
+        listContainer.addEventListener('click', (event) => {
+            const item = event.target.closest('.class-item');
+            if (item) {
                 // Update active state
                 listContainer.querySelectorAll('.class-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
 
-                // Load graph
-                loadGraphData(item.dataset.label);
-            });
+                currentClassName = item.dataset.label;
+
+                // Load based on current viz mode
+                if (currentVizMode === 'graph') {
+                    loadGraphData(currentClassName);
+                } else {
+                    loadUmlData(currentClassName, currentVizMode);
+                }
+            }
         });
 
     } catch (error) {
         console.error('Error loading classes:', error);
         listContainer.innerHTML = '<div class="placeholder">Failed to load classes. Is the server running?</div>';
     }
+}
+
+/**
+ * Visualization Tab switching logic (Graph vs UML vs Pydantic)
+ */
+function setupVizTabs() {
+    const tabBtns = document.querySelectorAll('.viz-tab-btn');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.viz;
+            if (mode === currentVizMode) return;
+
+            // Update UI
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentVizMode = mode;
+
+            // Refresh visualization if a class is currently selected
+            if (currentClassName) {
+                if (currentVizMode === 'graph') {
+                    loadGraphData(currentClassName);
+                } else {
+                    loadUmlData(currentClassName, currentVizMode);
+                }
+            }
+        });
+    });
 }
 
 /**
