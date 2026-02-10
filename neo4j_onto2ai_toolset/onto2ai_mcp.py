@@ -58,7 +58,7 @@ MATERIALIZED_SCHEMA_QUERY = """
       type(r) AS RelType,
       r.uri AS RelURI,
       r.skos__definition AS RelDef,
-      r.cardinality AS Cardinality,
+      coalesce(r.cardinality, "0..1") AS Cardinality,
       r.requirement AS Requirement,
       coalesce(r.property_type, "owl__ObjectProperty") AS PropMetaType, // Default to ObjectProperty
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
@@ -83,7 +83,7 @@ MATERIALIZED_SCHEMA_QUERY = """
       type(r) AS RelType,
       r.uri AS RelURI,
       r.skos__definition AS RelDef,
-      r.cardinality AS Cardinality,
+      coalesce(r.cardinality, "0..1") AS Cardinality,
       r.requirement AS Requirement,
       coalesce(r.property_type, "owl__DatatypeProperty") AS PropMetaType, // Default to DatatypeProperty
       coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
@@ -111,6 +111,9 @@ async def get_materialized_schema(
     - Render both sections as Markdown TABLES.
     - Section 1: Use the 'Label' as a clickable Markdown link to its 'URI'.
     - Section 2: Use the 'Relationship Type' as a clickable Markdown link to its 'URI'.
+    - **VISUALIZATION RULE**: When generating UML Class diagrams from this result:
+        - Render relationships to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes as **PROPERTIES** inside class boxes.
+        - Render relationships to other core classes as **ARROWS/ASSOCIATIONS**.
     - Do not show URIs in separate columns unless labels are missing.
     
     Returns:
@@ -531,8 +534,12 @@ async def generate_schema_code(
         - If 'sql', generate Oracle-compatible DDL.
         - If 'neo4j', generate Cypher CREATE CONSTRAINT/INDEX statements.
         
-        Documentation Style (CRITICAL):
-        - For Pydantic: Class definitions MUST be rendered as Python DOCSTRINGS (triple quotes) inside the class.
+        Pydantic Rendering Guidelines (CRITICAL):
+        - RELATIONSHIP-BASED ATTRIBUTES: Relationships pointing to 'rdfs__Datatype' nodes or 'owl__Class' enumeration nodes MUST be rendered as simple class fields (properties).
+        - DOCSTRINGS: Every class MUST include a triple-quoted Python docstring at the top of the class body using the 'definition' from the DataModel.
+        - FIELD DESCRIPTIONS: Every field MUST use Pydantic's 'Field(description="...")' to include its ontological definition.
+        
+        SQL/Neo4j Documentation Style:
         - For SQL: Table definitions MUST be rendered using 'COMMENT ON TABLE [name] IS ...' statements.
         - Property and Relationship definitions MUST be included as INLINE COMMENTS (# for Python, -- for SQL, // for Cypher) next to the field or constraint.
         - Definitions should be for ANNOTATION ONLY; do not include them as functional data fields.

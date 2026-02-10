@@ -13,7 +13,7 @@ description: financial application schema design and review
    - *Tip*: Set `flatten_inheritance=True` to automatically copy parent relationships if you want a self-contained model from the start.
 
 ---
-### Iterative Design Loop (Repeat Steps 4-8 until finalized)
+### Iterative Design Loop (Repeat Steps 4-9 until finalized)
 
 4. **Model Consolidation**
    Refine the model in the staging database:
@@ -24,30 +24,46 @@ description: financial application schema design and review
    Apply specific business logic or simplifications using the `enhance_schema` tool. 
    - **Ontological Consistency Standard**: All domain-specific attributes (rates, dates, money, statuses) MUST be modeled as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes. Avoid literal properties on class nodes.
 
-6. **Structural Review & Validation**
+6. **Enumeration Enrichment**
+   Identify all `owl__Class` nodes used as enumerations (e.g., `filing status`, `report status`).
+   - **Action**: Create `owl__NamedIndividual` members for these enums in `stagingdb`.
+   - **Validation**: Ensure members are linked to the parent class via `rdf__type`.
+
+7. **Structural Review & Validation**
    Verify the integrity of the design:
    - **Materialization Review**: Call `get_materialized_schema` on the staging database to inspect the final relationships.
    - **Graph Connectivity**: Use `read_neo4j_cypher` to run custom queries validating paths (e.g., between `Account` and `Payment`).
    - **SHACL Constraints**: Execute `generate_shacl_for_modelling` to create structural constraints that can be used for data validation.
 
-7. **Architectural Visualization**
+8. **Architectural Visualization**
    Create visual documentation:
-   - Generate Mermaid diagrams to represent the UML Class relationship.
+   - Generate Mermaid diagrams to represent the Class relationships.
+   - **Comprehensive Coverage Principle**: Ensure all classes included in the diagram are fully populated with their properties and core relationships. Avoid "empty box" placeholders for neighbor entities like `Party` or `Jurisdiction`.
+   - **Rendering Rules**:
+     - Render **Datatype and Enumeration relationships** (e.g., `hasTaxRate`, `hasStatus`) as **Properties** within the class boxes.
+     - Render **Core Functional relationships** (e.g., `provides`, `filedBy`) as explicit **Arrows**.
    - Document key attributes and cardinalities.
 
-8. **Designer Acceptance (User-in-the-Loop)**
+9. **Designer Acceptance (User-in-the-Loop)**
    Share the visualization, validation results, and description of changes with the user.
    - **Action**: Use `notify_user` with `PathsToReview` including the UML diagram and walkthrough.
    - **Wait**: Do not proceed until the designer/user provides approval or requests further changes.
 
-*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 9 only after receiving Designer Acceptance.*
+*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 10 only after receiving Designer Acceptance.*
 ---
 
-9. **Code Generation**
-   Translate the validated schema into production code using `generate_schema_code`:
-   - **Pydantic/SQLAlchemy**: For application backends.
-   - **SQL DDL**: For relational databases.
-   - **Cypher Scripts**: For graph database setup.
+10. **Code Generation**
+    Translate the validated schema into production code using `generate_schema_code`:
+    - **Comprehensive Coverage Principle**: 
+      - Always include **all involved classes** (those linked via relationships) in the generation request to ensure no "shell" classes are produced.
+      - Use Cypher queries to identify neighbor classes before calling the generation tool.
+    - **Pydantic Guidelines**:
+      - Model **Datatype and Enumeration relationships** as simple class fields.
+      - Explicitly request `skos:definition` for every class to populate **Docstrings** and **Field Descriptions**.
+    - **Output Types**:
+      - **Pydantic/SQLAlchemy**: For application backends.
+      - **SQL DDL**: For relational databases.
+      - **Cypher Scripts**: For graph database setup.
 
-10. **Data Model Archival**
+11. **Data Model Archival**
     Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema for documentation, peer review, or integration into external tools.
