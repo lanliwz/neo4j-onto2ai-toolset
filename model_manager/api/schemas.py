@@ -402,6 +402,50 @@ async def list_classes():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/relationships")
+async def list_relationships():
+    """
+    List all distinct relationships between owl:Class nodes in the stagingdb.
+    Returns relationship type, source/target class labels, URI, and cardinality.
+    """
+    db = get_db()
+    try:
+        query = """
+        MATCH (source:owl__Class)-[r]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND type(r) <> 'rdfs__subClassOf'
+          AND source.rdfs__label IS NOT NULL
+          AND NOT source.rdfs__label =~ '^N[0-9a-f]{32}$'
+        RETURN DISTINCT
+            source.rdfs__label AS source_class,
+            source.uri AS source_uri,
+            type(r) AS relationship_type,
+            coalesce(r.rdfs__label, type(r)) AS relationship_label,
+            r.uri AS rel_uri,
+            coalesce(r.cardinality, '0..1') AS cardinality,
+            r.requirement AS requirement,
+            coalesce(target.rdfs__label, target.uri, 'Resource') AS target_class,
+            target.uri AS target_uri
+        ORDER BY source_class, relationship_type
+        """
+        results = db.execute_cypher(query, name="list_relationships")
+        return [
+            {
+                "source_class": row["source_class"],
+                "relationship_type": row["relationship_type"],
+                "relationship_label": row["relationship_label"],
+                "target_class": row["target_class"],
+                "cardinality": row["cardinality"],
+                "requirement": row["requirement"],
+                "uri": row.get("rel_uri"),
+            }
+            for row in results
+        ]
+    except Exception as e:
+        logger.error(f"Error listing relationships: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/class/{class_name}", response_model=ClassSchema)
 async def get_class_schema(class_name: str):
     """

@@ -36,18 +36,45 @@
             <!-- Left Panel: Search/Chat/Query -->
             <aside class="left-panel" id="left-panel">
                 <div class="panel-tabs">
-                    <button class="tab-btn active" data-tab="search">Search</button>
+                    <button class="tab-btn active" data-tab="search">StagingDB</button>
                     <button class="tab-btn" data-tab="chat">Chat</button>
                     <button class="tab-btn" data-tab="query">Query</button>
                 </div>
 
-                <!-- Search Tab -->
+                <!-- StagingDB Tab -->
                 <div class="tab-content active" id="search-tab">
-                    <div class="search-box">
-                        <input type="text" id="search-input" placeholder="🔍 Search classes...">
+                    <!-- Classes Section -->
+                    <div class="staging-section">
+                        <div class="staging-section-header" id="classes-header">
+                            <span class="section-toggle">▼</span>
+                            <span class="section-title">Classes</span>
+                            <span class="section-count" id="classes-count">0</span>
+                        </div>
+                        <div class="staging-section-body" id="classes-body">
+                            <div class="search-box">
+                                <input type="text" id="search-input" placeholder="🔍 Filter classes...">
+                            </div>
+                            <div class="class-list" id="class-list">
+                                <div class="loading">Loading classes...</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="class-list" id="class-list">
-                        <div class="loading">Loading classes...</div>
+
+                    <!-- Relationships Section -->
+                    <div class="staging-section">
+                        <div class="staging-section-header" id="relationships-header">
+                            <span class="section-toggle">▼</span>
+                            <span class="section-title">Relationships</span>
+                            <span class="section-count" id="relationships-count">0</span>
+                        </div>
+                        <div class="staging-section-body" id="relationships-body">
+                            <div class="search-box">
+                                <input type="text" id="rel-search-input" placeholder="🔍 Filter relationships...">
+                            </div>
+                            <div class="relationship-list" id="relationship-list">
+                                <div class="loading">Loading relationships...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

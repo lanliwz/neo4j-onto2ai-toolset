@@ -15,8 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupQuery();
     setupToolbar();
     setupSplitters();
+    setupStagingSections();
     setupLLM();
     loadClasses();
+    loadRelationships();
 });
 
 /**
@@ -166,17 +168,20 @@ function setupTabs() {
  */
 async function loadClasses() {
     const listContainer = document.getElementById('class-list');
+    const countBadge = document.getElementById('classes-count');
 
     try {
         const response = await fetch('/api/classes');
         if (!response.ok) throw new Error('Failed to load classes');
 
         const classes = await response.json();
+        if (countBadge) countBadge.textContent = classes.length;
 
         listContainer.innerHTML = classes.map((cls, index) => `
             <div class="class-item"
                  data-label="${escapeHtml(cls.label)}"
                  style="animation-delay: ${index * 30}ms">
+                <span class="class-icon">◆</span>
                 ${escapeHtml(cls.label)}
             </div>
         `).join('');
@@ -185,8 +190,8 @@ async function loadClasses() {
         listContainer.addEventListener('click', (event) => {
             const item = event.target.closest('.class-item');
             if (item) {
-                // Update active state
-                listContainer.querySelectorAll('.class-item').forEach(i => i.classList.remove('active'));
+                // Update active state across both lists
+                document.querySelectorAll('.class-item, .rel-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
 
                 currentClassName = item.dataset.label;
@@ -204,6 +209,72 @@ async function loadClasses() {
         console.error('Error loading classes:', error);
         listContainer.innerHTML = '<div class="placeholder">Failed to load classes. Is the server running?</div>';
     }
+}
+
+/**
+ * Load and display relationship list
+ */
+async function loadRelationships() {
+    const listContainer = document.getElementById('relationship-list');
+    const countBadge = document.getElementById('relationships-count');
+
+    try {
+        const response = await fetch('/api/relationships');
+        if (!response.ok) throw new Error('Failed to load relationships');
+
+        const rels = await response.json();
+        if (countBadge) countBadge.textContent = rels.length;
+
+        listContainer.innerHTML = rels.map((rel, index) => `
+            <div class="rel-item"
+                 data-source="${escapeHtml(rel.source_class)}"
+                 data-type="${escapeHtml(rel.relationship_type)}"
+                 data-target="${escapeHtml(rel.target_class)}"
+                 style="animation-delay: ${index * 20}ms">
+                <span class="rel-source">${escapeHtml(rel.source_class)}</span>
+                <span class="rel-arrow">→</span>
+                <span class="rel-type">${escapeHtml(rel.relationship_label || rel.relationship_type)}</span>
+                <span class="rel-arrow">→</span>
+                <span class="rel-target">${escapeHtml(rel.target_class)}</span>
+                ${rel.requirement === 'Mandatory' ? '<span class="rel-badge mandatory">req</span>' : ''}
+            </div>
+        `).join('');
+
+        // Click handler: focus on the source class
+        listContainer.addEventListener('click', (event) => {
+            const item = event.target.closest('.rel-item');
+            if (item) {
+                document.querySelectorAll('.class-item, .rel-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                currentClassName = item.dataset.source;
+
+                if (currentVizMode === 'graph') {
+                    loadGraphData(currentClassName);
+                } else {
+                    loadUmlData(currentClassName, currentVizMode);
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading relationships:', error);
+        listContainer.innerHTML = '<div class="placeholder">Failed to load relationships.</div>';
+    }
+}
+
+/**
+ * Setup collapsible staging sections
+ */
+function setupStagingSections() {
+    document.querySelectorAll('.staging-section-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const body = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            const isCollapsed = body.classList.toggle('collapsed');
+            toggle.textContent = isCollapsed ? '▶' : '▼';
+        });
+    });
 }
 
 /**
@@ -239,17 +310,32 @@ function setupVizTabs() {
  * Search functionality
  */
 function setupSearch() {
+    // Class filter
     const searchInput = document.getElementById('search-input');
-
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         const items = document.querySelectorAll('.class-item');
-
         items.forEach(item => {
             const label = item.dataset.label.toLowerCase();
-            item.style.display = label.includes(query) ? 'block' : 'none';
+            item.style.display = label.includes(query) ? 'flex' : 'none';
         });
     });
+
+    // Relationship filter
+    const relSearchInput = document.getElementById('rel-search-input');
+    if (relSearchInput) {
+        relSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.rel-item');
+            items.forEach(item => {
+                const source = (item.dataset.source || '').toLowerCase();
+                const type = (item.dataset.type || '').toLowerCase();
+                const target = (item.dataset.target || '').toLowerCase();
+                const match = source.includes(query) || type.includes(query) || target.includes(query);
+                item.style.display = match ? 'flex' : 'none';
+            });
+        });
+    }
 }
 
 /**
