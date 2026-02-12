@@ -446,6 +446,71 @@ async def list_relationships():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/individuals")
+async def list_individuals():
+    """
+    List all owl:NamedIndividual nodes grouped by their rdf:type class.
+    Returns groups with type label and member individuals.
+    """
+    db = get_db()
+    try:
+        query = """
+        MATCH (n:owl__NamedIndividual)
+        WHERE n.rdfs__label IS NOT NULL
+          AND NOT n.rdfs__label =~ '^N[0-9a-f]{32}$'
+        OPTIONAL MATCH (n)-[:rdf__type]->(c:owl__Class)
+        WITH coalesce(c.rdfs__label, 'Untyped') AS type_label,
+             c.uri AS type_uri,
+             n.rdfs__label AS member_label,
+             n.uri AS member_uri,
+             n.skos__definition AS member_def
+        ORDER BY type_label, member_label
+        RETURN type_label, type_uri,
+               collect({label: member_label, uri: member_uri, definition: member_def}) AS members
+        ORDER BY type_label
+        """
+        results = db.execute_cypher(query, name="list_individuals")
+        return [
+            {
+                "type_label": row["type_label"],
+                "type_uri": row.get("type_uri"),
+                "members": row["members"],
+                "count": len(row["members"]),
+            }
+            for row in results
+        ]
+    except Exception as e:
+        logger.error(f"Error listing individuals: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/datatypes")
+async def list_datatypes():
+    """
+    List all rdfs:Datatype nodes in the stagingdb.
+    """
+    db = get_db()
+    try:
+        query = """
+        MATCH (n:rdfs__Datatype)
+        WHERE n.rdfs__label IS NOT NULL
+        RETURN n.rdfs__label AS label, n.uri AS uri, n.skos__definition AS definition
+        ORDER BY n.rdfs__label
+        """
+        results = db.execute_cypher(query, name="list_datatypes")
+        return [
+            {
+                "label": row["label"],
+                "uri": row.get("uri"),
+                "definition": row.get("definition"),
+            }
+            for row in results
+        ]
+    except Exception as e:
+        logger.error(f"Error listing datatypes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/class/{class_name}", response_model=ClassSchema)
 async def get_class_schema(class_name: str):
     """

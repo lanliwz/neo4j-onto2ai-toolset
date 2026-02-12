@@ -36,12 +36,12 @@
             <!-- Left Panel: Search/Chat/Query -->
             <aside class="left-panel" id="left-panel">
                 <div class="panel-tabs">
-                    <button class="tab-btn active" data-tab="search">StagingDB</button>
+                    <button class="tab-btn active" data-tab="search">Ontology</button>
                     <button class="tab-btn" data-tab="chat">Chat</button>
                     <button class="tab-btn" data-tab="query">Query</button>
                 </div>
 
-                <!-- StagingDB Tab -->
+                <!-- Ontology Tab -->
                 <div class="tab-content active" id="search-tab">
                     <!-- Classes Section -->
                     <div class="staging-section">
@@ -73,6 +73,34 @@
                             </div>
                             <div class="relationship-list" id="relationship-list">
                                 <div class="loading">Loading relationships...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Named Individuals Section -->
+                    <div class="staging-section">
+                        <div class="staging-section-header" id="individuals-header">
+                            <span class="section-toggle">▶</span>
+                            <span class="section-title">Individuals</span>
+                            <span class="section-count" id="individuals-count">0</span>
+                        </div>
+                        <div class="staging-section-body collapsed" id="individuals-body">
+                            <div class="individual-list" id="individual-list">
+                                <div class="loading">Loading individuals...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datatypes Section -->
+                    <div class="staging-section">
+                        <div class="staging-section-header" id="datatypes-header">
+                            <span class="section-toggle">▶</span>
+                            <span class="section-title">Datatypes</span>
+                            <span class="section-count" id="datatypes-count">0</span>
+                        </div>
+                        <div class="staging-section-body collapsed" id="datatypes-body">
+                            <div class="datatype-list" id="datatype-list">
+                                <div class="loading">Loading datatypes...</div>
                             </div>
                         </div>
                     </div>

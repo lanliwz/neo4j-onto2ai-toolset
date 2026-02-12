@@ -451,6 +451,115 @@ body.resizing * {
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
+/* Individual Groups */
+.individual-list {
+    overflow-y: auto;
+    padding: 0 var(--spacing-sm);
+    max-height: 300px;
+}
+
+.individual-group {
+    margin-bottom: 2px;
+}
+
+.individual-group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 5px var(--spacing-sm);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.individual-group-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.group-toggle {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    width: 10px;
+    text-align: center;
+}
+
+.group-type-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent-secondary);
+    flex: 1;
+}
+
+.group-count {
+    font-size: 0.65rem;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: rgba(124, 58, 237, 0.2);
+    color: var(--accent-secondary);
+    font-weight: 600;
+}
+
+.individual-group-body {
+    padding-left: var(--spacing-md);
+}
+
+.individual-group-body.collapsed {
+    display: none;
+}
+
+.individual-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 4px var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.individual-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.individual-item.active {
+    background: rgba(124, 58, 237, 0.2);
+    color: var(--text-primary);
+    border-left: 2px solid var(--accent-secondary);
+}
+
+.individual-icon {
+    color: var(--success);
+    font-size: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Datatype List */
+.datatype-list {
+    overflow-y: auto;
+    padding: 0 var(--spacing-sm);
+    max-height: 200px;
+}
+
+.datatype-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 5px var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: default;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.datatype-icon {
+    color: var(--node-datatype);
+    font-size: 0.6rem;
+    flex-shrink: 0;
+}
+
 /* Chat Tab */
 .chat-messages {
     flex: 1;

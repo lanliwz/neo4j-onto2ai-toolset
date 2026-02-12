@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLLM();
     loadClasses();
     loadRelationships();
+    loadIndividuals();
+    loadDatatypes();
 });
 
 /**
@@ -275,6 +277,109 @@ function setupStagingSections() {
             toggle.textContent = isCollapsed ? '▶' : '▼';
         });
     });
+}
+
+/**
+ * Load and display named individuals grouped by rdf:type
+ */
+async function loadIndividuals() {
+    const listContainer = document.getElementById('individual-list');
+    const countBadge = document.getElementById('individuals-count');
+
+    try {
+        const response = await fetch('/api/individuals');
+        if (!response.ok) throw new Error('Failed to load individuals');
+
+        const groups = await response.json();
+        const totalCount = groups.reduce((sum, g) => sum + g.count, 0);
+        if (countBadge) countBadge.textContent = totalCount;
+
+        if (groups.length === 0) {
+            listContainer.innerHTML = '<div class="placeholder">No named individuals found</div>';
+            return;
+        }
+
+        listContainer.innerHTML = groups.map(group => `
+            <div class="individual-group">
+                <div class="individual-group-header" data-type="${escapeHtml(group.type_label)}">
+                    <span class="group-toggle">▼</span>
+                    <span class="group-type-label">${escapeHtml(group.type_label)}</span>
+                    <span class="group-count">${group.count}</span>
+                </div>
+                <div class="individual-group-body">
+                    ${group.members.map(m => `
+                        <div class="individual-item" data-label="${escapeHtml(m.label)}" data-type="${escapeHtml(group.type_label)}" title="${escapeHtml(m.definition || '')}">
+                            <span class="individual-icon">●</span>
+                            ${escapeHtml(m.label)}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        // Toggle group collapse
+        listContainer.querySelectorAll('.individual-group-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const body = header.nextElementSibling;
+                const toggle = header.querySelector('.group-toggle');
+                const isCollapsed = body.classList.toggle('collapsed');
+                toggle.textContent = isCollapsed ? '▶' : '▼';
+            });
+        });
+
+        // Click handler: clicking an individual focuses graph on its type class
+        listContainer.addEventListener('click', (event) => {
+            const item = event.target.closest('.individual-item');
+            if (item) {
+                document.querySelectorAll('.class-item, .rel-item, .individual-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                currentClassName = item.dataset.type;
+                if (currentVizMode === 'graph') {
+                    loadGraphData(currentClassName);
+                } else {
+                    loadUmlData(currentClassName, currentVizMode);
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading individuals:', error);
+        listContainer.innerHTML = '<div class="placeholder">Failed to load individuals.</div>';
+    }
+}
+
+/**
+ * Load and display datatypes
+ */
+async function loadDatatypes() {
+    const listContainer = document.getElementById('datatype-list');
+    const countBadge = document.getElementById('datatypes-count');
+
+    try {
+        const response = await fetch('/api/datatypes');
+        if (!response.ok) throw new Error('Failed to load datatypes');
+
+        const datatypes = await response.json();
+        if (countBadge) countBadge.textContent = datatypes.length;
+
+        if (datatypes.length === 0) {
+            listContainer.innerHTML = '<div class="placeholder">No datatypes staged</div>';
+            return;
+        }
+
+        listContainer.innerHTML = datatypes.map((dt, index) => `
+            <div class="datatype-item" data-label="${escapeHtml(dt.label)}" title="${escapeHtml(dt.definition || dt.uri || '')}" style="animation-delay: ${index * 30}ms">
+                <span class="datatype-icon">◇</span>
+                ${escapeHtml(dt.label)}
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error loading datatypes:', error);
+        listContainer.innerHTML = '<div class="placeholder">Failed to load datatypes.</div>';
+    }
 }
 
 /**
