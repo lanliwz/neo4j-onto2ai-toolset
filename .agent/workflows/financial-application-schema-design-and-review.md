@@ -24,10 +24,11 @@ description: financial application schema design and review
    Apply specific business logic or simplifications using the `enhance_schema` tool. 
    - **Ontological Consistency Standard**: All domain-specific attributes (rates, dates, money, statuses) MUST be modeled as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes. Avoid literal properties on class nodes.
 
-6. **Enumeration Enrichment**
+6. **Enumeration Enrichment & Deduplication**
    Identify all `owl__Class` nodes used as enumerations (e.g., `filing status`, `report status`).
    - **Action**: Create `owl__NamedIndividual` members for these enums in `stagingdb`.
    - **Validation**: Ensure members are linked to the parent class via `rdf__type`.
+   - **Semantic Deduplication (CRITICAL)**: Use the `merge_semantic_individuals` tool to consolidate any local placeholders (e.g., `married_joint`) with official FIBO standard individuals (e.g., `married filing jointly`) to prevent schema fragmentation.
 
 7. **Structural Review & Validation**
    Verify the integrity of the design:

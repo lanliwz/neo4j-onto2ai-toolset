@@ -23,7 +23,10 @@ from neo4j_onto2ai_toolset.onto2ai_client import Onto2AIClient
 _onto2ai_client = None
 
 async def get_onto2ai_client():
-    global _onto2ai_client
+    global _onto2ai_client, _current_llm
+    if _current_llm is None:
+        _current_llm = os.getenv("LLM_MODEL_NAME") or "gemini-2.0-flash-exp"
+        
     if _onto2ai_client is None:
         _onto2ai_client = Onto2AIClient(model_name=_current_llm)
         await _onto2ai_client.connect()
@@ -33,8 +36,8 @@ async def get_onto2ai_client():
 _db_connection = None
 
 # LLM State
-AVAILABLE_LLMS = ["gemini-2.0-flash-exp", "gpt-4o-2024-05-13"]
-_current_llm = os.getenv("LLM_MODEL_NAME") or "gemini-2.0-flash-exp"
+AVAILABLE_LLMS = ["gemini-2.0-flash-exp", "gemini-3-flash-preview-001", "gpt-4o-2024-05-13"]
+_current_llm = None  # Lazy init in get_llm_status/get_onto2ai_client
 
 def get_db():
     """Get or create the staging database connection."""
@@ -890,6 +893,17 @@ async def get_uml_data(class_name: str):
 @router.get("/llm", response_model=LLMStatus)
 async def get_llm_status():
     """Get the current LLM and available options."""
+    global _current_llm
+    
+    # Refresh from env if not manually set yet
+    env_model = os.getenv("LLM_MODEL_NAME")
+    if _current_llm is None:
+        _current_llm = env_model or "gemini-2.0-flash-exp"
+        
+    # Ensure current model is in available list
+    if _current_llm not in AVAILABLE_LLMS:
+        AVAILABLE_LLMS.append(_current_llm)
+        
     return LLMStatus(
         current_llm=_current_llm,
         available_llms=AVAILABLE_LLMS
@@ -900,10 +914,11 @@ async def get_llm_status():
 async def update_llm(request: LLMUpdateRequest):
     """Switch the current LLM."""
     global _current_llm, _onto2ai_client
-    if request.llm_name not in AVAILABLE_LLMS:
-        raise HTTPException(status_code=400, detail=f"Invalid LLM: {request.llm_name}")
     
+    # Allow any model name to be set via API
     _current_llm = request.llm_name
+    if _current_llm not in AVAILABLE_LLMS:
+        AVAILABLE_LLMS.append(_current_llm)
     logger.info(f"Switched LLM to: {_current_llm}")
     
     # Reset onto2ai client to use the new LLM

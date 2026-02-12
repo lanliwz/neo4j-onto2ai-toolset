@@ -20,9 +20,10 @@ Follow these rules when mapping OWL/RDF to Neo4j:
 - **Property-based Attributes**: Model all domain-specific attributes (rates, dates, money, enums) as properties within the class box (e.g., `+hasTaxRate: xsd:decimal`).
 - **Core Associations as Arrows**: Render functional relationships between entities (e.g., `provides`, `filedBy`) as explicit arrows/relationships.
 
-## 3. Enumeration Enrichment
+## 3. Enumeration Enrichment & Individuals
 When managing a `stagingdb`, always ensure that `owl__Class` nodes used as enumerations are enriched with concrete members.
 - **Member Definition**: Create members as `owl__NamedIndividual` nodes.
+- **Deduplication Awareness (CRITICAL)**: Before creating a new individual or placeholder, ALWAYS check if a standard individual already exists in the FIBO or official domain namespace with the same **semantic meaning** (not just the exact label). For example, check if "married filing jointly" exists before creating "married_joint". Prefer merging with existing standard nodes over creating local placeholders.
 - **Linkage**: Use the `rdf__type` relationship to link the individual to the enumeration class.
 - **Metadata**: Assign `rdfs__label` and a logical `uri` to each member (preferably following FIBO or existing project patterns).
 
@@ -33,6 +34,11 @@ When generating Pydantic classes using the `generate_schema_code` tool:
 3. **Involved Class Discovery**: Before generating code, use a Cypher query to identify all neighbor classes linked to the primary target classes. Include the full set in the `class_names` argument.
 4. **Metadata Preservation**: Always instruct the AI to extract and include `skos:definition` strings in class docstrings and field descriptions.
 5. **Enums as Enums**: Ensure that `owl__Class` nodes enriched with individuals are rendered as standard Python `enum.Enum` classes.
+
+## 5. Model Manager Customization
+When extending the Model Manager's model support:
+- **Backend Model Shorthand**: In `main.py`, update the `--model` flag's choices and add shorthands (e.g., `gemini3` for `gemini-3-flash-preview-001`).
+- **Frontend Labeling**: Update `app.js` to provide pretty names in the LLM selector for new models.
 
 ## Best Practices
 1. **Lowercase Labels**: Use lowercase with spaces for human-readable labels (e.g., "mailing address").

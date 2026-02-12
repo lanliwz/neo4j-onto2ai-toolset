@@ -1149,6 +1149,60 @@ async def consolidate_staging_db(
     finally:
         db.close()
 
+@mcp.tool()
+async def merge_semantic_individuals(
+    label_pairs: List[Dict[str, str]],
+    staging_db_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Merge local placeholder individuals with official FIBO nodes based on semantic equivalence.
+    
+    Args:
+        label_pairs: List of dicts with:
+            - 'fibo_uri': The official standard URI to keep.
+            - 'local_uri': The local placeholder URI to be merged/deleted.
+        staging_db_name: Optional target database name.
+    
+    Returns:
+        Summary of merged pairs.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db
+    db = get_staging_db(staging_db_name)
+    results = []
+    
+    try:
+        for pair in label_pairs:
+            fibo_uri = pair.get('fibo_uri')
+            local_uri = pair.get('local_uri')
+            
+            if not fibo_uri or not local_uri:
+                continue
+                
+            query = """
+            MATCH (fibo:owl__NamedIndividual {uri: $fibo_uri})
+            MATCH (local:owl__NamedIndividual {uri: $local_uri})
+            CALL apoc.refactor.mergeNodes([fibo, local], {properties: 'overwrite', mergeRels: true}) YIELD node
+            RETURN node.uri AS uri
+            """
+            
+            res = db.execute_cypher(query, params={
+                "fibo_uri": fibo_uri,
+                "local_uri": local_uri
+            }, name="merge_semantic_individual")
+            
+            if res:
+                results.append({"fibo_uri": fibo_uri, "local_uri": local_uri, "status": "merged"})
+            else:
+                results.append({"fibo_uri": fibo_uri, "local_uri": local_uri, "status": "not_found"})
+                
+        return {
+            "status": "success",
+            "database": staging_db_name or "stagingdb",
+            "merges": results
+        }
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     # Support HTTP transport if requested via command line
     import sys

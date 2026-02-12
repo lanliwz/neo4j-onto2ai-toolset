@@ -14,5 +14,8 @@ description: cleanup and validate staging database for payment system
 4. **Validate Materialized Schema**
    Retrieve the `get_materialized_schema` for core payment classes (`credit card account`, `cardholder`, `payment`, `merchant`, `economic transaction`) and verify all core connections and properties are present.
 
-5. **Generate Architectural Documentation**
+5. **Deduplicate Named Individuals**
+   Identify `owl__NamedIndividual` nodes with duplicate `rdfs__label` strings across local (`onto2ai`) and official (`fibo`) namespaces. Use `apoc.refactor.mergeNodes` to consolidate them into the official FIBO version.
+
+6. **Generate Architectural Documentation**
    Optionally generate a UML Class Diagram or SHACL shapes using the specialized tools to document the final validated state.
