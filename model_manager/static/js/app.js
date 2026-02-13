@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRelationships();
     loadIndividuals();
     loadDatatypes();
+    loadClassHierarchy();
 });
 
 /**
@@ -379,6 +380,90 @@ async function loadDatatypes() {
     } catch (error) {
         console.error('Error loading datatypes:', error);
         listContainer.innerHTML = '<div class="placeholder">Failed to load datatypes.</div>';
+    }
+}
+
+/**
+ * Load and display class hierarchy tree
+ */
+async function loadClassHierarchy() {
+    const listContainer = document.getElementById('hierarchy-list');
+    const countBadge = document.getElementById('hierarchy-count');
+
+    try {
+        const response = await fetch('/api/class-hierarchy');
+        if (!response.ok) throw new Error('Failed to load class hierarchy');
+
+        const data = await response.json();
+        if (countBadge) countBadge.textContent = data.total_edges;
+
+        if (!data.tree || data.tree.length === 0) {
+            listContainer.innerHTML = '<div class="placeholder">No class hierarchy found</div>';
+            return;
+        }
+
+        function renderNode(node, depth) {
+            const hasChildren = node.children && node.children.length > 0;
+            const indent = depth * 16;
+            const icon = hasChildren ? '▼' : '•';
+            const iconClass = hasChildren ? 'hierarchy-toggle' : 'hierarchy-leaf';
+
+            let html = `
+                <div class="hierarchy-node" data-label="${escapeHtml(node.label)}" data-depth="${depth}" title="${escapeHtml(node.definition || '')}">
+                    <div class="hierarchy-node-row" style="padding-left: ${indent}px">
+                        <span class="${iconClass}">${icon}</span>
+                        <span class="hierarchy-label">${escapeHtml(node.label)}</span>
+                    </div>`;
+
+            if (hasChildren) {
+                html += `<div class="hierarchy-children">`;
+                for (const child of node.children) {
+                    html += renderNode(child, depth + 1);
+                }
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        listContainer.innerHTML = data.tree.map(root => renderNode(root, 0)).join('');
+
+        // Toggle collapse for parent nodes
+        listContainer.querySelectorAll('.hierarchy-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const node = toggle.closest('.hierarchy-node');
+                const children = node.querySelector('.hierarchy-children');
+                if (children) {
+                    const isCollapsed = children.classList.toggle('collapsed');
+                    toggle.textContent = isCollapsed ? '▶' : '▼';
+                }
+            });
+        });
+
+        // Click handler: clicking a hierarchy node focuses graph on that class
+        listContainer.addEventListener('click', (event) => {
+            const row = event.target.closest('.hierarchy-node-row');
+            if (row && !event.target.classList.contains('hierarchy-toggle')) {
+                const node = row.closest('.hierarchy-node');
+                const label = node.dataset.label;
+
+                document.querySelectorAll('.class-item, .rel-item, .individual-item, .hierarchy-node-row').forEach(i => i.classList.remove('active'));
+                row.classList.add('active');
+
+                currentClassName = label;
+                if (currentVizMode === 'graph') {
+                    loadGraphData(currentClassName);
+                } else {
+                    loadUmlData(currentClassName, currentVizMode);
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading class hierarchy:', error);
+        listContainer.innerHTML = '<div class="placeholder">Failed to load hierarchy.</div>';
     }
 }
 

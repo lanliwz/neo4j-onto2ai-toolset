@@ -276,6 +276,7 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
     """
     Heavily flattens Neo4j results for UML/Pydantic box visualization.
     Datatype properties and Enumeration relationships are pulled INSIDE the class boxes.
+    Handles both outgoing (r_out/target) and incoming (r_in/source) relationships.
     """
     if not results:
         return GraphData(nodes=[], links=[], query=query)
@@ -285,81 +286,114 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
     links = []
     seen_links = set()
 
-    for row in results:
-        # Extract source class
-        src = row.get("c") or row.get("center")
-        if not src:
-            continue
-            
-        src_id = src.get("element_id") or src.get("_id")
-        if not src_id:
-            continue
-            
-        if src_id not in classes:
-            classes[src_id] = {
-                "key": src_id,
-                "label": src.get("rdfs__label") or src.get("label") or "Class",
-                "uri": src.get("uri"),
-                "definition": src.get("skos__definition"),
+    def ensure_class(node_data):
+        """Register a class node if not already tracked."""
+        nid = node_data.get("element_id") or node_data.get("_id")
+        if not nid:
+            return None
+        if nid not in classes:
+            raw_label = node_data.get("rdfs__label") or node_data.get("label") or "Class"
+            if isinstance(raw_label, list):
+                raw_label = raw_label[0] if raw_label else "Class"
+            classes[nid] = {
+                "key": nid,
+                "label": raw_label,
+                "uri": node_data.get("uri"),
+                "definition": node_data.get("skos__definition"),
                 "category": "class",
                 "attributes": []
             }
-            attributes_by_class[src_id] = []
+            attributes_by_class[nid] = []
+        return nid
 
-        # Extract relationship and target
+    for row in results:
+        # Extract source class (c or center)
+        src = row.get("c") or row.get("center")
+        if not src:
+            continue
+        src_id = ensure_class(src)
+        if not src_id:
+            continue
+
+        # --- Process outgoing relationship (r_out / r -> target) ---
         rel = row.get("r") or row.get("r_out")
         tgt = row.get("target")
         
-        if not rel or not tgt:
-            continue
+        if rel and tgt:
+            tgt_labels = tgt.get("_labels", []) or tgt.get("labels", [])
+            is_attribute = "rdfs__Datatype" in tgt_labels or "owl__NamedIndividual" in tgt_labels or "XMLSchema" in (tgt.get("uri") or "")
+            
+            rel_type = rel.get("_rel_type") or rel.get("type") or "relates_to"
+            tgt_label = tgt.get("rdfs__label") or tgt.get("label") or "Resource"
+            if isinstance(tgt_label, list):
+                tgt_label = tgt_label[0] if tgt_label else "Resource"
 
-        tgt_labels = tgt.get("_labels", []) or tgt.get("labels", [])
-        is_attribute = "rdfs__Datatype" in tgt_labels or "owl__NamedIndividual" in tgt_labels or "XMLSchema" in (tgt.get("uri") or "")
-        
-        rel_type = rel.get("_rel_type") or rel.get("type") or "relates_to"
-        tgt_label = tgt.get("rdfs__label") or tgt.get("label") or "Resource"
-
-        if is_attribute:
-            # Flatten into class as attribute
-            cardinality = rel.get("cardinality") or "0..1"
-            attributes_by_class[src_id].append({
-                "name": rel_type,
-                "type": tgt_label,
-                "cardinality": cardinality,
-                "definition": rel.get("skos__definition")
-            })
-        else:
-            # Keep as edge to another class
-            tgt_id = tgt.get("element_id") or tgt.get("_id")
-            if not tgt_id:
-                continue
-                
-            if tgt_id not in classes:
-                 classes[tgt_id] = {
-                    "key": tgt_id,
-                    "label": tgt_label,
-                    "uri": tgt.get("uri"),
-                    "definition": tgt.get("skos__definition"),
-                    "category": "class",
-                    "attributes": []
-                }
-                 attributes_by_class[tgt_id] = attributes_by_class.get(tgt_id, [])
-
-            link_key = (src_id, tgt_id, rel_type)
-            if link_key not in seen_links:
-                links.append({
-                    "from": src_id,
-                    "to": tgt_id,
-                    "relationship": rel_type,
-                    "uri": rel.get("uri"),
+            if is_attribute:
+                cardinality = rel.get("cardinality") or "0..1"
+                attributes_by_class[src_id].append({
+                    "name": rel_type,
+                    "type": tgt_label,
+                    "cardinality": cardinality,
                     "definition": rel.get("skos__definition")
                 })
-                seen_links.add(link_key)
+            else:
+                tgt_id = ensure_class(tgt)
+                if tgt_id:
+                    # Also list association inside the class box
+                    cardinality = rel.get("cardinality") or ""
+                    attributes_by_class[src_id].append({
+                        "name": rel_type,
+                        "type": tgt_label,
+                        "cardinality": cardinality,
+                        "definition": rel.get("skos__definition"),
+                        "kind": "association"
+                    })
+                    link_key = (src_id, tgt_id, rel_type)
+                    if link_key not in seen_links:
+                        links.append({
+                            "from": src_id,
+                            "to": tgt_id,
+                            "relationship": rel_type,
+                            "uri": rel.get("uri"),
+                            "definition": rel.get("skos__definition")
+                        })
+                        seen_links.add(link_key)
 
-    # Attach attributes to classes
+        # --- Process incoming relationship (source -> r_in -> c) ---
+        r_in = row.get("r_in")
+        source = row.get("source")
+        
+        if r_in and source:
+            source_labels = source.get("_labels", []) or source.get("labels", [])
+            is_source_class = "owl__Class" in source_labels
+            
+            if is_source_class:
+                source_id = ensure_class(source)
+                if source_id:
+                    rel_type = r_in.get("_rel_type") or r_in.get("type") or "relates_to"
+                    link_key = (source_id, src_id, rel_type)
+                    if link_key not in seen_links:
+                        links.append({
+                            "from": source_id,
+                            "to": src_id,
+                            "relationship": rel_type,
+                            "uri": r_in.get("uri"),
+                            "definition": r_in.get("skos__definition")
+                        })
+                        seen_links.add(link_key)
+
+    # Attach deduplicated attributes to classes
     final_nodes = []
     for cid, cdata in classes.items():
-        cdata["attributes"] = attributes_by_class.get(cid, [])
+        raw_attrs = attributes_by_class.get(cid, [])
+        seen_attrs = set()
+        deduped = []
+        for attr in raw_attrs:
+            attr_key = (attr["name"], attr["type"])
+            if attr_key not in seen_attrs:
+                seen_attrs.add(attr_key)
+                deduped.append(attr)
+        cdata["attributes"] = deduped
         final_nodes.append(cdata)
 
     return GraphData(nodes=final_nodes, links=links, query=query)
@@ -508,6 +542,80 @@ async def list_datatypes():
         ]
     except Exception as e:
         logger.error(f"Error listing datatypes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/class-hierarchy")
+async def list_class_hierarchy():
+    """
+    Return the class hierarchy (rdfs:subClassOf) as a tree structure.
+    Returns root classes (those with no parent) and their children.
+    """
+    db = get_db()
+    try:
+        query = """
+        MATCH (child:owl__Class)-[:rdfs__subClassOf]->(parent:owl__Class)
+        WHERE child.rdfs__label IS NOT NULL AND parent.rdfs__label IS NOT NULL
+        RETURN child.rdfs__label AS child_label,
+               child.uri AS child_uri,
+               child.skos__definition AS child_def,
+               parent.rdfs__label AS parent_label,
+               parent.uri AS parent_uri,
+               parent.skos__definition AS parent_def
+        ORDER BY parent_label, child_label
+        """
+        results = db.execute_cypher(query, name="list_class_hierarchy")
+
+        # Build adjacency: parent -> [children]
+        children_map = {}  # parent_label -> [{label, uri, definition}]
+        all_children = set()
+        all_classes = {}  # label -> {uri, definition}
+
+        for row in results:
+            parent = row["parent_label"]
+            child = row["child_label"]
+            parent_uri = row.get("parent_uri")
+            child_uri = row.get("child_uri")
+            parent_def = row.get("parent_def")
+            child_def = row.get("child_def")
+
+            all_classes[parent] = {"uri": parent_uri, "definition": parent_def}
+            all_classes[child] = {"uri": child_uri, "definition": child_def}
+
+            if parent not in children_map:
+                children_map[parent] = []
+            children_map[parent].append({
+                "label": child,
+                "uri": child_uri,
+                "definition": child_def,
+            })
+            all_children.add(child)
+
+        # Root classes = parents that are not themselves children
+        roots = [label for label in children_map if label not in all_children]
+        # Also include classes that are children but have no children of their own
+        # (they will appear as leaves under their parent)
+
+        def build_tree(label):
+            node = {
+                "label": label,
+                "uri": all_classes.get(label, {}).get("uri"),
+                "definition": all_classes.get(label, {}).get("definition"),
+                "children": [],
+            }
+            for child in children_map.get(label, []):
+                node["children"].append(build_tree(child["label"]))
+            return node
+
+        tree = [build_tree(root) for root in sorted(roots)]
+
+        # Count total hierarchy edges
+        total_edges = sum(len(v) for v in children_map.values())
+
+        return {"tree": tree, "total_edges": total_edges, "root_count": len(roots)}
+
+    except Exception as e:
+        logger.error(f"Error listing class hierarchy: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1007,6 +1115,7 @@ async def get_uml_data(class_name: str):
     """
     Get graph data optimized for UML/Pydantic box visualization.
     Datatypes are flattened into attributes of the class node.
+    Includes class hierarchy (rdfs:subClassOf) as inheritance links.
     """
     db = get_db()
     try:
@@ -1018,22 +1127,92 @@ async def get_uml_data(class_name: str):
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
         WITH DISTINCT c, coalesce(parent, c) AS classNode
         
-        // Materialized relationships (including inherited)
-        OPTIONAL MATCH (classNode)-[r]->(target)
+        // Outgoing materialized relationships (including inherited)
+        OPTIONAL MATCH (classNode)-[r_out]->(target)
         WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
-          AND (r.materialized = true OR r.materialized IS NULL)
-          AND type(r) <> "rdfs__subClassOf"
+          AND (r_out.materialized = true OR r_out.materialized IS NULL)
+          AND type(r_out) <> "rdfs__subClassOf"
+
+        // Incoming relationships (to the focal class itself)
+        OPTIONAL MATCH (source)-[r_in]->(c)
+        WHERE (source:owl__Class OR source:owl__NamedIndividual)
+          AND (r_in.materialized = true OR r_in.materialized IS NULL)
+          AND type(r_in) <> "rdfs__subClassOf"
         
-        RETURN DISTINCT c, classNode, r, target
+        RETURN DISTINCT c, classNode, r_out, target, source, r_in
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_uml_data")
         
         # Build UML data (flattened)
         uml_graph = results_to_uml_data(results, query=query.replace("$label", f"'{class_name}'").strip())
         
+        # Now fetch class hierarchy (rdfs__subClassOf) for all classes in the graph
+        class_labels = [node["label"] for node in uml_graph.nodes]
+        if class_labels:
+            hierarchy_query = """
+            MATCH (child:owl__Class)-[:rdfs__subClassOf]->(parent:owl__Class)
+            WHERE child.rdfs__label IN $labels OR parent.rdfs__label IN $labels
+            RETURN DISTINCT child.rdfs__label AS child_label,
+                   child.uri AS child_uri,
+                   child.skos__definition AS child_def,
+                   parent.rdfs__label AS parent_label,
+                   parent.uri AS parent_uri,
+                   parent.skos__definition AS parent_def
+            """
+            hierarchy_results = db.execute_cypher(
+                hierarchy_query, params={"labels": class_labels}, name="get_uml_hierarchy"
+            )
+            
+            # Build a label-to-key map for existing nodes
+            label_to_key = {node["label"].lower(): node["key"] for node in uml_graph.nodes}
+            existing_keys = set(label_to_key.values())
+            
+            for row in hierarchy_results:
+                child_label = row["child_label"]
+                parent_label = row["parent_label"]
+                child_key = label_to_key.get(child_label.lower())
+                parent_key = label_to_key.get(parent_label.lower())
+                
+                # Add parent node if not already present
+                if not parent_key:
+                    parent_key = f"hierarchy_{parent_label}"
+                    if parent_key not in existing_keys:
+                        uml_graph.nodes.append({
+                            "key": parent_key,
+                            "label": parent_label,
+                            "uri": row.get("parent_uri"),
+                            "definition": row.get("parent_def"),
+                            "category": "class",
+                            "attributes": []
+                        })
+                        label_to_key[parent_label.lower()] = parent_key
+                        existing_keys.add(parent_key)
+                
+                # Add child node if not already present
+                if not child_key:
+                    child_key = f"hierarchy_{child_label}"
+                    if child_key not in existing_keys:
+                        uml_graph.nodes.append({
+                            "key": child_key,
+                            "label": child_label,
+                            "uri": row.get("child_uri"),
+                            "definition": row.get("child_def"),
+                            "category": "class",
+                            "attributes": []
+                        })
+                        label_to_key[child_label.lower()] = child_key
+                        existing_keys.add(child_key)
+                
+                # Add inheritance link (child -> parent, UML generalization)
+                uml_graph.links.append({
+                    "from": child_key,
+                    "to": parent_key,
+                    "relationship": "rdfs__subClassOf",
+                    "category": "inheritance"
+                })
+        
         # Mark center node
         for node in uml_graph.nodes:
-            # In UML data, keys are element IDs, but we might still want to check labels
             if node["label"].lower() == class_name.lower():
                 node["isCenter"] = True
                 

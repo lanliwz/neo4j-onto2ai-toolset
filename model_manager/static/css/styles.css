@@ -829,7 +829,7 @@ body.resizing * {
 
 .graph-toolbar {
     position: absolute;
-    top: var(--spacing-md);
+    top: 52px;
     right: var(--spacing-md);
     display: flex;
     gap: var(--spacing-xs);
@@ -1053,4 +1053,68 @@ body.resizing * {
 
 .text-teal-400 {
     color: #2dd4bf;
+}
+
+/* Class Hierarchy Tree */
+.hierarchy-list {
+    padding: 4px 0;
+}
+
+.hierarchy-node-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+    font-size: 13px;
+}
+
+.hierarchy-node-row:hover {
+    background: rgba(79, 70, 229, 0.15);
+}
+
+.hierarchy-node-row.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.hierarchy-toggle {
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.hierarchy-toggle:hover {
+    color: var(--text-primary);
+}
+
+.hierarchy-leaf {
+    font-size: 8px;
+    color: var(--accent-primary);
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.hierarchy-label {
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hierarchy-children {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    margin-left: 15px;
+    transition: max-height 0.2s ease;
+}
+
+.hierarchy-children.collapsed {
+    display: none;
 }

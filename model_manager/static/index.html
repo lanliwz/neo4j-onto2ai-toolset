@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onto2AI Model Manager</title>
-    <link rel="stylesheet" href="/static/css/styles.css?v=2">
+    <link rel="stylesheet" href="/static/css/styles.css?v=8">
     <script src="https://unpkg.com/gojs/release/go.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
@@ -104,6 +104,20 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Class Hierarchy Section -->
+                    <div class="staging-section">
+                        <div class="staging-section-header" id="hierarchy-header">
+                            <span class="section-toggle">▶</span>
+                            <span class="section-title">Class Hierarchy</span>
+                            <span class="section-count" id="hierarchy-count">0</span>
+                        </div>
+                        <div class="staging-section-body collapsed" id="hierarchy-body">
+                            <div class="hierarchy-list" id="hierarchy-list">
+                                <div class="loading">Loading hierarchy...</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Chat Tab -->
@@ -177,8 +191,8 @@
         </main>
     </div>
 
-    <script src="/static/js/graph.js?v=2"></script>
-    <script src="/static/js/app.js?v=2"></script>
+    <script src="/static/js/graph.js?v=8"></script>
+    <script src="/static/js/app.js?v=8"></script>
 </body>
 
 </html>

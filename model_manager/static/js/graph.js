@@ -126,9 +126,10 @@ function initGraph() {
     const umlPropertyTemplate = $(go.Panel, "Horizontal",
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
-            stroke: "#34d399",
             margin: new go.Margin(0, 5, 0, 0)
-        }, new go.Binding("text", "name", (n) => `+ ${n}`)),
+        },
+            new go.Binding("text", "name", (n) => `+ ${n}`),
+            new go.Binding("stroke", "kind", (k) => k === "association" ? "#818cf8" : "#34d399")),
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
             stroke: "#94a3b8"
@@ -168,6 +169,7 @@ function initGraph() {
                 $(go.Panel, "Vertical",
                     {
                         stretch: go.GraphObject.Horizontal,
+                        defaultAlignment: go.Spot.Left,
                         background: "rgba(0,0,0,0.3)",
                         padding: 8,
                         itemTemplate: umlPropertyTemplate
@@ -182,9 +184,10 @@ function initGraph() {
     const pydanticPropertyTemplate = $(go.Panel, "Horizontal",
         $(go.TextBlock, {
             font: "italic 11px 'Fira Code', monospace",
-            stroke: "#f1f5f9",
             margin: new go.Margin(0, 4, 0, 0)
-        }, new go.Binding("text", "name")),
+        },
+            new go.Binding("text", "name"),
+            new go.Binding("stroke", "kind", (k) => k === "association" ? "#818cf8" : "#f1f5f9")),
         $(go.TextBlock, {
             font: "11px 'Fira Code', monospace",
             stroke: "#a78bfa"
@@ -228,6 +231,7 @@ function initGraph() {
                 $(go.Panel, "Vertical",
                     {
                         stretch: go.GraphObject.Horizontal,
+                        defaultAlignment: go.Spot.Left,
                         padding: new go.Margin(4, 16, 8, 16),
                         itemTemplate: pydanticPropertyTemplate,
                         alignment: go.Spot.Left
@@ -266,7 +270,7 @@ function initGraph() {
             )
         );
 
-    // Link template
+    // Default link template (association)
     myDiagram.linkTemplate =
         $(go.Link,
             {
@@ -301,6 +305,45 @@ function initGraph() {
                     new go.Binding("text", "relationship"))
             )
         );
+
+    // Inheritance link template (UML generalization: open triangle, dashed)
+    myDiagram.linkTemplateMap.add("inheritance",
+        $(go.Link,
+            {
+                routing: go.Link.AvoidsNodes,
+                curve: go.Link.Bezier,
+                corner: 10,
+                selectable: true,
+                click: (e, link) => onLinkClick(link)
+            },
+            $(go.Shape, {
+                strokeWidth: 2,
+                stroke: "#a78bfa",
+                strokeDashArray: [6, 3]
+            },
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#a78bfa").ofObject()),
+            $(go.Shape, {
+                toArrow: "Triangle",
+                fill: "white",
+                stroke: "#a78bfa",
+                strokeWidth: 1.5,
+                scale: 1.4
+            },
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#a78bfa").ofObject(),
+                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "white").ofObject()),
+            $(go.Panel, "Auto",
+                $(go.Shape, "RoundedRectangle", {
+                    fill: "rgba(15, 15, 26, 0.9)",
+                    stroke: null
+                }),
+                $(go.TextBlock, {
+                    font: "italic 10px Inter, sans-serif",
+                    stroke: "#a78bfa",
+                    margin: 3
+                }, "extends")
+            )
+        )
+    );
 
     // Selection changed event
     myDiagram.addDiagramListener("ChangedSelection", (e) => {
@@ -645,8 +688,10 @@ async function loadUmlData(className, mode) {
             category: mode // 'uml' or 'pydantic'
         }));
 
-        // Set the model
-        myDiagram.model = new go.GraphLinksModel(nodes, data.links);
+        // Set the model with link category support for inheritance arrows
+        const model = new go.GraphLinksModel(nodes, data.links);
+        model.linkCategoryProperty = "category";
+        myDiagram.model = model;
 
         // Hide placeholder
         document.getElementById('graph-placeholder').classList.add('hidden');
