@@ -88,6 +88,40 @@ function initGraph() {
         )
     );
 
+    // Node template for named individuals
+    myDiagram.nodeTemplateMap.add("individual",
+        $(go.Node, "Auto",
+            {
+                selectionAdorned: true,
+                cursor: "pointer",
+                click: (e, node) => onNodeClick(node)
+            },
+            $(go.Shape, "Capsule", {
+                fill: "#0d9488",
+                stroke: "#2dd4bf",
+                strokeWidth: 2,
+                portId: "",
+                fromLinkable: true,
+                toLinkable: true
+            },
+                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "#0d9488").ofObject()),
+            $(go.Panel, "Vertical",
+                { margin: new go.Margin(8, 16, 8, 16) },
+                $(go.TextBlock, {
+                    font: "bold 12px Inter, sans-serif",
+                    stroke: "white",
+                    margin: new go.Margin(0, 0, 2, 0)
+                },
+                    new go.Binding("text", "label")),
+                $(go.TextBlock, {
+                    font: "italic 10px Inter, sans-serif",
+                    stroke: "rgba(255,255,255,0.6)"
+                },
+                    new go.Binding("text", "", () => "«individual»"))
+            )
+        )
+    );
+
     // UML Style Template
     const umlPropertyTemplate = $(go.Panel, "Horizontal",
         $(go.TextBlock, {
@@ -387,8 +421,8 @@ function showNodeProperties(data) {
     // Standard fields we want to show first
     let html = `
         <div class="property-section">
-            <h3 class="${data.category === 'datatype' ? 'text-emerald-400' : 'text-indigo-400'}">
-                ${data.category === 'datatype' ? 'Datatype' : 'Class'}: ${escapeHtml(data.label)}
+            <h3 class="${data.category === 'datatype' ? 'text-emerald-400' : data.category === 'individual' ? 'text-teal-400' : 'text-indigo-400'}">
+                ${data.category === 'datatype' ? 'Datatype' : data.category === 'individual' ? 'Individual' : 'Class'}: ${escapeHtml(data.label)}
             </h3>
     `;
 

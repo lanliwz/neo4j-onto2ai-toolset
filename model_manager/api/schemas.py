@@ -515,16 +515,17 @@ async def list_datatypes():
 async def get_class_schema(class_name: str):
     """
     Get the materialized schema for a specific class.
-    Returns classes and relationships.
+    Returns classes and relationships (both outgoing and incoming).
     """
     db = get_db()
     try:
         query = """
+        // Outgoing relationships: this class -> target
         MATCH (c:owl__Class)
         WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
         
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-        WITH c, coalesce(parent, c) AS classNode
+        WITH DISTINCT c, coalesce(parent, c) AS classNode
         
         MATCH (classNode)-[r]->(target)
         WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
@@ -543,7 +544,29 @@ async def get_class_schema(class_name: str):
           coalesce(target.rdfs__label, target.uri, 'Resource') AS TargetClassLabel,
           target.uri AS TargetClassURI,
           target.skos__definition AS TargetClassDef
-        ORDER BY SourceClassLabel, RelType
+
+        UNION
+
+        // Incoming relationships: source -> this class
+        MATCH (c:owl__Class)
+        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        
+        MATCH (source:owl__Class)-[r]->(c)
+        WHERE (r.materialized = true OR r.materialized IS NULL)
+          AND type(r) <> "rdfs__subClassOf"
+        
+        RETURN DISTINCT
+          source.rdfs__label AS SourceClassLabel,
+          source.uri AS SourceClassURI,
+          source.skos__definition AS SourceClassDef,
+          type(r) AS RelType,
+          r.uri AS RelURI,
+          r.skos__definition AS RelDef,
+          coalesce(r.cardinality, "0..1") AS Cardinality,
+          r.requirement AS Requirement,
+          c.rdfs__label AS TargetClassLabel,
+          c.uri AS TargetClassURI,
+          c.skos__definition AS TargetClassDef
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_class_schema")
         
@@ -581,6 +604,21 @@ async def get_class_schema(class_name: str):
                 cardinality=row.get("Cardinality"),
                 requirement=row.get("Requirement")
             ))
+        
+        # If no relationships found, still return the class itself
+        if not classes_dict:
+            class_query = """
+            MATCH (c:owl__Class)
+            WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+            RETURN c.rdfs__label AS label, c.uri AS uri, c.skos__definition AS definition
+            """
+            class_results = db.execute_cypher(class_query, params={"label": class_name}, name="get_class_self")
+            for row in class_results:
+                classes_dict[row["label"]] = ClassInfo(
+                    label=row["label"],
+                    uri=row["uri"] or "",
+                    definition=row.get("definition")
+                )
         
         return ClassSchema(
             database="stagingdb",
@@ -873,11 +911,11 @@ async def execute_cypher(request: CypherRequest):
 async def get_graph_data(class_name: str):
     """
     Get graph data formatted for GoJS visualization using inheritance exploration.
-    Uses the requested Cypher pattern to show base and superclass relationships.
+    Includes both outgoing and incoming relationships.
     """
     db = get_db()
     try:
-        # Optimized inheritance-aware query pattern matching get_materialized_schema logic
+        # Bidirectional query: outgoing (including inherited) + incoming
         query = """
         MATCH (c:owl__Class)
         WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
@@ -885,13 +923,19 @@ async def get_graph_data(class_name: str):
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
         WITH DISTINCT c, coalesce(parent, c) AS classNode
         
-        // Materialized relationships (including inherited)
-        OPTIONAL MATCH (classNode)-[r]->(target)
+        // Outgoing materialized relationships (including inherited)
+        OPTIONAL MATCH (classNode)-[r_out]->(target)
         WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
-          AND (r.materialized = true OR r.materialized IS NULL)
-          AND type(r) <> "rdfs__subClassOf"
+          AND (r_out.materialized = true OR r_out.materialized IS NULL)
+          AND type(r_out) <> "rdfs__subClassOf"
         
-        RETURN DISTINCT c, classNode, r, target
+        // Incoming relationships (to the focal class itself)
+        OPTIONAL MATCH (source)-[r_in]->(c)
+        WHERE (source:owl__Class OR source:owl__NamedIndividual)
+          AND (r_in.materialized = true OR r_in.materialized IS NULL)
+          AND type(r_in) <> "rdfs__subClassOf"
+        
+        RETURN DISTINCT c, classNode, r_out, target, source, r_in
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_graph_data_enhanced")
         

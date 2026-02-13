@@ -25,6 +25,7 @@
     /* Node Colors */
     --node-class: #4f46e5;
     --node-datatype: #10b981;
+    --node-individual: #0d9488;
     --node-selected: #f59e0b;
 
     /* Spacing */
@@ -1039,4 +1040,17 @@ body.resizing * {
 
 .chat-message {
     animation: fadeIn 0.3s ease forwards;
+}
+
+/* Utility text color classes for properties panel */
+.text-indigo-400 {
+    color: #818cf8;
+}
+
+.text-emerald-400 {
+    color: #34d399;
+}
+
+.text-teal-400 {
+    color: #2dd4bf;
 }
