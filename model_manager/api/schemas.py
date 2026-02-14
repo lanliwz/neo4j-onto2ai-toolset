@@ -1149,10 +1149,10 @@ async def get_uml_data(class_name: str):
           AND type(r_in) <> "rdfs__subClassOf"
         
         RETURN DISTINCT 
-               c {.*, element_id: elementId(c), individualCount: size([(c)<-[:rdf__type]-(i:owl__NamedIndividual) | i])} AS c,
+               c {.*, element_id: elementId(c), labels: labels(c), individualCount: size([(c)<-[:rdf__type]-(i:owl__NamedIndividual) | i])} AS c,
                classNode, r_out, 
-               target {.*, element_id: elementId(target), individualCount: size([(target)<-[:rdf__type]-(ti:owl__NamedIndividual) | ti])} AS target,
-               source {.*, element_id: elementId(source), individualCount: size([(source)<-[:rdf__type]-(si:owl__NamedIndividual) | si])} AS source,
+               target {.*, element_id: elementId(target), labels: labels(target), individualCount: size([(target)<-[:rdf__type]-(ti:owl__NamedIndividual) | ti])} AS target,
+               source {.*, element_id: elementId(source), labels: labels(source), individualCount: size([(source)<-[:rdf__type]-(si:owl__NamedIndividual) | si])} AS source,
                r_in
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_uml_graph_data")

@@ -1074,7 +1074,8 @@ async def consolidate_staging_db(
                 logger.info(f"Deleted {deleted_individuals} NamedIndividual(s) linked to '{old_label}'")
 
             query = """
-            MATCH (n:owl__Class {rdfs__label: $old_label})
+            MATCH (n)
+            WHERE (n:owl__Class OR n:rdfs__Datatype) AND n.rdfs__label = $old_label
             
             // 1. Tag incoming relationships as datatype properties for visualization
             WITH n

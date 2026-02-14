@@ -27,7 +27,7 @@ function initGraph() {
     myDiagram.model.modelData.isLight = isLight;
     myDiagram.div.style.background = isLight ? "#f8fafc" : "#0f0f1a";
 
-    // Node template for classes
+    // Node template for classes (Professional Rectangular Header Style)
     myDiagram.nodeTemplateMap.add("class",
         $(go.Node, "Auto",
             {
@@ -36,55 +36,57 @@ function initGraph() {
                 click: (e, node) => onNodeClick(node),
                 doubleClick: (e, node) => onNodeDoubleClick(node)
             },
-            $(go.Shape, "RoundedRectangle", {
-                fill: "#4f46e5",
-                stroke: "#818cf8",
-                strokeWidth: 2,
-                portId: "",
-                fromLinkable: true,
-                toLinkable: true
+            $(go.Shape, "Rectangle", {
+                fill: "#1a1a2e",
+                stroke: "#4f46e5",
+                strokeWidth: 2
             },
-                new go.Binding("fill", "isCenter", (isCenter, obj) => {
-                    if (obj.part.isSelected) return "#f59e0b";
-                    const isLight = obj.diagram.model.modelData.isLight;
-                    if (isLight) return isCenter ? "#1e1b4b" : "#ffffff";
-                    return isCenter ? "#7c3aed" : "#4f46e5";
+                new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#1e1b4b" : "#1a1a2e"),
+                new go.Binding("fill", "isLight", (light) => light ? "#ffffff" : "#1a1a2e").ofModel(),
+                new go.Binding("stroke", "isLight", (light, obj) => {
+                    if (obj.part.data.isCenter) return light ? "#7c3aed" : "#7c3aed";
+                    return light ? "#cbd5e1" : "#4f46e5";
                 }).ofModel(),
-                new go.Binding("stroke", "isCenter", (isCenter, obj) => {
-                    const isLight = obj.diagram.model.modelData.isLight;
-                    if (isCenter) return isLight ? "#7c3aed" : "#a78bfa";
-                    return isLight ? "#cbd5e1" : "#818cf8";
-                }).ofModel()),
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#4f46e5").ofObject()),
             $(go.Panel, "Vertical",
-                { margin: 12 },
-                $(go.TextBlock, {
-                    font: "bold 14px Inter, sans-serif",
-                    stroke: "white",
-                    margin: new go.Margin(0, 0, 4, 0)
-                },
-                    new go.Binding("stroke", "isLight", (light, obj) => {
-                        const isCenter = obj.part.data.isCenter;
-                        if (light && !isCenter) return "#1e293b";
-                        return "white";
-                    }).ofModel(),
-                    new go.Binding("text", "label")),
-                $(go.TextBlock, {
-                    font: "11px Inter, sans-serif",
-                    stroke: "rgba(255,255,255,0.7)",
-                    maxSize: new go.Size(150, NaN),
-                    wrap: go.TextBlock.WrapFit
-                },
-                    new go.Binding("stroke", "isLight", (light, obj) => {
-                        const isCenter = obj.part.data.isCenter;
-                        if (light && !isCenter) return "#475569";
-                        return "rgba(255,255,255,0.7)";
-                    }).ofModel(),
-                    new go.Binding("text", "definition", (d) => d ? truncate(d, 50) : ""))
+                { stretch: go.GraphObject.Fill, margin: 1 },
+                // Header
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal },
+                    $(go.Shape, "Rectangle", { fill: "#4f46e5", stroke: null },
+                        new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#7c3aed" : "#4f46e5")),
+                    $(go.Panel, "Vertical",
+                        $(go.TextBlock, {
+                            font: "bold 13px Inter, sans-serif",
+                            stroke: "white",
+                            margin: 8,
+                            alignment: go.Spot.Center
+                        }, new go.Binding("text", "label"))
+                    )
+                ),
+                // Definition Preview
+                $(go.Panel, "Auto",
+                    {
+                        stretch: go.GraphObject.Horizontal,
+                        margin: new go.Margin(0, 8, 8, 8),
+                        visible: false
+                    },
+                    new go.Binding("visible", "definition", (d) => !!d),
+                    $(go.TextBlock, {
+                        font: "11px Inter, sans-serif",
+                        stroke: "#94a3b8",
+                        maxSize: new go.Size(160, NaN),
+                        wrap: go.TextBlock.WrapFit,
+                        alignment: go.Spot.Left
+                    },
+                        new go.Binding("stroke", "isLight", (light) => light ? "#475569" : "#94a3b8").ofModel(),
+                        new go.Binding("text", "definition", (d) => d ? truncate(d, 60) : ""))
+                )
             )
         )
     );
 
-    // Node template for datatypes (Classic Graph only)
+    // Node template for datatypes (Unified Rectangular Style)
     myDiagram.nodeTemplateMap.add("datatype",
         $(go.Node, "Auto",
             {
@@ -92,28 +94,40 @@ function initGraph() {
                 cursor: "pointer",
                 click: (e, node) => onNodeClick(node)
             },
-            $(go.Shape, "RoundedRectangle", {
-                fill: "#10b981",
-                stroke: "#34d399",
+            $(go.Shape, "Rectangle", {
+                fill: "#1a1a2e",
+                stroke: "#10b981",
                 strokeWidth: 2
             },
-                new go.Binding("fill", "isSelected", (sel, obj) => {
-                    if (sel) return "#f59e0b";
-                    const isLight = obj.diagram.model.modelData.isLight;
-                    return isLight ? "#059669" : "#10b981";
-                }).ofObject()),
+                new go.Binding("fill", "isLight", (light) => light ? "#ffffff" : "#1a1a2e").ofModel(),
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#10b981").ofObject()),
             $(go.Panel, "Vertical",
-                { margin: 10 },
+                { stretch: go.GraphObject.Fill, margin: 1 },
+                // Header
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal },
+                    $(go.Shape, "Rectangle", { fill: "#10b981", stroke: null }),
+                    $(go.Panel, "Vertical",
+                        $(go.TextBlock, {
+                            font: "bold 12px Inter, sans-serif",
+                            stroke: "white",
+                            margin: 6,
+                            alignment: go.Spot.Center
+                        }, new go.Binding("text", "label"))
+                    )
+                ),
+                // Stereotype Label
                 $(go.TextBlock, {
-                    font: "bold 12px Inter, sans-serif",
-                    stroke: "white"
-                },
-                    new go.Binding("text", "label"))
+                    font: "italic 10px Inter, sans-serif",
+                    stroke: "#10b981",
+                    margin: new go.Margin(4, 8, 4, 8),
+                    alignment: go.Spot.Center
+                }, "«datatype»")
             )
         )
     );
 
-    // Node template for named individuals
+    // Node template for named individuals (Unified Capsule-Header Style)
     myDiagram.nodeTemplateMap.add("individual",
         $(go.Node, "Auto",
             {
@@ -121,34 +135,35 @@ function initGraph() {
                 cursor: "pointer",
                 click: (e, node) => onNodeClick(node)
             },
-            $(go.Shape, "Capsule", {
-                fill: "#0d9488",
-                stroke: "#2dd4bf",
-                strokeWidth: 2,
-                portId: "",
-                fromLinkable: true,
-                toLinkable: true
+            $(go.Shape, "Rectangle", {
+                fill: "#1a1a2e",
+                stroke: "#0d9488",
+                strokeWidth: 2
             },
-                new go.Binding("fill", "isSelected", (sel, obj) => {
-                    if (sel) return "#f59e0b";
-                    const isLight = obj.diagram.model.modelData.isLight;
-                    return isLight ? "#0f766e" : "#0d9488";
-                }).ofModel()),
+                new go.Binding("fill", "isLight", (light) => light ? "#ffffff" : "#1a1a2e").ofModel(),
+                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#0d9488").ofObject()),
             $(go.Panel, "Vertical",
-                { margin: new go.Margin(8, 16, 8, 16) },
-                $(go.TextBlock, {
-                    font: "bold 12px Inter, sans-serif",
-                    stroke: "white",
-                    margin: new go.Margin(0, 0, 2, 0)
-                },
-                    new go.Binding("stroke", "isLight", (light) => light ? "white" : "white").ofModel(), // Still white is usually fine for these colors
-                    new go.Binding("text", "label")),
+                { stretch: go.GraphObject.Fill, margin: 1 },
+                // Header
+                $(go.Panel, "Auto",
+                    { stretch: go.GraphObject.Horizontal },
+                    $(go.Shape, "Rectangle", { fill: "#0d9488", stroke: null }),
+                    $(go.Panel, "Vertical",
+                        $(go.TextBlock, {
+                            font: "bold 12px Inter, sans-serif",
+                            stroke: "white",
+                            margin: 6,
+                            alignment: go.Spot.Center
+                        }, new go.Binding("text", "label"))
+                    )
+                ),
+                // Stereotype Label
                 $(go.TextBlock, {
                     font: "italic 10px Inter, sans-serif",
-                    stroke: "rgba(255,255,255,0.6)"
-                },
-                    new go.Binding("stroke", "isLight", (light) => light ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.6)").ofModel(),
-                    new go.Binding("text", "", () => "«individual»"))
+                    stroke: "#0d9488",
+                    margin: new go.Margin(4, 8, 4, 8),
+                    alignment: go.Spot.Center
+                }, "«individual»")
             )
         )
     );
