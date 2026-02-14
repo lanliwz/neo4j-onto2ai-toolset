@@ -22,6 +22,13 @@ function initGraph() {
         "toolManager.hoverDelay": 100
     });
 
+    // Initial theme check
+    const isLight = document.documentElement.classList.contains('light-mode');
+    myDiagram.model.modelData.isLight = isLight;
+    if (isLight) {
+        myDiagram.div.style.background = "#f8fafc";
+    }
+
     // Node template for classes
     myDiagram.nodeTemplateMap.add("class",
         $(go.Node, "Auto",
@@ -117,6 +124,7 @@ function initGraph() {
                     font: "italic 10px Inter, sans-serif",
                     stroke: "rgba(255,255,255,0.6)"
                 },
+                    new go.Binding("stroke", "isLight", (light) => light ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)").ofModel(),
                     new go.Binding("text", "", () => "«individual»"))
             )
         )
@@ -129,11 +137,17 @@ function initGraph() {
             margin: new go.Margin(0, 5, 0, 0)
         },
             new go.Binding("text", "name", (n) => `+ ${n}`),
-            new go.Binding("stroke", "kind", (k) => k === "association" ? "#818cf8" : "#34d399")),
+            new go.Binding("stroke", "kind", (k, obj) => {
+                const isLight = obj.diagram.model.modelData.isLight;
+                if (k === "association") return isLight ? "#4338ca" : "#818cf8";
+                return isLight ? "#065f46" : "#34d399";
+            }).ofModel()),
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
             stroke: "#94a3b8"
-        }, new go.Binding("text", "type", (t) => `: ${t}`))
+        },
+            new go.Binding("stroke", "isLight", (light) => light ? "#475569" : "#94a3b8").ofModel(),
+            new go.Binding("text", "type", (t) => `: ${t}`))
     );
 
     myDiagram.nodeTemplateMap.add("uml",
@@ -150,7 +164,11 @@ function initGraph() {
                 strokeWidth: 2
             },
                 new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#1e1b4b" : "#1a1a2e"),
-                new go.Binding("stroke", "isCenter", (isCenter) => isCenter ? "#7c3aed" : "#4f46e5")),
+                new go.Binding("fill", "isLight", (light) => light ? "#ffffff" : "#1a1a2e").ofModel(),
+                new go.Binding("stroke", "isLight", (light, obj) => {
+                    if (obj.part.data.isCenter) return light ? "#7c3aed" : "#7c3aed";
+                    return light ? "#cbd5e1" : "#4f46e5";
+                }).ofModel()),
             $(go.Panel, "Vertical",
                 { stretch: go.GraphObject.Fill, margin: 1 },
                 // Header
@@ -174,6 +192,7 @@ function initGraph() {
                         padding: 8,
                         itemTemplate: umlPropertyTemplate
                     },
+                    new go.Binding("background", "isLight", (light) => light ? "#f1f5f9" : "rgba(0,0,0,0.3)").ofModel(),
                     new go.Binding("itemArray", "attributes")
                 )
             )
@@ -187,11 +206,17 @@ function initGraph() {
             margin: new go.Margin(0, 4, 0, 0)
         },
             new go.Binding("text", "name"),
-            new go.Binding("stroke", "kind", (k) => k === "association" ? "#818cf8" : "#f1f5f9")),
+            new go.Binding("stroke", "kind", (k, obj) => {
+                const isLight = obj.diagram.model.modelData.isLight;
+                if (k === "association") return isLight ? "#4338ca" : "#818cf8";
+                return isLight ? "#1e293b" : "#f1f5f9";
+            }).ofModel()),
         $(go.TextBlock, {
             font: "11px 'Fira Code', monospace",
             stroke: "#a78bfa"
-        }, new go.Binding("text", "type", (t) => `: Optional[${t}] = None`))
+        },
+            new go.Binding("stroke", "isLight", (light) => light ? "#6d28d9" : "#a78bfa").ofModel(),
+            new go.Binding("text", "type", (t) => `: Optional[${t}] = None`))
     );
 
     myDiagram.nodeTemplateMap.add("pydantic",
@@ -206,7 +231,13 @@ function initGraph() {
                 stroke: "#30363d",
                 strokeWidth: 1
             },
-                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#30363d").ofObject()),
+                new go.Binding("fill", "isLight", (light) => light ? "#ffffff" : "#0d1117").ofModel(),
+                new go.Binding("stroke", "isLight", (light) => light ? "#cbd5e1" : "#30363d").ofModel(),
+                new go.Binding("stroke", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    return isLight ? "#cbd5e1" : "#30363d";
+                }).ofObject()),
             $(go.Panel, "Vertical",
                 { stretch: go.GraphObject.Fill, margin: 1 },
                 // Class definition line
@@ -215,7 +246,9 @@ function initGraph() {
                     $(go.TextBlock, {
                         font: "bold 13px 'Fira Code', monospace",
                         stroke: "#ff7b72"
-                    }, new go.Binding("text", "label", (l) => `class ${l.replace(/\s+/g, '')}(BaseModel):`))
+                    },
+                        new go.Binding("stroke", "isLight", (light) => light ? "#8b1c1c" : "#ff7b72").ofModel(),
+                        new go.Binding("text", "label", (l) => `class ${l.replace(/\s+/g, '')}(BaseModel):`))
                 ),
                 // Docstring
                 $(go.Panel, "Auto",
@@ -225,7 +258,9 @@ function initGraph() {
                         stroke: "#8b949e",
                         maxSize: new go.Size(200, NaN),
                         wrap: go.TextBlock.WrapFit
-                    }, new go.Binding("text", "definition", (d) => d ? `\"\"\"\n${d}\n\"\"\"` : ""))
+                    },
+                        new go.Binding("stroke", "isLight", (light) => light ? "#4b5563" : "#8b949e").ofModel(),
+                        new go.Binding("text", "definition", (d) => d ? `\"\"\"\n${d}\n\"\"\"` : ""))
                 ),
                 // Fields
                 $(go.Panel, "Vertical",
@@ -284,24 +319,35 @@ function initGraph() {
                 strokeWidth: 2,
                 stroke: "#64748b"
             },
-                new go.Binding("stroke", "isSelected", (sel) => sel ? "#f59e0b" : "#64748b").ofObject()),
+                new go.Binding("stroke", "isLight", (light) => light ? "#94a3b8" : "#64748b").ofModel(),
+                new go.Binding("stroke", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const light = obj.diagram.model.modelData.isLight;
+                    return light ? "#94a3b8" : "#64748b";
+                }).ofObject()),
             $(go.Shape, {
                 toArrow: "Triangle",
                 fill: "#64748b",
                 stroke: null,
                 scale: 1.2
             },
-                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "#64748b").ofObject()),
+                new go.Binding("fill", "isLight", (light) => light ? "#94a3b8" : "#64748b").ofModel(),
+                new go.Binding("fill", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const light = obj.diagram.model.modelData.isLight;
+                    return light ? "#94a3b8" : "#64748b";
+                }).ofObject()),
             $(go.Panel, "Auto",
                 $(go.Shape, "RoundedRectangle", {
                     fill: "rgba(15, 15, 26, 0.9)",
                     stroke: null
-                }),
+                }, new go.Binding("fill", "isLight", (light) => light ? "rgba(255, 255, 255, 0.9)" : "rgba(15, 15, 26, 0.9)").ofModel()),
                 $(go.TextBlock, {
                     font: "11px Inter, sans-serif",
                     stroke: "#94a3b8",
                     margin: 4
                 },
+                    new go.Binding("stroke", "isLight", (light) => light ? "#475569" : "#94a3b8").ofModel(),
                     new go.Binding("text", "relationship"))
             )
         );
@@ -335,12 +381,14 @@ function initGraph() {
                 $(go.Shape, "RoundedRectangle", {
                     fill: "rgba(15, 15, 26, 0.9)",
                     stroke: null
-                }),
+                }, new go.Binding("fill", "isLight", (light) => light ? "rgba(255, 255, 255, 0.9)" : "rgba(15, 15, 26, 0.9)").ofModel()),
                 $(go.TextBlock, {
                     font: "italic 10px Inter, sans-serif",
                     stroke: "#a78bfa",
                     margin: 3
-                }, "extends")
+                },
+                    new go.Binding("stroke", "isLight", (light) => light ? "#6d28d9" : "#a78bfa").ofModel(),
+                    "extends")
             )
         )
     );
@@ -369,7 +417,13 @@ async function loadGraphData(className) {
         const data = await response.json();
 
         // Set the model
-        myDiagram.model = new go.GraphLinksModel(data.nodes, data.links);
+        const model = new go.GraphLinksModel(data.nodes, data.links);
+
+        // Preserve theme state
+        const isLight = document.documentElement.classList.contains('light-mode');
+        model.modelData.isLight = isLight;
+
+        myDiagram.model = model;
 
         // Hide placeholder
         document.getElementById('graph-placeholder').classList.add('hidden');
@@ -434,7 +488,13 @@ async function onNodeDoubleClick(node) {
         }
 
         // Set the model with focused data
-        myDiagram.model = new go.GraphLinksModel(data.nodes, data.links);
+        const model = new go.GraphLinksModel(data.nodes, data.links);
+
+        // Preserve theme state
+        const isLight = document.documentElement.classList.contains('light-mode');
+        model.modelData.isLight = isLight;
+
+        myDiagram.model = model;
 
         // Display the query in the Query tab
         if (data.query) {
@@ -637,7 +697,13 @@ function loadGraphFromData(data) {
     }
 
     // Set the model
-    myDiagram.model = new go.GraphLinksModel(data.nodes, data.links || []);
+    const model = new go.GraphLinksModel(data.nodes, data.links || []);
+
+    // Preserve theme state
+    const isLight = document.documentElement.classList.contains('light-mode');
+    model.modelData.isLight = isLight;
+
+    myDiagram.model = model;
 
     // Hide placeholder
     document.getElementById('graph-placeholder').classList.add('hidden');
@@ -691,6 +757,11 @@ async function loadUmlData(className, mode) {
         // Set the model with link category support for inheritance arrows
         const model = new go.GraphLinksModel(nodes, data.links);
         model.linkCategoryProperty = "category";
+
+        // Preserve theme state
+        const isLight = document.documentElement.classList.contains('light-mode');
+        model.modelData.isLight = isLight;
+
         myDiagram.model = model;
 
         // Hide placeholder
@@ -711,12 +782,25 @@ async function loadUmlData(className, mode) {
     }
 }
 
+/**
+ * Update the GoJS diagram theme
+ */
+function updateGraphTheme(isLight) {
+    if (!myDiagram) return;
+
+    myDiagram.commit(d => {
+        d.model.modelData.isLight = isLight;
+        d.div.style.background = isLight ? "#f8fafc" : "#0f0f1a";
+    }, "change theme");
+}
+
 // Export functions for global access
 window.initGraph = initGraph;
 window.loadGraphData = loadGraphData;
 window.loadUmlData = loadUmlData;
 window.loadGraphFromData = loadGraphFromData;
 window.changeVizMode = changeVizMode;
+window.updateGraphTheme = updateGraphTheme;
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 window.fitView = fitView;

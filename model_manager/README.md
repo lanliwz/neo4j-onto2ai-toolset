@@ -57,10 +57,11 @@ Launch the backend server:
 
 ```bash
 # Start with Gemini (default)
+cd model_manager
 python main.py --model gemini
 
 # Or start with GPT
-python main.py --model gpt
+python python main.py --model gpt-5.2 --port 8081
 ```
 
 Access the application at: **[http://localhost:8180](http://localhost:8180)**

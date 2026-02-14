@@ -1060,6 +1060,19 @@ async def consolidate_staging_db(
                 results.append({"old_label": old_label, "status": "error", "message": "Missing old_label or new_label"})
                 continue
                 
+            # Pre-step: Delete NamedIndividuals linked via rdf__type before consolidation
+            cleanup_individuals_query = """
+            MATCH (ind:owl__NamedIndividual)-[:rdf__type]->(n:owl__Class {rdfs__label: $old_label})
+            DETACH DELETE ind
+            RETURN count(ind) as deleted_count
+            """
+            cleanup_res = db.execute_cypher(cleanup_individuals_query, params={
+                "old_label": old_label
+            }, name="consolidate_cleanup_individuals")
+            deleted_individuals = cleanup_res[0].get("deleted_count", 0) if cleanup_res else 0
+            if deleted_individuals > 0:
+                logger.info(f"Deleted {deleted_individuals} NamedIndividual(s) linked to '{old_label}'")
+
             query = """
             MATCH (n:owl__Class {rdfs__label: $old_label})
             
@@ -1090,13 +1103,16 @@ async def consolidate_staging_db(
             }, name="consolidate_transform")
             
             if res:
-                results.append({
+                result_entry = {
                     "old_label": old_label,
                     "new_label": new_label,
                     "uri": res[0].get("uri"),
                     "status": "success",
                     "nodes_affected": res[0].get("count", 1)
-                })
+                }
+                if deleted_individuals > 0:
+                    result_entry["individuals_deleted"] = deleted_individuals
+                results.append(result_entry)
             else:
                 results.append({"old_label": old_label, "status": "not_found"})
 

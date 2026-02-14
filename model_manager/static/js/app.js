@@ -17,12 +17,39 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSplitters();
     setupStagingSections();
     setupLLM();
+    setupTheme();
     loadClasses();
     loadRelationships();
     loadIndividuals();
     loadDatatypes();
     loadClassHierarchy();
 });
+
+/**
+ * Theme Toggle functionality
+ */
+function setupTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const isLight = savedTheme === 'light';
+
+    if (isLight) {
+        document.documentElement.classList.add('light-mode');
+    }
+
+    themeToggle.addEventListener('click', () => {
+        const currentlyLight = document.documentElement.classList.toggle('light-mode');
+        localStorage.setItem('theme', currentlyLight ? 'light' : 'dark');
+
+        // Sync GoJS diagram if it exists
+        if (typeof window.updateGraphTheme === 'function') {
+            window.updateGraphTheme(currentlyLight);
+        }
+    });
+}
 
 /**
  * LLM Switching functionality

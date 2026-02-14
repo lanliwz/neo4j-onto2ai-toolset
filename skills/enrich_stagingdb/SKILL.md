@@ -4,7 +4,7 @@ description: "Specialized skill for managing, enriching, and consolidating the N
 ---
 # Staging Database Expert Instructions
 
-You are a master of the Staging Database (typically `stagingdb`). Use this skill to move data from the primary ontology to staging and to clean up/flatten the staging schema for production use.
+You are a master of the Staging Database (typically `stagingdb`). Use this skill to move data from the primary ontology to staging, enrich classes with properties, create custom classes, manage named individuals, and clean up/flatten the staging schema for production use.
 
 ## Core Operations
 
@@ -13,18 +13,254 @@ Use `staging_materialized_schema` to copy classes and relationships to the stagi
 - **Goal**: Create a self-contained subset of the ontology.
 - **Options**: Set `flatten_inheritance=True` if you want to copy ancestor relationships directly to the child classes during extraction.
 
-### 2. Consolidating Inheritance
+### 2. Enriching Classes from FIBO Ontology
+Use `get_materialized_schema` to discover available properties for a class, then write them to staging with Cypher.
+
+**Workflow:**
+1. Query FIBO ontology: `get_materialized_schema(class_names=["person"])` to see all available relationships
+2. Check what already exists in staging: `MATCH (c:owl__Class {rdfs__label: 'person'})-[r]->(t) RETURN type(r), t.rdfs__label`
+3. Write enrichment via Cypher — create target class nodes with `MERGE` and relationships with `CREATE`
+
+**Example — Enriching Person:**
+```cypher
+MATCH (person:owl__Class {rdfs__label: 'person'})
+SET person.skos__definition = 'individual human being, with consciousness of self',
+    person.uri = 'https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person'
+
+MERGE (personName:owl__Class {uri: 'https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/PersonName'})
+  ON CREATE SET personName.rdfs__label = 'person name',
+               personName.skos__definition = 'designation by which someone is known in some context'
+
+CREATE (person)-[:hasName {
+  materialized: true,
+  uri: 'https://www.omg.org/spec/Commons/Designators/hasName',
+  skos__definition: 'is known by',
+  cardinality: '0..*'
+}]->(personName)
+```
+
+**Key rules for enrichment relationships:**
+- Always set `materialized: true` on relationship properties
+- Include `uri`, `skos__definition`, and `cardinality` on each relationship
+- Use `MERGE` for target nodes (to avoid duplicates) and `CREATE` for relationships
+- Standard cardinality values: `1`, `0..1`, `0..*`, `1..*`
+
+### 3. Creating Custom Classes
+When FIBO doesn't have a class you need, create it in staging with a custom URI namespace.
+
+**Example — Creating Tax Payer:**
+```cypher
+CREATE (tp:owl__Class {
+  rdfs__label: 'tax payer',
+  uri: 'https://example.org/ontology/TaxPayer',
+  skos__definition: 'A person who is obligated to pay taxes and is identified by a tax identifier.'
+})
+
+// Inheritance
+WITH tp
+MATCH (person:owl__Class {rdfs__label: 'person'})
+CREATE (tp)-[:rdfs__subClassOf {
+  materialized: true,
+  skos__definition: 'A tax payer is a person.'
+}]->(person)
+
+// Associations
+WITH tp
+MATCH (taxId:owl__Class {rdfs__label: 'tax identifier'})
+CREATE (tp)-[:hasTaxId {
+  materialized: true,
+  uri: 'https://example.org/ontology/hasTaxId',
+  skos__definition: 'The tax identifier assigned to a tax payer.',
+  cardinality: '1..*'
+}]->(taxId)
+```
+
+**Rules for custom classes:**
+- Use `https://example.org/ontology/` as the URI namespace
+- Use lowercase with spaces for `rdfs__label` (e.g., `'tax payer'`)
+- Use PascalCase for the URI fragment (e.g., `TaxPayer`)
+- Always include `skos__definition`
+- Use `rdfs__subClassOf` for inheritance relationships
+
+### 4. Enriching with Datatype Properties (Inline)
+For simple value-type properties, create `rdfs__Datatype` nodes directly instead of full classes.
+
+**Example — Enriching Conventional Street Address as US Physical Address:**
+```cypher
+MATCH (addr:owl__Class {rdfs__label: 'conventional street address'})
+
+MERGE (sa:rdfs__Datatype {uri: '...'})
+  ON CREATE SET sa.rdfs__label = 'streetAddress', sa.xsd__type = 'xsd:string',
+               sa.skos__definition = 'primary address number, street name, suffix'
+
+MERGE (zip:rdfs__Datatype {uri: '...'})
+  ON CREATE SET zip.rdfs__label = 'zipCode', zip.xsd__type = 'xsd:string',
+               zip.skos__definition = 'US postal ZIP code'
+
+MERGE (city:rdfs__Datatype {uri: '...'})
+  ON CREATE SET city.rdfs__label = 'city', city.xsd__type = 'xsd:string'
+
+MERGE (state:rdfs__Datatype {uri: '...'})
+  ON CREATE SET state.rdfs__label = 'state', state.xsd__type = 'xsd:string'
+
+CREATE (addr)-[:hasStreetAddress {materialized: true, cardinality: '1'}]->(sa)
+CREATE (addr)-[:hasZipCode {materialized: true, cardinality: '1'}]->(zip)
+CREATE (addr)-[:hasCity {materialized: true, cardinality: '1'}]->(city)
+CREATE (addr)-[:hasState {materialized: true, cardinality: '1'}]->(state)
+```
+
+**Common XSD types:**
+- `xsd:string` — names, codes, identifiers, addresses
+- `xsd:date` — dates (dateOfBirth, dateOfDeath)
+- `xsd:integer` — whole numbers (age)
+- `xsd:decimal` — monetary amounts
+- `xsd:boolean` — true/false flags
+
+### 5. Creating Named Individuals
+Create instances of classes using `owl__NamedIndividual` nodes with `rdf__type` links.
+
+**Example — Creating United States of America:**
+```cypher
+MATCH (country:owl__Class {rdfs__label: 'country'})
+
+CREATE (usa:owl__NamedIndividual {
+  rdfs__label: 'United States of America',
+  uri: 'https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedStatesOfAmerica',
+  skos__definition: 'country in North America',
+  countryName: 'United States of America',
+  isoAlpha2Code: 'US',
+  isoAlpha3Code: 'USA',
+  isoNumericCode: '840'
+})
+CREATE (usa)-[:rdf__type {materialized: true}]->(country)
+
+// Link to a class that uses this individual
+WITH usa
+MATCH (addr:owl__Class {rdfs__label: 'conventional street address'})
+CREATE (addr)-[:defaultCountry {materialized: true, cardinality: '1'}]->(usa)
+```
+
+**Rules for named individuals:**
+- Label: `owl__NamedIndividual`
+- Must have `rdf__type` relationship to its class
+- Include instance-specific property values directly on the node
+- Use official URIs (e.g., FIBO/LCC) when available
+
+### 6. Consolidating Inheritance
 If data is already in staging but still has parent-child links, use `consolidate_inheritance`.
 - **Purpose**: Flatten the hierarchy so each class is fully descriptive on its own.
 - **When**: Use this after staging classes if you didn't use `flatten_inheritance` during the initial copy.
 
-### 3. Structural Consolidation
+### 7. Structural Consolidation (Class → Datatype)
 Use `consolidate_staging_db` to convert complex classes into simpler datatypes.
-- **Workflow**: Identify classes that act purely as values (e.g., "card verification code") and transform them into `rdfs__Datatype` nodes.
-- **Benefit**: This simplifies the final application schema and removes unnecessary node overhead.
-- **Cleanup**: This tool automatically performs de-duplication of URIs, labels, and relationships.
+
+**Example — Converting date classes to datatypes:**
+```python
+consolidate_staging_db(transformations=[
+    {"old_label": "date of birth", "new_label": "dateOfBirth", "xsd_type": "xsd:date"},
+    {"old_label": "date of death", "new_label": "dateOfDeath", "xsd_type": "xsd:date"},
+    {"old_label": "person name",   "new_label": "personName",   "xsd_type": "xsd:string"},
+    {"old_label": "age",           "new_label": "age",           "xsd_type": "xsd:integer"}
+])
+```
+
+**When to consolidate:**
+- Class acts purely as a value container (no outgoing relationships of its own)
+- Class represents a simple scalar type (date, string, number)
+- You want to simplify the UML diagram by reducing class boxes
+
+### 8. Enriching Location Classes
+For location-type classes (place of birth, headquarters, etc.), use a mix of datatypes and class references.
+
+**Example — Enriching Place of Birth:**
+```cypher
+MATCH (pob:owl__Class {rdfs__label: 'place of birth'})
+
+MERGE (city:rdfs__Datatype {rdfs__label: 'city', xsd__type: 'xsd:string'})
+MERGE (state:rdfs__Datatype {rdfs__label: 'stateOrProvince', xsd__type: 'xsd:string'})
+
+MATCH (country:owl__Class {rdfs__label: 'country'})
+
+CREATE (pob)-[:hasCity {materialized: true, cardinality: '0..1'}]->(city)
+CREATE (pob)-[:hasStateOrProvince {materialized: true, cardinality: '0..1'}]->(state)
+CREATE (pob)-[:hasCountry {materialized: true, cardinality: '1'}]->(country)
+```
+
+**Pattern**: Use datatypes for simple text fields (city, state names) and class references for complex objects (country with its own properties).
+
+## Rules
+
+### ⚠️ CRITICAL: No Inline Properties on Named Individuals
+**NEVER store data attributes as inline properties on `owl__NamedIndividual` nodes.** All attributes must be modeled as relationships to `rdfs__Datatype` nodes.
+
+❌ **WRONG** — inline properties:
+```cypher
+CREATE (w2:owl__NamedIndividual {
+  rdfs__label: 'W-2',
+  box1_wages: 'decimal',      // WRONG: inline property
+  box2_taxWithheld: 'decimal'  // WRONG: inline property
+})
+```
+
+✅ **CORRECT** — relationships to datatypes:
+```cypher
+CREATE (w2:owl__NamedIndividual {
+  rdfs__label: 'W-2',
+  uri: '...',
+  skos__definition: '...'
+})
+
+MERGE (wages:rdfs__Datatype {rdfs__label: 'wagesTipsOtherComp'})
+  ON CREATE SET wages.xsd__type = 'xsd:decimal',
+               wages.skos__definition = 'Box 1: Total wages, tips, and other compensation'
+
+CREATE (w2)-[:hasWagesTipsOtherComp {materialized: true, cardinality: '1'}]->(wages)
+```
+
+**Why**: Named individuals should only have metadata properties (`rdfs__label`, `uri`, `skos__definition`). All domain attributes must be expressed as graph relationships so they appear correctly in UML/Pydantic visualizations and can be properly queried.
+
+### ⚠️ CRITICAL: Promote Schema Types to Classes, Not Named Individuals
+**When a concept represents a type/template (e.g., a form type, document type), model it as `owl__Class` with `rdfs__subClassOf`, NOT as `owl__NamedIndividual` with `rdf__type`.**
+
+Use `owl__NamedIndividual` ONLY for true singleton instances (e.g., "United States of America", "US Dollar").
+
+❌ **WRONG** — form type as named individual:
+```cypher
+CREATE (f:owl__NamedIndividual {rdfs__label: 'Form 1040'})
+CREATE (f)-[:rdf__type]->(report)  // WRONG: rdf__type implies instance
+```
+
+✅ **CORRECT** — form type as class:
+```cypher
+CREATE (f:owl__Class {rdfs__label: 'Form 1040', uri: '...', skos__definition: '...'})
+CREATE (f)-[:rdfs__subClassOf {materialized: true}]->(report)  // Subclass hierarchy
+```
+
+**To convert existing named individuals to classes:**
+```cypher
+MATCH (f:owl__NamedIndividual {rdfs__label: 'Form 1040'})
+REMOVE f:owl__NamedIndividual
+SET f:owl__Class
+WITH f
+MATCH (f)-[oldType:rdf__type]->(c)
+DELETE oldType
+WITH DISTINCT f
+MATCH (parent:owl__Class {rdfs__label: 'report'})
+MERGE (f)-[:rdfs__subClassOf {materialized: true}]->(parent)
+```
+
+**When to use which:**
+| Concept | Node Type | Relationship |
+|---|---|---|
+| W-2 form, Form 1040, Form 1120 | `owl__Class` | `rdfs__subClassOf → report` |
+| United States of America | `owl__NamedIndividual` | `rdf__type → country` |
+| US Dollar, Euro | `owl__NamedIndividual` | `rdf__type → currency` |
 
 ## Best Practices
 - **Isolation**: Always work on `stagingdb` to avoid polluting the main ontology.
 - **Consistency**: Use camelCase for relationship types and lowercase with spaces for class labels.
-- **Integrity**: Verify the results using standard Neo4j schema tools after each major transformation.
+- **Integrity**: Verify results after each enrichment: `MATCH (c {rdfs__label: '...'})-[r]->(t) RETURN type(r), t.rdfs__label`
+- **Reuse nodes**: Always `MERGE` target nodes by URI to avoid duplicates (e.g., `country`, `city` datatypes).
+- **FIBO first**: Check the FIBO ontology for existing definitions before creating custom classes.
+- **Deduplication**: The `consolidate_staging_db` tool automatically de-duplicates URIs, labels, and relationships.
+- **Consolidation cleanup**: `consolidate_staging_db` automatically deletes named individuals linked via `rdf__type` when converting a class to a datatype.

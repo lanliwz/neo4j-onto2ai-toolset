@@ -13,30 +13,36 @@ description: financial application schema design and review
    - *Tip*: Set `flatten_inheritance=True` to automatically copy parent relationships if you want a self-contained model from the start.
 
 ---
-### Iterative Design Loop (Repeat Steps 4-9 until finalized)
+### Iterative Design Loop (Repeat Steps 4-10 until finalized)
 
 4. **Model Consolidation**
    Refine the model in the staging database:
    - **Inheritance Consolidation**: Use `consolidate_inheritance` for specific classes (e.g., `service provider`, `cardholder`) to flatten their hierarchy.
    - **Datatype Consolidation**: Use `consolidate_staging_db` to convert structural classes (like `address` or `open date`) into flat properties with technical XSD types.
 
-5. **AI-Driven Schema Enhancement**
+5. **Schema Refinement**
+   Prune and specialize the model for the target domain:
+   - **Domain Specialization**: Rename generic classes to domain-specific ones (e.g., `conventional street address` -> `US street address`).
+   - **Type Promotion (CRITICAL)**: Promote template-like `owl__NamedIndividual` nodes (e.g., specific tax forms or document types) to `owl__Class` nodes with `rdfs__subClassOf` links.
+   - **Relationship Streamlining**: Remove redundant or instance-specific relationships (e.g., `defaultCountry`) from the class node to keep the schema decoupled from specific data instances.
+
+6. **AI-Driven Schema Enhancement**
    Apply specific business logic or simplifications using the `enhance_schema` tool. 
    - **Ontological Consistency Standard**: All domain-specific attributes (rates, dates, money, statuses) MUST be modeled as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes. Avoid literal properties on class nodes.
 
-6. **Enumeration Enrichment & Deduplication**
+7. **Enumeration Enrichment & Deduplication**
    Identify all `owl__Class` nodes used as enumerations (e.g., `filing status`, `report status`).
    - **Action**: Create `owl__NamedIndividual` members for these enums in `stagingdb`.
    - **Validation**: Ensure members are linked to the parent class via `rdf__type`.
    - **Semantic Deduplication (CRITICAL)**: Use the `merge_semantic_individuals` tool to consolidate any local placeholders (e.g., `married_joint`) with official FIBO standard individuals (e.g., `married filing jointly`) to prevent schema fragmentation.
 
-7. **Structural Review & Validation**
+8. **Structural Review & Validation**
    Verify the integrity of the design:
    - **Materialization Review**: Call `get_materialized_schema` on the staging database to inspect the final relationships.
    - **Graph Connectivity**: Use `read_neo4j_cypher` to run custom queries validating paths (e.g., between `Account` and `Payment`).
    - **SHACL Constraints**: Execute `generate_shacl_for_modelling` to create structural constraints that can be used for data validation.
 
-8. **Architectural Visualization**
+9. **Architectural Visualization**
    Create visual documentation:
    - Generate Mermaid diagrams to represent the Class relationships.
    - **Comprehensive Coverage Principle**: Ensure all classes in the diagram are fully populated with their properties and core relationships.
@@ -46,15 +52,15 @@ description: financial application schema design and review
      - Render **Core Functional relationships** (e.g., `provides`, `filedBy`) as explicit **Arrows**.
    - Document key attributes and cardinalities.
 
-9. **Designer Acceptance (User-in-the-Loop)**
+10. **Designer Acceptance (User-in-the-Loop)**
    Share the visualization, validation results, and description of changes with the user.
    - **Action**: Use `notify_user` with `PathsToReview` including the UML diagram and walkthrough.
    - **Wait**: Do not proceed until the designer/user provides approval or requests further changes.
 
-*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 10 only after receiving Designer Acceptance.*
+*Review the visualization and validation results. If the model requires further refinement, return to Step 4. Proceed to Step 11 only after receiving Designer Acceptance.*
 ---
 
-10. **Code Generation**
+11. **Code Generation**
     Translate the validated schema into production code using `generate_schema_code`:
     - **Comprehensive Coverage Principle**: 
       - Always include **all involved classes** (those linked via relationships) in the generation request to ensure no "shell" classes are produced.
@@ -67,5 +73,5 @@ description: financial application schema design and review
       - **SQL DDL**: For relational databases.
       - **Cypher Scripts**: For graph database setup.
 
-11. **Data Model Archival**
+12. **Data Model Archival**
     Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema for documentation, peer review, or integration into external tools.
