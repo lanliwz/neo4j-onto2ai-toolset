@@ -25,9 +25,7 @@ function initGraph() {
     // Initial theme check
     const isLight = document.documentElement.classList.contains('light-mode');
     myDiagram.model.modelData.isLight = isLight;
-    if (isLight) {
-        myDiagram.div.style.background = "#f8fafc";
-    }
+    myDiagram.div.style.background = isLight ? "#f8fafc" : "#0f0f1a";
 
     // Node template for classes
     myDiagram.nodeTemplateMap.add("class",
@@ -48,9 +46,15 @@ function initGraph() {
             },
                 new go.Binding("fill", "isCenter", (isCenter, obj) => {
                     if (obj.part.isSelected) return "#f59e0b";
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    if (isLight) return isCenter ? "#1e1b4b" : "#ffffff";
                     return isCenter ? "#7c3aed" : "#4f46e5";
-                }),
-                new go.Binding("stroke", "isCenter", (isCenter) => isCenter ? "#a78bfa" : "#818cf8")),
+                }).ofModel(),
+                new go.Binding("stroke", "isCenter", (isCenter, obj) => {
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    if (isCenter) return isLight ? "#7c3aed" : "#a78bfa";
+                    return isLight ? "#cbd5e1" : "#818cf8";
+                }).ofModel()),
             $(go.Panel, "Vertical",
                 { margin: 12 },
                 $(go.TextBlock, {
@@ -58,6 +62,11 @@ function initGraph() {
                     stroke: "white",
                     margin: new go.Margin(0, 0, 4, 0)
                 },
+                    new go.Binding("stroke", "isLight", (light, obj) => {
+                        const isCenter = obj.part.data.isCenter;
+                        if (light && !isCenter) return "#1e293b";
+                        return "white";
+                    }).ofModel(),
                     new go.Binding("text", "label")),
                 $(go.TextBlock, {
                     font: "11px Inter, sans-serif",
@@ -65,6 +74,11 @@ function initGraph() {
                     maxSize: new go.Size(150, NaN),
                     wrap: go.TextBlock.WrapFit
                 },
+                    new go.Binding("stroke", "isLight", (light, obj) => {
+                        const isCenter = obj.part.data.isCenter;
+                        if (light && !isCenter) return "#475569";
+                        return "rgba(255,255,255,0.7)";
+                    }).ofModel(),
                     new go.Binding("text", "definition", (d) => d ? truncate(d, 50) : ""))
             )
         )
@@ -83,7 +97,11 @@ function initGraph() {
                 stroke: "#34d399",
                 strokeWidth: 2
             },
-                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "#10b981").ofObject()),
+                new go.Binding("fill", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    return isLight ? "#059669" : "#10b981";
+                }).ofObject()),
             $(go.Panel, "Vertical",
                 { margin: 10 },
                 $(go.TextBlock, {
@@ -111,7 +129,11 @@ function initGraph() {
                 fromLinkable: true,
                 toLinkable: true
             },
-                new go.Binding("fill", "isSelected", (sel) => sel ? "#f59e0b" : "#0d9488").ofObject()),
+                new go.Binding("fill", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    return isLight ? "#0f766e" : "#0d9488";
+                }).ofModel()),
             $(go.Panel, "Vertical",
                 { margin: new go.Margin(8, 16, 8, 16) },
                 $(go.TextBlock, {
@@ -119,12 +141,13 @@ function initGraph() {
                     stroke: "white",
                     margin: new go.Margin(0, 0, 2, 0)
                 },
+                    new go.Binding("stroke", "isLight", (light) => light ? "white" : "white").ofModel(), // Still white is usually fine for these colors
                     new go.Binding("text", "label")),
                 $(go.TextBlock, {
                     font: "italic 10px Inter, sans-serif",
                     stroke: "rgba(255,255,255,0.6)"
                 },
-                    new go.Binding("stroke", "isLight", (light) => light ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)").ofModel(),
+                    new go.Binding("stroke", "isLight", (light) => light ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.6)").ofModel(),
                     new go.Binding("text", "", () => "«individual»"))
             )
         )
@@ -176,12 +199,23 @@ function initGraph() {
                     { stretch: go.GraphObject.Horizontal },
                     $(go.Shape, "Rectangle", { fill: "#4f46e5", stroke: null },
                         new go.Binding("fill", "isCenter", (isCenter) => isCenter ? "#7c3aed" : "#4f46e5")),
-                    $(go.TextBlock, {
-                        font: "bold 13px Inter, sans-serif",
-                        stroke: "white",
-                        margin: 8,
-                        alignment: go.Spot.Center
-                    }, new go.Binding("text", "label"))
+                    $(go.Panel, "Vertical",
+                        $(go.TextBlock, {
+                            font: "italic 10px Inter, sans-serif",
+                            stroke: "white",
+                            margin: new go.Margin(4, 8, 0, 8),
+                            alignment: go.Spot.Center,
+                            visible: false
+                        },
+                            new go.Binding("visible", "is_enum"),
+                            new go.Binding("text", "", () => "«enumeration»")),
+                        $(go.TextBlock, {
+                            font: "bold 13px Inter, sans-serif",
+                            stroke: "white",
+                            margin: 8,
+                            alignment: go.Spot.Center
+                        }, new go.Binding("text", "label"))
+                    )
                 ),
                 // Attributes
                 $(go.Panel, "Vertical",
@@ -206,11 +240,11 @@ function initGraph() {
             margin: new go.Margin(0, 4, 0, 0)
         },
             new go.Binding("text", "name"),
-            new go.Binding("stroke", "kind", (k, obj) => {
+            new go.Binding("stroke", "", (data, obj) => {
                 const isLight = obj.diagram.model.modelData.isLight;
-                if (k === "association") return isLight ? "#4338ca" : "#818cf8";
+                if (data.kind === "association") return isLight ? "#4338ca" : "#818cf8";
                 return isLight ? "#1e293b" : "#f1f5f9";
-            }).ofModel()),
+            })),
         $(go.TextBlock, {
             font: "11px 'Fira Code', monospace",
             stroke: "#a78bfa"
@@ -242,13 +276,28 @@ function initGraph() {
                 { stretch: go.GraphObject.Fill, margin: 1 },
                 // Class definition line
                 $(go.Panel, "Auto",
-                    { stretch: go.GraphObject.Horizontal, margin: new go.Margin(4, 8, 4, 8) },
-                    $(go.TextBlock, {
-                        font: "bold 13px 'Fira Code', monospace",
-                        stroke: "#ff7b72"
-                    },
-                        new go.Binding("stroke", "isLight", (light) => light ? "#8b1c1c" : "#ff7b72").ofModel(),
-                        new go.Binding("text", "label", (l) => `class ${l.replace(/\s+/g, '')}(BaseModel):`))
+                    { stretch: go.GraphObject.Horizontal },
+                    $(go.Shape, "Rectangle", { fill: "#1e293b", stroke: null }),
+                    $(go.Panel, "Vertical",
+                        $(go.TextBlock, {
+                            font: "italic 9px 'Fira Code', monospace",
+                            stroke: "rgba(255,255,255,0.5)",
+                            margin: new go.Margin(4, 8, 0, 8),
+                            alignment: go.Spot.Center,
+                            visible: false
+                        },
+                            new go.Binding("visible", "is_enum"),
+                            new go.Binding("text", "", () => "@enumeration")),
+                        $(go.TextBlock, {
+                            font: "bold 12px 'Fira Code', monospace",
+                            stroke: "#38bdf8",
+                            margin: 8,
+                            alignment: go.Spot.Center
+                        }, new go.Binding("text", "label", (l) => {
+                            const snake = l.toLowerCase().replace(/ /g, "_");
+                            return snake.charAt(0).toUpperCase() + snake.slice(1).replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+                        }))
+                    )
                 ),
                 // Docstring
                 $(go.Panel, "Auto",
@@ -293,14 +342,25 @@ function initGraph() {
             },
                 new go.Binding("fill", "isCenter", (isCenter, obj) => {
                     if (obj.part.isSelected) return "#f59e0b";
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    if (isLight) return isCenter ? "#1e1b4b" : "#ffffff";
                     return isCenter ? "#7c3aed" : "#4f46e5";
-                })),
+                }).ofModel(),
+                new go.Binding("stroke", "isCenter", (isCenter, obj) => {
+                    const isLight = obj.diagram.model.modelData.isLight;
+                    return isLight ? "#cbd5e1" : "#818cf8";
+                }).ofModel()),
             $(go.Panel, "Vertical",
                 { margin: 12 },
                 $(go.TextBlock, {
                     font: "bold 14px Inter, sans-serif",
                     stroke: "white"
                 },
+                    new go.Binding("stroke", "isLight", (light, obj) => {
+                        const isCenter = obj.part.data.isCenter;
+                        if (light && !isCenter) return "#1e293b";
+                        return "white";
+                    }).ofModel(),
                     new go.Binding("text", "label"))
             )
         );

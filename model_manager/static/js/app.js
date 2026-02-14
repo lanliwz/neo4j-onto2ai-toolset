@@ -32,12 +32,11 @@ function setupTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     if (!themeToggle) return;
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    const isLight = savedTheme === 'light';
-
-    if (isLight) {
-        document.documentElement.classList.add('light-mode');
+    // Theme is applied early in index.html to prevent flickering.
+    // We just sync the GoJS theme if it's currently light.
+    const isLight = document.documentElement.classList.contains('light-mode');
+    if (isLight && typeof window.updateGraphTheme === 'function') {
+        window.updateGraphTheme(true);
     }
 
     themeToggle.addEventListener('click', () => {

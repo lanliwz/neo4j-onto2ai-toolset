@@ -10,6 +10,7 @@ class ClassInfo(BaseModel):
     label: str
     uri: str
     definition: Optional[str] = None
+    is_enum: bool = False
 
 
 class RelationshipInfo(BaseModel):

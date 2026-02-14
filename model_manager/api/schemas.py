@@ -301,7 +301,8 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
                 "uri": node_data.get("uri"),
                 "definition": node_data.get("skos__definition"),
                 "category": "class",
-                "attributes": []
+                "attributes": [],
+                "is_enum": node_data.get("individualCount", 0) > 0 or node_data.get("SourceIndividualCount", 0) > 0 or node_data.get("TargetIndividualCount", 0) > 0
             }
             attributes_by_class[nid] = []
         return nid
@@ -630,7 +631,7 @@ async def get_class_schema(class_name: str):
         query = """
         // Outgoing relationships: this class -> target
         MATCH (c:owl__Class)
-        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
         
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
         WITH DISTINCT c, coalesce(parent, c) AS classNode
@@ -644,6 +645,7 @@ async def get_class_schema(class_name: str):
           c.rdfs__label AS SourceClassLabel,
           c.uri AS SourceClassURI,
           c.skos__definition AS SourceClassDef,
+          size([(c)<-[:rdf__type]-(i:owl__NamedIndividual) | i]) AS SourceIndividualCount,
           type(r) AS RelType,
           r.uri AS RelURI,
           r.skos__definition AS RelDef,
@@ -651,13 +653,14 @@ async def get_class_schema(class_name: str):
           r.requirement AS Requirement,
           coalesce(target.rdfs__label, target.uri, 'Resource') AS TargetClassLabel,
           target.uri AS TargetClassURI,
-          target.skos__definition AS TargetClassDef
+          target.skos__definition AS TargetClassDef,
+          size([(target)<-[:rdf__type]-(ti:owl__NamedIndividual) | ti]) AS TargetIndividualCount
 
         UNION
 
         // Incoming relationships: source -> this class
         MATCH (c:owl__Class)
-        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
         
         MATCH (source:owl__Class)-[r]->(c)
         WHERE (r.materialized = true OR r.materialized IS NULL)
@@ -667,6 +670,7 @@ async def get_class_schema(class_name: str):
           source.rdfs__label AS SourceClassLabel,
           source.uri AS SourceClassURI,
           source.skos__definition AS SourceClassDef,
+          size([(source)<-[:rdf__type]-(si:owl__NamedIndividual) | si]) AS SourceIndividualCount,
           type(r) AS RelType,
           r.uri AS RelURI,
           r.skos__definition AS RelDef,
@@ -674,7 +678,8 @@ async def get_class_schema(class_name: str):
           r.requirement AS Requirement,
           c.rdfs__label AS TargetClassLabel,
           c.uri AS TargetClassURI,
-          c.skos__definition AS TargetClassDef
+          c.skos__definition AS TargetClassDef,
+          size([(c)<-[:rdf__type]-(ci:owl__NamedIndividual) | ci]) AS TargetIndividualCount
         """
         results = db.execute_cypher(query, params={"label": class_name}, name="get_class_schema")
         
@@ -688,7 +693,8 @@ async def get_class_schema(class_name: str):
                 classes_dict[src_label] = ClassInfo(
                     label=src_label,
                     uri=row["SourceClassURI"] or "",
-                    definition=row.get("SourceClassDef")
+                    definition=row.get("SourceClassDef"),
+                    is_enum=row.get("SourceIndividualCount", 0) > 0
                 )
             
             # Add target class
@@ -697,7 +703,8 @@ async def get_class_schema(class_name: str):
                 classes_dict[tgt_label] = ClassInfo(
                     label=tgt_label,
                     uri=row["TargetClassURI"] or "",
-                    definition=row.get("TargetClassDef")
+                    definition=row.get("TargetClassDef"),
+                    is_enum=row.get("TargetIndividualCount", 0) > 0
                 )
             
             # Add relationship
@@ -717,15 +724,17 @@ async def get_class_schema(class_name: str):
         if not classes_dict:
             class_query = """
             MATCH (c:owl__Class)
-            WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
-            RETURN c.rdfs__label AS label, c.uri AS uri, c.skos__definition AS definition
+            WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
+            RETURN c.rdfs__label AS label, c.uri AS uri, c.skos__definition AS definition,
+                   size([(c)<-[:rdf__type]-(i:owl__NamedIndividual) | i]) AS individualCount
             """
             class_results = db.execute_cypher(class_query, params={"label": class_name}, name="get_class_self")
             for row in class_results:
                 classes_dict[row["label"]] = ClassInfo(
                     label=row["label"],
                     uri=row["uri"] or "",
-                    definition=row.get("definition")
+                    definition=row.get("definition"),
+                    is_enum=row.get("individualCount", 0) > 0
                 )
         
         return ClassSchema(
@@ -859,7 +868,7 @@ async def chat(request: ChatRequest):
                 # Fetch graph data for the detected class using a more robust pattern
                 query = """
                 MATCH (c:owl__Class)
-                WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+                WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
                 
                 OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
                 WITH DISTINCT c, coalesce(parent, c) AS classNode
@@ -1026,7 +1035,7 @@ async def get_graph_data(class_name: str):
         # Bidirectional query: outgoing (including inherited) + incoming
         query = """
         MATCH (c:owl__Class)
-        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
         
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
         WITH DISTINCT c, coalesce(parent, c) AS classNode
@@ -1122,7 +1131,7 @@ async def get_uml_data(class_name: str):
         # Robust query pattern matching get_materialized_schema logic
         query = """
         MATCH (c:owl__Class)
-        WHERE any(lbl IN CASE WHEN c.rdfs__label IS :: LIST<ANY> THEN c.rdfs__label ELSE [c.rdfs__label] END WHERE toLower(toString(lbl)) = toLower($label)) OR c.uri = $label
+        WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
         
         OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
         WITH DISTINCT c, coalesce(parent, c) AS classNode
@@ -1139,9 +1148,14 @@ async def get_uml_data(class_name: str):
           AND (r_in.materialized = true OR r_in.materialized IS NULL)
           AND type(r_in) <> "rdfs__subClassOf"
         
-        RETURN DISTINCT c, classNode, r_out, target, source, r_in
+        RETURN DISTINCT 
+               c {.*, element_id: elementId(c), individualCount: size([(c)<-[:rdf__type]-(i:owl__NamedIndividual) | i])} AS c,
+               classNode, r_out, 
+               target {.*, element_id: elementId(target), individualCount: size([(target)<-[:rdf__type]-(ti:owl__NamedIndividual) | ti])} AS target,
+               source {.*, element_id: elementId(source), individualCount: size([(source)<-[:rdf__type]-(si:owl__NamedIndividual) | si])} AS source,
+               r_in
         """
-        results = db.execute_cypher(query, params={"label": class_name}, name="get_uml_data")
+        results = db.execute_cypher(query, params={"label": class_name}, name="get_uml_graph_data")
         
         # Build UML data (flattened)
         uml_graph = results_to_uml_data(results, query=query.replace("$label", f"'{class_name}'").strip())

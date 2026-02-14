@@ -34,6 +34,8 @@ When generating Pydantic classes using the `generate_schema_code` tool:
 3. **Involved Class Discovery**: Before generating code, use a Cypher query to identify all neighbor classes linked to the primary target classes. Include the full set in the `class_names` argument.
 4. **Metadata Preservation**: Always instruct the AI to extract and include `skos:definition` strings in class docstrings and field descriptions.
 5. **Enums as Enums**: Ensure that `owl__Class` nodes enriched with individuals are rendered as standard Python `enum.Enum` classes.
+    - **Canonical Example (Currency)**: `Currency` should be modeled as an `Enum` containing members like `US_DOLLAR = "US Dollar"`, `EURO = "Euro"`, etc.
+    - **Usage**: Reference the Enum directly in parent classes (e.g., `MonetaryAmount.has_currency: Currency`).
 
 ## 5. Model Manager Customization
 When extending the Model Manager's model support:

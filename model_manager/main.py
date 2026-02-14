@@ -9,9 +9,10 @@ import os
 # Add parent directory to path so we can import from neo4j_onto2ai_toolset
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.schemas import router as schemas_router
@@ -38,6 +39,9 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+# Templates for injecting server-side config
+templates = Jinja2Templates(directory=STATIC_DIR)
+
 import argparse
 import uvicorn
 
@@ -46,9 +50,10 @@ app.include_router(schemas_router, prefix="/api")
 
 
 @app.get("/")
-async def root():
-    """Serve the main application page."""
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+async def root(request: Request):
+    """Serve the main application page with injected config."""
+    theme = os.getenv("APP_THEME", "dark")
+    return templates.TemplateResponse("index.html", {"request": request, "default_theme": theme})
 
 
 @app.get("/health")
@@ -76,8 +81,18 @@ if __name__ == "__main__":
         default=8180,
         help="Port to bind to"
     )
+    parser.add_argument(
+        "--theme", "-t",
+        type=str,
+        choices=["dark", "light"],
+        default="dark",
+        help="Default theme to start with (dark or light)"
+    )
     
     args = parser.parse_args()
+    
+    # Store theme in environment for the root handler
+    os.environ["APP_THEME"] = args.theme
     
     # Handle shorthand model names
     if args.model:
