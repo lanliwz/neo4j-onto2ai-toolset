@@ -1025,6 +1025,143 @@ async def consolidate_inheritance(
 
 
 @mcp.tool()
+async def apply_data_model(
+    data_model: Dict[str, Any],
+    staging_db_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Apply a structured DataModel (JSON) to the staging database.
+    Creates classes, datatypes, and relationships described in the model.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db
+    
+    db = get_staging_db(staging_db_name)
+    logger.info(f"Applying data model to staging database: {staging_db_name or 'default'}")
+    
+    try:
+        nodes = data_model.get("nodes", [])
+        relationships = data_model.get("relationships", [])
+        
+        created_nodes = 0
+        created_rels = 0
+        
+        # 1. Create Nodes (Classes and Datatypes)
+        for node in nodes:
+            label = node.get("label")
+            # Handle potential variation in label key (sometimes "rdfs__label" in raw outputs)
+            if not label: 
+                label = node.get("rdfs__label")
+            
+            uri = node.get("uri")
+            definition = node.get("description") or node.get("definition") or node.get("skos__definition")
+            node_type = node.get("type", "owl__Class")
+            
+            # Sanitize inputs
+            if not uri or not label:
+                logger.warning(f"Skipping node without URI or label: {node}")
+                continue
+                
+            query = f"""
+            MERGE (n:{node_type} {{uri: $uri}})
+            SET n.rdfs__label = $label,
+                n.skos__definition = $definition
+            """
+            
+            db.execute_cypher(query, params={
+                "uri": uri,
+                "label": label,
+                "definition": definition
+            }, name="apply_model_node")
+            created_nodes += 1
+            
+            # Handle inline properties (turn into relationships to datatypes)
+            for prop in node.get("properties", []):
+                prop_name = prop.get("name")
+                prop_uri = prop.get("uri")
+                prop_type = prop.get("type", "string")  # Target label (e.g. string, date)
+                cardinality = prop.get("cardinality", "0..1")
+                prop_def = prop.get("description")
+                
+                if not prop_name or not prop_uri:
+                    continue
+                    
+                # Creating the datatype node if it doesn't exist
+                dt_query = """
+                MERGE (dt:rdfs__Datatype {uri: $prop_uri})
+                SET dt.rdfs__label = $prop_type
+                """
+                db.execute_cypher(dt_query, params={"prop_uri": prop_uri, "prop_type": prop_type}, name="apply_model_prop_dt")
+                
+                # Linking class to datatype
+                link_query = f"""
+                MATCH (c:{node_type} {{uri: $class_uri}})
+                MATCH (dt:rdfs__Datatype {{uri: $prop_uri}})
+                MERGE (c)-[r:{to_camel_case(prop_name)}]->(dt)
+                SET r.uri = $prop_uri,
+                    r.skos__definition = $prop_def,
+                    r.cardinality = $cardinality,
+                    r.materialized = true,
+                    r.property_type = 'owl__DatatypeProperty'
+                """
+                db.execute_cypher(link_query, params={
+                    "class_uri": uri,
+                    "prop_uri": prop_uri,
+                    "prop_def": prop_def,
+                    "cardinality": cardinality
+                }, name="apply_model_prop_link")
+                created_rels += 1
+
+        # 2. Create Relationships (Object Properties)
+        for rel in relationships:
+            src_label = rel.get("start_node_label")
+            tgt_label = rel.get("end_node_label")
+            rel_type = rel.get("type")
+            rel_uri = rel.get("uri")
+            rel_def = rel.get("description")
+            cardinality = rel.get("cardinality", "0..*")
+            
+            if not src_label or not tgt_label or not rel_type:
+                continue
+                
+            # We match by Label since we might not have the URI handy in the relationship object
+            # Ideally we should match by URI if available, but Label is often safer for cross-referencing in JSON
+            
+            query = f"""
+            MATCH (source) WHERE source.rdfs__label = $src_label AND (source:owl__Class OR source:owl__NamedIndividual)
+            MATCH (target) WHERE target.rdfs__label = $tgt_label AND (target:owl__Class OR target:owl__NamedIndividual)
+            
+            MERGE (source)-[r:{to_camel_case(rel_type)}]->(target)
+            SET r.uri = $rel_uri,
+                r.skos__definition = $rel_def,
+                r.cardinality = $cardinality,
+                r.materialized = true,
+                r.property_type = 'owl__ObjectProperty'
+            """
+            
+            db.execute_cypher(query, params={
+                "src_label": src_label,
+                "tgt_label": tgt_label,
+                "rel_uri": rel_uri,
+                "rel_def": rel_def,
+                "cardinality": cardinality
+            }, name="apply_model_rel")
+            created_rels += 1
+            
+        return {
+            "status": "success",
+            "database": staging_db_name or "stagingdb",
+            "nodes_created_or_updated": created_nodes,
+            "relationships_created_or_updated": created_rels
+        }
+        
+    except Exception as e:
+        logger.error(f"Error applying data model: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        db.close()
+
+
+@mcp.tool()
 async def consolidate_staging_db(
     transformations: List[Dict[str, str]],
     staging_db_name: Optional[str] = None
