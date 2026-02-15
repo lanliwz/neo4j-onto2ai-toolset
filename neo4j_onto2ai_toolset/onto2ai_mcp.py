@@ -322,18 +322,41 @@ async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str
         return {"error": str(e)}
 
 @mcp.tool()
-async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
+async def extract_data_model(
+    class_names: Optional[Union[str, List[str]]] = None,
+    database: Optional[str] = None
+) -> DataModel:
     """
-    Extract a structured DataModel (JSON) from the ontology for the specified classes.
-    Includes nodes, properties, relationships, and metadata.
+    Extract a structured DataModel (JSON) from the ontology.
+    
+    Args:
+        class_names: One or more class labels. If None, extracts ALL classes from the database.
+        database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.
     """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+    
+    # Select database
+    db = get_staging_db(database) if database else semanticdb
+    
+    # Logic: If class_names is None, fetch ALL class labels
+    if not class_names:
+        logger.info(f"No class_names provided. Fetching ALL classes from database: {database or 'semanticdb'}")
+        query_all = "MATCH (n:owl__Class) RETURN n.rdfs__label as label"
+        try:
+            all_classes = db.execute_cypher(query_all, name="fetch_all_classes")
+            class_names = [row['label'] for row in all_classes if row.get('label')]
+            logger.info(f"Found {len(class_names)} classes to extract.")
+        except Exception as e:
+            logger.error(f"Error fetching all classes: {e}")
+            raise
+    
     if isinstance(class_names, str):
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
     
     try:
-        results = semanticdb.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="internal_extract_data_model")
+        results = db.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="internal_extract_data_model")
         
         nodes_dict = {}
         relationships = []
@@ -373,20 +396,27 @@ async def extract_data_model(class_names: Union[str, List[str]]) -> DataModel:
         return DataModel(
             nodes=list(nodes_dict.values()),
             relationships=relationships,
-            metadata={"source_classes": labels, "engine": "Onto2AI-Materialized"}
+            metadata={"source_classes": labels, "engine": "Onto2AI-Materialized", "database": database or "semanticdb"}
         )
     except Exception as e:
         logger.error(f"Error in extract_data_model: {e}")
         raise
+    finally:
+        if database:
+            db.close()
 
 @mcp.tool()
-async def enhance_schema(class_names: Union[str, List[str]], instructions: str) -> DataModel:
+async def enhance_schema(
+    class_names: Optional[Union[str, List[str]]] = None, 
+    instructions: str = "",
+    database: Optional[str] = None
+) -> DataModel:
     """
     Extract a model from ontology and enhance it using AI instructions.
     Returns the updated DataModel (JSON).
     """
     try:
-        data_model = await extract_data_model(class_names)
+        data_model = await extract_data_model(class_names, database=database)
         
         prompt = f"""
         You are a data architect. Modify the following Neo4j DataModel based on these instructions: "{instructions}"
@@ -507,9 +537,10 @@ async def enhance_schema(class_names: Union[str, List[str]], instructions: str) 
 
 @mcp.tool()
 async def generate_schema_code(
-    class_names: Union[str, List[str]], 
+    class_names: Optional[Union[str, List[str]]] = None, 
     target_type: str = "pydantic", 
-    instructions: Optional[str] = None
+    instructions: Optional[str] = None,
+    database: Optional[str] = None
 ) -> str:
     """
     Generate production-ready code (SQL, Pydantic, Neo4j) for one or more ontology classes.
@@ -518,9 +549,9 @@ async def generate_schema_code(
     try:
         # 1. Extract base model
         if instructions:
-            data_model = await enhance_schema(class_names, instructions)
+            data_model = await enhance_schema(class_names, instructions, database=database)
         else:
-            data_model = await extract_data_model(class_names)
+            data_model = await extract_data_model(class_names, database=database)
             
         # 2. Generate code
         prompt = f"""
