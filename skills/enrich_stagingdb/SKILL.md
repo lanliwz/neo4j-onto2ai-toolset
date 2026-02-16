@@ -220,6 +220,17 @@ To ensure data integrity, maintain a `staging_schema_contraint.cypher` file that
 2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`).
 3. **Automate**: Use a script (e.g., `generate_archival_cypher.py`) to keep the Cypher file synchronized with the graph metadata.
 
+### 12. Domain Model Consistency (Pydantic)
+To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:
+
+**Key Patterns:**
+1. **URI Identity**: All core classes should inherit from a `SemanticModel` base class that includes an optional `uri: str` field.
+2. **Field Aliases**: Use `Field(alias="...")` to map Python field names to their ontological counterparts (the Neo4j relationship types or property names). This allows for clean Python code while maintaining strict graph parity.
+   - Example: `taxableIncome: Optional[MonetaryAmount] = Field(alias="hasTaxableIncome", ...)`
+3. **Automated Bridge**: Use the `PydanticNeo4jBridge` utility to automate the conversion between Pydantic objects and Neo4j `MERGE` queries. This utility leverages the aliases to identify the correct graph predicates.
+
+**Why**: This 1:1 parity between the domain model and the graph schema enables type-safe, automated data ingestion and extraction without manual Cypher mapping.
+
 ## Rules
 
 ### ⚠️ CRITICAL: No Inline Properties on Named Individuals

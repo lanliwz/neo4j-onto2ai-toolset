@@ -66,8 +66,9 @@ description: financial application schema design and review
     - **Comprehensive Coverage Principle**: 
       - Always include **all involved classes** (those linked via relationships) in the generation request to ensure no "shell" classes are produced.
       - Use Cypher queries to identify neighbor classes before calling the generation tool.
-    - **Pydantic Guidelines**:
-      - Model **Datatype and Enumeration relationships** as simple class fields.
+    - **Pydantic Bridge Standard (CRITICAL)**:
+      - All core classes MUST inherit from a `SemanticModel` base class (including an optional `uri` field).
+      - Use `Field(alias="...")` for all attributes and relationships to map Python field names to their ontological counterparts (Neo4j relationship types/properties). This enables automated compatibility with the `PydanticNeo4jBridge`.
       - Explicitly request `skos:definition` for every class to populate **Docstrings** and **Field Descriptions**.
     - **Output Types**:
       - **Pydantic/SQLAlchemy**: For application backends.
@@ -79,3 +80,9 @@ description: financial application schema design and review
     Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema.
     - **Physical Schema**: Generate `staging_schema_contraint.cypher` to enforce data integrity (existence constraints for mandatory properties) while keeping semantic metadata (labels, definitions, URIs) as comments.
     - **Documentation**: Use `get_ontology_schema_description` to provide a human-readable Markdown summary of the graph topology and business definitions.
+
+13. **Integration & Round-Trip Validation**
+    Perform a final validation gate before production deployment.
+    - **Action**: Use the `PydanticNeo4jBridge` utility to save a complex instance of the domain model to `stagingdb` and extract it back.
+    - **Validation**: Assert that the round-trip preserves all attributes, relationships, and metadata perfectly.
+    - **Success Criteria**: 1:1 parity between the application code and the graph database schema.

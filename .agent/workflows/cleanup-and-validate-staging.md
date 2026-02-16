@@ -30,3 +30,8 @@ description: cleanup and validate staging database for payment system
 9. **Archive Schema Constraints**
    Generate a `staging_schema_contraint.cypher` file (e.g., via `generate_archival_cypher.py`) to preserve physical schema constraints. 
    - **Rule**: Separate metadata (definitions/URIs as comments) from data schema (existence constraints for mandatory properties).
+
+10. **Verify Domain Model Parity**
+    Finalize the validation by ensuring the generated Pydantic models are perfectly synchronized with the graph.
+    - **Step**: Use the `PydanticNeo4jBridge` utility to run a round-trip test (Save Object -> Extract Object -> Assert Equality).
+    - **Goal**: Confirm that the ontological aliases in the code correctly map to the database relationships.

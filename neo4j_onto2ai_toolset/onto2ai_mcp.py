@@ -602,6 +602,11 @@ async def generate_schema_code(
         
         SQL/Neo4j Documentation Style:
         - For SQL: Table definitions MUST be rendered using 'COMMENT ON TABLE [name] IS ...' statements.
+        - For Neo4j/Cypher: 
+            - DO NOT create constraints or indexes for metadata fields like 'uri', 'rdfs__label', or 'skos__definition'.
+            - Inclusion Principle: Include 'uri', 'rdfs__label', and 'skos__definition' as // COMMENTS only above each class definition.
+            - Structural Principles: Generate 'IS UNIQUE' constraints ONLY for functional identifiers if specified (otherwise ignore).
+            - Existence Principles: Generate 'IS NOT NULL' constraints ONLY for properties where 'mandatory' is true.
         - Property and Relationship definitions MUST be included as INLINE COMMENTS (# for Python, -- for SQL, // for Cypher) next to the field or constraint.
         - Definitions should be for ANNOTATION ONLY; do not include them as functional data fields.
         
@@ -614,6 +619,90 @@ async def generate_schema_code(
     except Exception as e:
         logger.error(f"Error generating schema code: {e}")
         return f"Error: {e}"
+
+@mcp.tool()
+async def generate_schema_constraints(
+    database: Optional[str] = None
+) -> str:
+    """
+    Generate Neo4j Cypher constraints and indexes for a database based on its metadata.
+    
+    This tool produces a deterministic Cypher script that includes:
+    1. Existence constraints (IS NOT NULL) for all mandatory data properties.
+    2. Comments providing URI, Label, and Definition metadata for AI semantic discovery.
+    3. NO constraints or indexes for metadata fields like URI or Label (follows production separation principle).
+    
+    Args:
+        database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+    
+    db = get_staging_db(database) if database else semanticdb
+    try:
+        query = """
+        MATCH (n:owl__Class)
+        OPTIONAL MATCH (n)-[r]->(m:rdfs__Datatype)
+        RETURN n.rdfs__label as class_label, 
+               n.skos__definition as class_definition, 
+               n.uri as class_uri,
+               type(r) as prop_name,
+               r.cardinality as prop_cardinality
+        ORDER BY class_label
+        """
+        results = db.execute_cypher(query, name="generate_schema_constraints")
+        
+        # Group by class
+        schema_data = {}
+        for row in results:
+            cls_label = row['class_label']
+            if cls_label not in schema_data:
+                schema_data[cls_label] = {
+                    "definition": row['class_definition'],
+                    "uri": row['class_uri'],
+                    "properties": []
+                }
+            if row['prop_name']:
+                schema_data[cls_label]["properties"].append({
+                    "name": row['prop_name'],
+                    "cardinality": row['prop_cardinality']
+                })
+
+        cypher_output = [
+            "// ===========================================================",
+            f"// NEO4J SCHEMA CONSTRAINTS (Source: {database or 'semanticdb'})",
+            "// Generated to enforce structural integrity while keeping metadata as comments.",
+            "// ===========================================================\n"
+        ]
+        
+        for cls_label, data in schema_data.items():
+            actual_label = cls_label.replace(" ", "").replace("-", "")
+            
+            cypher_output.append(f"// Class: {cls_label}")
+            if data['definition']:
+                cypher_output.append(f"// Definition: {data['definition']}")
+            if data['uri']:
+                cypher_output.append(f"// URI: {data['uri']}")
+            
+            # Note: metadata fields like labels and URIs do not get physical constraints
+            
+            # Property constraints (Existence for mandatory fields)
+            for prop in data['properties']:
+                card = prop['cardinality'] or ""
+                if card.startswith("1"):
+                    constraint_name = f"{actual_label}_{prop['name']}_Required"
+                    cypher_output.append(f"// Mandatory property: {prop['name']} (cardinality: {card})")
+                    cypher_output.append(f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS FOR (n:{actual_label}) REQUIRE n.{prop['name']} IS NOT NULL;")
+            
+            cypher_output.append("")
+            
+        return "\n".join(cypher_output)
+        
+    except Exception as e:
+        logger.error(f"Error generating schema constraints: {e}")
+        return f"Error: {e}"
+    finally:
+        if database:
+            db.close()
 
 @mcp.tool()
 async def generate_shacl_for_modelling(
