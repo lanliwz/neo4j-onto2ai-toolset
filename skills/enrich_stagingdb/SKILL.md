@@ -188,6 +188,38 @@ CREATE (pob)-[:hasCountry {materialized: true, cardinality: '1'}]->(country)
 
 **Pattern**: Use datatypes for simple text fields (city, state names) and class references for complex objects (country with its own properties).
 
+### 9. Metadata Enrichment (AI-Driven)
+For nodes (Classes) and relationships in `stagingdb` that are missing semantic documentation, use the LLM to generate `skos__definition` based on the context.
+
+**Class Enrichment Workflow:**
+1. Identify missing class definitions: `MATCH (n:owl__Class) WHERE n.skos__definition IS NULL RETURN n.rdfs__label, n.uri`
+2. Generate with AI: Provide the class label and URI to the LLM.
+3. Update Staging: `MATCH (n:owl__Class {uri: $uri}) SET n.skos__definition = $definition`
+
+**Relationship Enrichment Workflow:**
+1. Identify missing rel definitions: `MATCH (n:owl__Class)-[r]->(m) WHERE r.skos__definition IS NULL RETURN n.rdfs__label, type(r), m.rdfs__label, r.uri`
+2. Generate with AI: Provide the relationship URI and the source/target labels to the LLM.
+3. Update Staging: Set the generated definition on the relationship property in `stagingdb`.
+
+### 10. Full Schema Documentation
+Maintain a textual representation of the entire graph schema for easy reference and LLM context.
+
+**Tool:** `get_ontology_schema_description(database='stagingdb')`
+**Purpose**: Generates a structured Markdown/text description:
+1. **Node Labels**: URI and semantic definition.
+2. **Relationship Types**: URI, definition, source/target, and cardinality.
+3. **Node Properties**: **Data Type** (XSD or semantic class) and **Mandatory** status (existence requirement).
+
+**Standard**: Ensure the Markdown output includes dedicated columns for `Data Type` and `Mandatory` in the properties section.
+
+### 11. Data Schema Constraints (Archival)
+To ensure data integrity, maintain a `staging_schema_contraint.cypher` file that defines the physical constraints of the Neo4j database. 
+
+**Core Principles:**
+1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
+2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`).
+3. **Automate**: Use a script (e.g., `generate_archival_cypher.py`) to keep the Cypher file synchronized with the graph metadata.
+
 ## Rules
 
 ### ⚠️ CRITICAL: No Inline Properties on Named Individuals

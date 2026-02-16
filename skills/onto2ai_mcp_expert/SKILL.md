@@ -30,6 +30,10 @@ The server supports two primary transports:
 - **Tool Config**: Resolves database connections and LLM settings via [onto2ai_tool_config.py](file:///Users/weizhang/github/neo4j-onto2ai-toolset/neo4j_onto2ai_toolset/onto2ai_tool_config.py).
 - **Logger**: All events should be logged via the standard project `logger`.
 
+### 4. Specialized Schema Tools
+- **`get_ontology_schema_description`**: Generates a full textual/Markdown summary of a Neo4j database schema (Labels, Relationships, Properties, Metadata).
+- **`generate_schema_code` (target_type='graph_schema')**: Invokes the schema description logic to produce a deployment-ready representation of the graph model.
+
 ## Maintenance & Debugging
 - **JSON Outputs**: When returning complex data, prefer returning Pydantic models (like `DataModel`) or well-structured dictionaries.
 - **Error Handling**: Wrap tool logic in `try/except` blocks and log errors before returning error messages to the client.

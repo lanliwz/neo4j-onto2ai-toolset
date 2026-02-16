@@ -12,6 +12,7 @@ from mcp.server.fastmcp import FastMCP
 from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm, get_staging_db
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
+from neo4j_onto2ai_toolset.onto2ai_utility import get_full_schema, get_schema
 
 mcp = FastMCP("Onto2AI")
 
@@ -543,9 +544,38 @@ async def generate_schema_code(
     database: Optional[str] = None
 ) -> str:
     """
-    Generate production-ready code (SQL, Pydantic, Neo4j) for one or more ontology classes.
+    Generate production-ready code (SQL, Pydantic, Neo4j, GraphSchema) for one or more ontology classes.
     Optional 'instructions' allows on-the-fly AI enhancement of the base ontology schema.
+    
+    target_type options:
+    - 'pydantic': Python Pydantic v2 models.
+    - 'sql': Oracle-compatible DDL.
+    - 'neo4j': Cypher CREATE CONSTRAINT/INDEX statements.
+    - 'graph_schema': Textual description of the graph schema (Labels, Relationships, Metadata).
     """
+    if target_type == "graph_schema":
+        from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+        db = get_staging_db(database) if database else semanticdb
+        try:
+            if not class_names:
+                return get_full_schema(db)
+            
+            if isinstance(class_names, str):
+                class_names = [class_names]
+            
+            # If specific classes requested, we construct the schema description iteratively
+            parts = []
+            for cls in class_names:
+                parts.append(get_schema(start_node=cls, db=db))
+            
+            return "\n\n".join(parts)
+        except Exception as e:
+            logger.error(f"Error generating graph schema: {e}")
+            return f"Error: {e}"
+        finally:
+            if database:
+                db.close()
+
     try:
         # 1. Extract base model
         if instructions:
@@ -1387,6 +1417,27 @@ async def merge_semantic_individuals(
         }
     finally:
         db.close()
+
+@mcp.tool()
+async def get_ontology_schema_description(database: Optional[str] = None) -> str:
+    """
+    Retrieve said database schema description (Nodes, Relationships, Properties) as a string.
+    Useful for LLM context or schema management.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+    
+    db = get_staging_db(database) if database else semanticdb
+    try:
+        # get_full_schema is synchronous, but we can return it directly.
+        # It performs blocking IO, but is acceptable here.
+        schema_text = get_full_schema(db)
+        return schema_text
+    except Exception as e:
+        logger.error(f"Error getting ontology schema: {e}")
+        return f"Error: {e}"
+    finally:
+        if database:
+            db.close()
 
 if __name__ == "__main__":
     # Support HTTP transport if requested via command line

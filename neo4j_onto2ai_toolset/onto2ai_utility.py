@@ -87,7 +87,7 @@ class Neo4jDatabase:
     def get_node_dataproperty(self, label=None):
         with self._driver.session(database=self._database_name) as session:
             result = session.execute_read(self._get_dataset, query_dataproperty(label))
-            return [f"(:{record['start_node']}) nodes have data property {record['relationship']}" for record in result]
+            return [f"(:{record['start_node']}) node has property {record['relationship']} [type: {record['xsd_type'] or record['end_node']}, cardinality: {record['cardinality'] or '-'}]" for record in result]
 
     def get_nodes(self, label=None):
         with self._driver.session(database=self._database_name) as session:

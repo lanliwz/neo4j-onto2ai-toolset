@@ -67,11 +67,13 @@ apoc.map.removeKeys(properties(n), ['embedding']) as annotation_properties
 '''
 
 start_nodes_dataproperty_return = r'''
-WITH r,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
+WITH r, m, [word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
 [word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(start_node_raw, '') AS start_node,
 type(r) as relationship,
-apoc.text.join(end_node_raw, '') AS end_node
+apoc.text.join(end_node_raw, '') AS end_node,
+m.xsd__type as xsd_type,
+r.cardinality as cardinality
 '''
 
 end_nodes_return = r'''

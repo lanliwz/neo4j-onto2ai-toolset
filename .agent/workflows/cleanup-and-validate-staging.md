@@ -20,5 +20,13 @@ description: cleanup and validate staging database for payment system
 6. **Deduplicate Named Individuals**
    Identify `owl__NamedIndividual` nodes with duplicate `rdfs__label` strings across local (`onto2ai`) and official (`fibo`) namespaces. Use `apoc.refactor.mergeNodes` to consolidate them into the official FIBO version.
 
-7. **Generate Architectural Documentation**
-   Optionally generate a UML Class Diagram or SHACL shapes using the specialized tools to document the final validated state.
+7. **Enrich Metadata Definitions**
+   Identify nodes (Classes) and Relationships missing `skos__definition` in `stagingdb`. Use AI (LLM) to generate semantic descriptions based on URI, labels, and topology context to ensure a high-quality, documented schema.
+
+8. **Generate Full Schema Representation**
+   Use the `get_ontology_schema_description` tool to produce a comprehensive Markdown documentation (`staging_schema.md`).
+   - **Requirement**: Documentation must include `Data Type` and `Mandatory` status (cardinality) for all node properties.
+
+9. **Archive Schema Constraints**
+   Generate a `staging_schema_contraint.cypher` file (e.g., via `generate_archival_cypher.py`) to preserve physical schema constraints. 
+   - **Rule**: Separate metadata (definitions/URIs as comments) from data schema (existence constraints for mandatory properties).
