@@ -135,6 +135,16 @@ class Neo4jDatabase:
         )
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
+    def get_label_counts(self) -> Dict[str, int]:
+        """Fetch instance counts for all labels in the database."""
+        query = """
+        MATCH (n)
+        UNWIND labels(n) AS label
+        RETURN label, count(n) AS count
+        """
+        results = self.execute_cypher(query, name="get_label_counts")
+        return {row['label']: row['count'] for row in results}
+
 def get_schema(start_node: str, db: Neo4jDatabase):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
               + "\n".join(db.get_node_dataproperty(start_node)) + '\n'
@@ -144,18 +154,76 @@ def get_schema(start_node: str, db: Neo4jDatabase):
     ontoToollogger.debug(schema)
     return schema
 
-def get_full_schema(db: Neo4jDatabase):
-    nodes = "\n".join(db.get_nodes())
-    relationships = "\n".join(db.get_relationships())
-    node2node_rels = "\n".join(db.get_node2node_relationship())
-    node_dataprops = "\n".join(db.get_node_dataproperty())
+def get_full_schema(db: Neo4jDatabase, use_heuristics: bool = True):
+    import re
+    import ast
+    
+    # 1. Fetch raw components
+    nodes_raw = db.get_nodes()
+    relationships_raw = db.get_relationships()
+    node2node_rels_raw = db.get_node2node_relationship()
+    node_dataprops_raw = db.get_node_dataproperty()
+    
+    if not use_heuristics:
+        schema = (
+            f"Node Labels: \n{chr(10).join(nodes_raw)} \n"
+            f"Relationships: \n{chr(10).join(node2node_rels_raw)} \n"
+            f"Relationship types: \n{chr(10).join(relationships_raw)} \n"
+            f"Node Properties: \n{chr(10).join(node_dataprops_raw)} \n"
+        )
+        return schema
+
+    # 2. Heuristic Filtering Logic
+    instance_counts = db.get_label_counts()
+    
+    # Parse label metadata
+    label_metadata = {}
+    for line in nodes_raw:
+        match = re.search(r"^\(:(.*?)\) nodes have annotation properties\s+(.*)", line)
+        if match:
+            label = match.group(1)
+            try:
+                props = ast.literal_eval(match.group(2))
+                label_metadata[label] = props
+            except:
+                label_metadata[label] = {}
+
+    # Determine outgoing relationships (topology)
+    outgoing_rels = set()
+    for rel_str in node2node_rels_raw:
+        # Example: (:Person)-[:hasAddress]->(:PhysicalAddress)
+        m = re.search(r"^\(:(.*?)\)-.*?->", rel_str)
+        if m:
+            outgoing_rels.add(m.group(1).strip())
+
+    # Baseline core entities (Always preserve these)
+    baseline_entities = {'Person', 'Employer', 'Organization', 'IndividualTaxReturn', 'Form1040_2025', 'MonetaryAmount', 'W2Form', 'CreditCardAccount', 'Cardholder', 'Merchant', 'Payment'}
+    
+    # Effective Label Calculation
+    effective_labels = set()
+    for label in label_metadata:
+        count = instance_counts.get(label, 0)
+        is_baseline = label in baseline_entities
+        has_outgoing = label in outgoing_rels
+        
+        props = label_metadata.get(label, {})
+        is_datatype = any(k in props for k in ['enumValues', 'xsd__type', 'xsd_type', 'xsd_datatype'])
+        
+        # Effective if: has instances, is baseline, OR has outgoing relationships (and not a datatype)
+        if (count > 0 or is_baseline or has_outgoing) and not is_datatype:
+            effective_labels.add(label)
+
+    # 3. Filter and rebuild output
+    filtered_nodes = [n for n in nodes_raw if re.search(r"^\(:(.*?)\)", n).group(1) in effective_labels]
+    filtered_topo = [r for r in node2node_rels_raw if re.search(r"^\(:(.*?)\)", r).group(1) in effective_labels]
+    filtered_props = [p for p in node_dataprops_raw if re.search(r"^\(:(.*?)\)", p).group(1) in effective_labels]
+    
     schema = (
-        f"Node Labels: \n{nodes} \n"
-        f"Relationships: \n{node2node_rels} \n"
-        f"Relationship types: \n{relationships} \n"
-        f"Node Properties: \n{node_dataprops} \n"
+        f"Node Labels: \n{chr(10).join(filtered_nodes)} \n"
+        f"Relationships: \n{chr(10).join(filtered_topo)} \n"
+        f"Relationship types: \n{chr(10).join(relationships_raw)} \n"
+        f"Node Properties: \n{chr(10).join(filtered_props)} \n"
     )
-    ontoToollogger.debug(schema)
     return schema
 
 def get_node4schema(start_node: str, db: Neo4jDatabase):

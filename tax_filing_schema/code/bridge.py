@@ -35,9 +35,13 @@ class PydanticNeo4jBridge:
                 properties[field_name] = float(field_value)
             # Handle nested models (Relationships)
             elif isinstance(field_value, dict):
+                # We extract properties from the dict (which might contain Decimals)
+                # But to avoid Decimal issues in the target SET n += $props,
+                # we must ensure the dict itself is clean.
+                cleaned_target = PydanticNeo4jBridge._clean_data(field_value)
                 relationships.append({
                     "type": field_name,
-                    "target": field_value,
+                    "target": cleaned_target,
                     "target_label": PydanticNeo4jBridge._get_model_label(model, field_name)
                 })
             # Handle lists of nested models
@@ -45,9 +49,10 @@ class PydanticNeo4jBridge:
                 target_label = PydanticNeo4jBridge._get_model_label(model, field_name)
                 for item in field_value:
                     if isinstance(item, dict):
+                        cleaned_item = PydanticNeo4jBridge._clean_data(item)
                         relationships.append({
                             "type": field_name,
-                            "target": item,
+                            "target": cleaned_item,
                             "target_label": target_label
                         })
                     else:
@@ -57,6 +62,21 @@ class PydanticNeo4jBridge:
                 properties[field_name] = field_value
                 
         return {"properties": properties, "relationships": relationships}
+
+    @staticmethod
+    def _clean_data(data: Any) -> Any:
+        """Helper to recursively clean data for Neo4j (Decimals to floats, Enums to values)."""
+        if isinstance(data, dict):
+            return {k: PydanticNeo4jBridge._clean_data(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [PydanticNeo4jBridge._clean_data(i) for i in data]
+        elif isinstance(data, Decimal):
+            return float(data)
+        elif isinstance(data, Enum):
+            return data.value
+        elif isinstance(data, date):
+            return data.isoformat()
+        return data
 
     @staticmethod
     def _get_model_label(model: BaseModel, alias: str) -> str:
@@ -94,7 +114,6 @@ class PydanticNeo4jBridge:
         rels = data["relationships"]
         
         # 1. Create/Identify the main node
-        # We need a URI or a unique ID. For staging, we might use a hash if URI is missing.
         uri = props.get("uri") or f"local:node:{hash(json.dumps(props, sort_keys=True))}"
         props["uri"] = uri
         
@@ -104,14 +123,13 @@ class PydanticNeo4jBridge:
         
         # 2. Process relationships
         for rel in rels:
-            # Recursively load target
-            # Note: rel['target'] is a dict (from model_dump)
-            # We need to turn it back into a model if possible, or just load as properties
             target_label = rel["target_label"]
             target_data = rel["target"]
+            rel_type = rel["type"]
             
-            # Identify target (recursive call)
-            # For simplicity in this bridge, we assume target is a BaseModel dict
+            # Recursive load for target node
+            # target_data is a dict (from model_dump). We need to load it.
+            # We assume target_data has a uri or identifier.
             target_uri = target_data.get("uri") or f"local:node:{hash(json.dumps(target_data, sort_keys=True))}"
             target_data["uri"] = target_uri
             
@@ -121,7 +139,6 @@ class PydanticNeo4jBridge:
             target_id = t_res[0]["target_id"]
             
             # Create relationship
-            rel_type = rel["type"]
             r_query = f"MATCH (n) WHERE id(n) = $node_id MATCH (m) WHERE id(m) = $target_id MERGE (n)-[r:{rel_type}]->(m) SET r.materialized = true"
             db.execute_cypher(r_query, params={"node_id": node_id, "target_id": target_id}, name=f"create_rel_{rel_type}")
 

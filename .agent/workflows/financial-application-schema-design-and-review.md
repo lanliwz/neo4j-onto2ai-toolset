@@ -76,10 +76,12 @@ description: financial application schema design and review
       - **Graph Schema Description**: Generate a detailed Markdown summary (`staging_schema.md`) using `get_ontology_schema_description`.
         - **Standard**: Must include `Data Type` and `Mandatory` status for all node properties.
 
-12. **Data Model Archival**
+12. **Data Model Archival & Documentation**
     Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema.
     - **Physical Schema**: Generate `staging_schema_contraint.cypher` to enforce data integrity (existence constraints for mandatory properties) while keeping semantic metadata (labels, definitions, URIs) as comments.
-    - **Documentation**: Use `get_ontology_schema_description` to provide a human-readable Markdown summary of the graph topology and business definitions.
+    - **Documentation (Standard)**: Use `get_ontology_schema_description` to provide a human-readable Markdown summary (`staging_schema.md`).
+        - **Alignment Heuristic (CRITICAL)**: Filter the "Node Labels (Classes)" table to only include **Effective Node Labels**. Use instance counts (`count > 0`), topological activity (outgoing relationships), and Pydantic Enum filtering to ensure the documented classes match the production Pydantic implementation.
+        - **Metadata**: Must include `Data Type` and `Mandatory` status for all node properties.
 
 13. **Integration & Round-Trip Validation**
     Perform a final validation gate before production deployment.

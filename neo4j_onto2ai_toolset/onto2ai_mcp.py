@@ -1508,18 +1508,24 @@ async def merge_semantic_individuals(
         db.close()
 
 @mcp.tool()
-async def get_ontology_schema_description(database: Optional[str] = None) -> str:
+async def get_ontology_schema_description(
+    database: Optional[str] = None,
+    use_heuristics: bool = True
+) -> str:
     """
     Retrieve said database schema description (Nodes, Relationships, Properties) as a string.
     Useful for LLM context or schema management.
+    
+    Args:
+        database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.
+        use_heuristics: If True, filters out metadata classes (Enums/Datatypes) using instance counts and topology.
     """
     from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
     
     db = get_staging_db(database) if database else semanticdb
     try:
-        # get_full_schema is synchronous, but we can return it directly.
-        # It performs blocking IO, but is acceptable here.
-        schema_text = get_full_schema(db)
+        # get_full_schema now supports heuristics
+        schema_text = get_full_schema(db, use_heuristics=use_heuristics)
         return schema_text
     except Exception as e:
         logger.error(f"Error getting ontology schema: {e}")

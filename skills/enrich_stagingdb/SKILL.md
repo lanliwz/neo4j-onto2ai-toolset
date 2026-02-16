@@ -231,7 +231,17 @@ To ensure the generated code is fully compatible with the graph, follow these Py
 
 **Why**: This 1:1 parity between the domain model and the graph schema enables type-safe, automated data ingestion and extraction without manual Cypher mapping.
 
-## Rules
+### 13. Effective Node Label Heuristic (Documentation Filtering)
+When generating final documentation (like `staging_schema.md`), use instance counts and topological activity to distinguish between primary Entity Classes and metadata/flattened classes.
+
+**Filtering Logic (Effective Label Calculation):**
+1.  **Direct Instances**: Any label with `count > 0` in the database is considered an effective Entity Class.
+2.  **Topological Activity**: Labels with outgoing relationships are considered structural classes and should be included.
+3.  **Domain Baseline**: Core entities (e.g., `Person`, `Employer`, `Account`, `Form1010`) are always kept regardless of instances.
+4.  **Leaf Node Rule (Exclusion)**: Labels with zero instances AND no outgoing relationships should be treated as **Datatypes** or **Enums**, even if they appear in the graph topology. They should be excluded from the main "Node Labels (Classes)" table but described in the "Graph Topology" and "Node Properties" sections.
+5.  **Pydantic Enum Filter**: Explicitly exclude any class that is implemented as a Pydantic `Enum` (identified by `enumValues` or `xsd_type` in metadata) from the Classes table.
+
+**Why**: This ensures the documentation matches the actual implemented model (where many ontological classes are flattened into properties) rather than listing every technical label used in the graph.
 
 ### ⚠️ CRITICAL: No Inline Properties on Named Individuals
 **NEVER store data attributes as inline properties on `owl__NamedIndividual` nodes.** All attributes must be modeled as relationships to `rdfs__Datatype` nodes.
