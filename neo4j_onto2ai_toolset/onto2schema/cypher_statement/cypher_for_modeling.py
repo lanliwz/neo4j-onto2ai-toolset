@@ -49,8 +49,11 @@ WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith
 '''
 
 node2node_relationship_return = r'''
-WITH r,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
-[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
+WITH n, m, r,
+     CASE apoc.meta.type(n.rdfs__label) WHEN 'LIST' THEN n.rdfs__label[0] ELSE n.rdfs__label END as n_label,
+     CASE apoc.meta.type(m.rdfs__label) WHEN 'LIST' THEN m.rdfs__label[0] ELSE m.rdfs__label END as m_label
+WITH r,[word IN apoc.text.split(n_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
+[word IN apoc.text.split(m_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(start_node_raw, '') AS start_node,
 type(r) as relationship,
 apoc.text.join(end_node_raw, '') AS end_node
@@ -61,14 +64,19 @@ RETURN DISTINCT type(r) as relationship, properties(r) as annotation_properties
 '''
 
 start_nodes_return  = r'''
-WITH n,[word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw
+WITH n,
+     CASE apoc.meta.type(n.rdfs__label) WHEN 'LIST' THEN n.rdfs__label[0] ELSE n.rdfs__label END as n_label
+WITH n,[word IN apoc.text.split(n_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw
 RETURN DISTINCT apoc.text.join(start_node_raw, '') AS start_node, 
 apoc.map.removeKeys(properties(n), ['embedding']) as annotation_properties
 '''
 
 start_nodes_dataproperty_return = r'''
-WITH r, m, [word IN apoc.text.split(n.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
-[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
+WITH n, m, r,
+     CASE apoc.meta.type(n.rdfs__label) WHEN 'LIST' THEN n.rdfs__label[0] ELSE n.rdfs__label END as n_label,
+     CASE apoc.meta.type(m.rdfs__label) WHEN 'LIST' THEN m.rdfs__label[0] ELSE m.rdfs__label END as m_label
+WITH r, m, [word IN apoc.text.split(n_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS start_node_raw,
+[word IN apoc.text.split(m_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(start_node_raw, '') AS start_node,
 type(r) as relationship,
 apoc.text.join(end_node_raw, '') AS end_node,
@@ -77,7 +85,9 @@ r.cardinality as cardinality
 '''
 
 end_nodes_return = r'''
-WITH m,[word IN apoc.text.split(m.rdfs__label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
+WITH m,
+     CASE apoc.meta.type(m.rdfs__label) WHEN 'LIST' THEN m.rdfs__label[0] ELSE m.rdfs__label END as m_label
+WITH m,[word IN apoc.text.split(m_label, '[-\s]') | toUpper(left(word, 1)) + substring(word, 1)] AS end_node_raw
 RETURN distinct apoc.text.join(end_node_raw, '') AS end_node, 
 apoc.map.removeKeys(properties(m), ['embedding']) as annotation_properties
 '''
