@@ -655,6 +655,9 @@ async def generate_schema_constraints(
         schema_data = {}
         for row in results:
             cls_label = row['class_label']
+            if isinstance(cls_label, list):
+                cls_label = cls_label[0]  # Take first label if multiple exist
+            
             if cls_label not in schema_data:
                 schema_data[cls_label] = {
                     "definition": row['class_definition'],

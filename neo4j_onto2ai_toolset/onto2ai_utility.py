@@ -136,14 +136,40 @@ class Neo4jDatabase:
         tx.run(query, properties1=node1_properties, properties2=node2_properties)
 
     def get_label_counts(self) -> Dict[str, int]:
-        """Fetch instance counts for all labels in the database."""
-        query = """
-        MATCH (n)
-        UNWIND labels(n) AS label
-        RETURN label, count(n) AS count
-        """
-        results = self.execute_cypher(query, name="get_label_counts")
-        return {row['label']: row['count'] for row in results}
+        """Fetch instance counts for all labels and concepts in the database."""
+        import re
+        
+        # Query 1: Regular Neo4j Labels
+        q1 = "MATCH (n) UNWIND labels(n) AS label RETURN label, count(n) AS count"
+        
+        # Query 2: Ontological types (for non-materialized datasets)
+        # We look for nodes connected to a class via rdf__type
+        q2 = "MATCH (c:owl__Class)<-[:rdf__type]-(i) RETURN c.rdfs__label AS label, count(i) AS count"
+        
+        counts = {}
+        
+        def to_camel(s):
+            if not s: return ""
+            return "".join(word.capitalize() for word in re.split(r"[-\s]", str(s)))
+
+        try:
+            # Get regular label counts
+            results1 = self.execute_cypher(q1, name="get_label_counts_core")
+            for row in results1:
+                lbl = row['label']
+                counts[lbl] = row['count']
+                
+            # Get ontological type counts
+            results2 = self.execute_cypher(q2, name="get_label_counts_onto")
+            for row in results2:
+                raw_lbl = row['label']
+                camel_lbl = to_camel(raw_lbl)
+                # Aggregate
+                counts[camel_lbl] = counts.get(camel_lbl, 0) + row['count']
+        except Exception as e:
+            ontoToollogger.error(f"Error in get_label_counts: {e}")
+            
+        return counts
 
 def get_schema(start_node: str, db: Neo4jDatabase):
     schema = ("\n".join(db.get_node2node_relationship(start_node)) + '\n'
