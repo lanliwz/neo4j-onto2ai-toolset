@@ -1,0 +1,851 @@
+{
+  "nodes": [
+    {
+      "label": "W-2 form",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasAllocatedTips",
+          "type": "allocatedTips",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasBox12Codes",
+          "type": "box12Codes",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": null
+        },
+        {
+          "name": "hasDependentCareBenefits",
+          "type": "dependentCareBenefits",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasFederalIncomeTaxWithheld",
+          "type": "federalIncomeTaxWithheld",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasMedicareTaxWithheld",
+          "type": "medicareTaxWithheld",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasMedicareWagesAndTips",
+          "type": "medicareWagesAndTips",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasNonqualifiedPlans",
+          "type": "nonqualifiedPlans",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasOtherInfo",
+          "type": "otherInfo",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": null
+        },
+        {
+          "name": "hasReportDateTime",
+          "type": "dateTime",
+          "description": "Relates a W-2 form to the date and time at which the form is reported or issued for reporting purposes.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
+        },
+        {
+          "name": "hasRetirementPlan",
+          "type": "retirementPlan",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasSocialSecurityTaxWithheld",
+          "type": "socialSecurityTaxWithheld",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasSocialSecurityTips",
+          "type": "socialSecurityTips",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasSocialSecurityWages",
+          "type": "socialSecurityWages",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasTaxYear",
+          "type": "taxYear",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasThirdPartySickPay",
+          "type": "thirdPartySickPay",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "hasWagesTipsOtherComp",
+          "type": "wagesTipsOtherComp",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "isProvidedBy",
+          "type": "reportingParty",
+          "description": "Relates a W-2 form to the reporting party that provides and issues it for wage and tax reporting purposes.",
+          "mandatory": true,
+          "cardinality": "1..*",
+          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
+        },
+        {
+          "name": "isStatutoryEmployee",
+          "type": "statutoryEmployee",
+          "description": null,
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": null
+        },
+        {
+          "name": "isSubmittedBy",
+          "type": "submitter",
+          "description": "Relates a W-2 form to the submitter that files or submits it to the appropriate authority or recipient.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
+        }
+      ],
+      "description": "IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee.",
+      "uri": "https://example.org/ontology/W2Form"
+    },
+    {
+      "label": "crypto asset",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasTokenSymbol",
+          "type": "string",
+          "description": "The ticker symbol for the crypto asset.",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": "https://model.onto2ai.com/schema/hasTokenSymbol"
+        }
+      ],
+      "description": "A digital asset designed to work as a medium of exchange.",
+      "uri": "https://model.onto2ai.com/schema/CryptoAsset"
+    },
+    {
+      "label": "tax authority",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "functional entity that is responsible for the administration and enforcement of tax laws",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority"
+    },
+    {
+      "label": "person",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasAge",
+          "type": "age",
+          "description": "relates something to the length of time it has existed",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/hasAge"
+        },
+        {
+          "name": "hasCitizenship",
+          "type": "citizenship",
+          "description": "links a person to their country of citizenship",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasCitizenship"
+        },
+        {
+          "name": "hasDateOfBirth",
+          "type": "dateOfBirth",
+          "description": "identifies the date on which an individual was born",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfBirth"
+        },
+        {
+          "name": "hasDateOfDeath",
+          "type": "dateOfDeath",
+          "description": "identifies the date on which an individual died",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfDeath"
+        },
+        {
+          "name": "hasName",
+          "type": "personName",
+          "description": "is known by",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://www.omg.org/spec/Commons/Designators/hasName"
+        },
+        {
+          "name": "hasPlaceOfBirth",
+          "type": "birthPlace",
+          "description": "identifies the location where an individual was born",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasPlaceOfBirth"
+        },
+        {
+          "name": "hasResidence",
+          "type": "fullAddress",
+          "description": "identifies a dwelling where an individual lives",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasResidence"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "ssn",
+          "description": "Links a person to their tax identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "itin",
+          "description": "Relates a person to an Individual Taxpayer Identification Number (ITIN) that serves as that person’s tax identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        }
+      ],
+      "description": "individual human being, with consciousness of self",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person"
+    },
+    {
+      "label": "individual tax return",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasReportDateTime",
+          "type": "dateTime",
+          "description": "Links an individual tax return to the date and time at which it was reported or filed.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
+        },
+        {
+          "name": "isProvidedBy",
+          "type": "reportingParty",
+          "description": "Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.",
+          "mandatory": true,
+          "cardinality": "1..*",
+          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
+        },
+        {
+          "name": "isSubmittedBy",
+          "type": "submitter",
+          "description": "Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
+        }
+      ],
+      "description": "A tax return filed by an individual person.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn"
+    },
+    {
+      "label": "monetary amount",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "A quantity of money, denominated in a specific currency.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount"
+    },
+    {
+      "label": "2025 Form 1040",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasReportDateTime",
+          "type": "dateTime",
+          "description": "Links an individual tax return to the date and time at which it was reported or filed.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
+        },
+        {
+          "name": "isProvidedBy",
+          "type": "reportingParty",
+          "description": "Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.",
+          "mandatory": true,
+          "cardinality": "1..*",
+          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
+        },
+        {
+          "name": "isSubmittedBy",
+          "type": "submitter",
+          "description": "Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
+        }
+      ],
+      "description": "The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability.",
+      "uri": "https://example.org/tax/filings/2025-Form1040"
+    },
+    {
+      "label": "tax payer",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasAge",
+          "type": "age",
+          "description": "relates something to the length of time it has existed",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/hasAge"
+        },
+        {
+          "name": "hasCitizenship",
+          "type": "citizenship",
+          "description": "links a person to their country of citizenship",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasCitizenship"
+        },
+        {
+          "name": "hasDateOfBirth",
+          "type": "dateOfBirth",
+          "description": "identifies the date on which an individual was born",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfBirth"
+        },
+        {
+          "name": "hasDateOfDeath",
+          "type": "dateOfDeath",
+          "description": "identifies the date on which an individual died",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfDeath"
+        },
+        {
+          "name": "hasName",
+          "type": "personName",
+          "description": "is known by",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://www.omg.org/spec/Commons/Designators/hasName"
+        },
+        {
+          "name": "hasPlaceOfBirth",
+          "type": "birthPlace",
+          "description": "identifies the location where an individual was born",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasPlaceOfBirth"
+        },
+        {
+          "name": "hasResidence",
+          "type": "fullAddress",
+          "description": "identifies a dwelling where an individual lives",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasResidence"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "ssn",
+          "description": "Links a person to their tax identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "itin",
+          "description": "Relates a tax payer to the Individual Taxpayer Identification Number (ITIN) assigned to them for tax reporting and identification purposes.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "itin",
+          "description": "Relates a person to an Individual Taxpayer Identification Number (ITIN) that serves as that person’s tax identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        }
+      ],
+      "description": "A person who is obligated to pay taxes and is identified by a tax identifier.",
+      "uri": "https://example.org/ontology/TaxPayer"
+    },
+    {
+      "label": "employer",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasAddress",
+          "type": "fullAddress",
+          "description": "employer business address",
+          "mandatory": false,
+          "cardinality": "1..*",
+          "uri": null
+        },
+        {
+          "name": "hasEIN",
+          "type": "ein",
+          "description": "Employer Identification Number",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasEmployerName",
+          "type": "employerName",
+          "description": "legal name of the employer",
+          "mandatory": false,
+          "cardinality": "1",
+          "uri": null
+        },
+        {
+          "name": "hasPhoneNumber",
+          "type": "phoneNumber",
+          "description": "contact phone number",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "uri": null
+        }
+      ],
+      "description": "A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes.",
+      "uri": "https://example.org/ontology/Employer"
+    },
+    {
+      "label": "organization",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasEIN",
+          "type": "ein",
+          "description": "Links an organization to its employer identification number.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasEIN"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "ein",
+          "description": "Relates an organization to its Employer Identification Number (EIN) used as the organization’s tax identification identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        }
+      ],
+      "description": "framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals",
+      "uri": "https://www.omg.org/spec/Commons/Organizations/Organization"
+    }
+  ],
+  "relationships": [
+    {
+      "type": "hasReportStatus",
+      "start_node_label": "W-2 form",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "description": "Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
+    },
+    {
+      "type": "issuedBy",
+      "start_node_label": "W-2 form",
+      "end_node_label": "employer",
+      "properties": [],
+      "description": "employer that issued the W-2",
+      "uri": null
+    },
+    {
+      "type": "issuedTo",
+      "start_node_label": "W-2 form",
+      "end_node_label": "person",
+      "properties": [],
+      "description": "employee who received the W-2",
+      "uri": null
+    },
+    {
+      "type": "isTradedOn",
+      "start_node_label": "crypto asset",
+      "end_node_label": "exchange",
+      "properties": [],
+      "description": "Indicates the exchange where the asset is listed.",
+      "uri": "https://model.onto2ai.com/schema/isTradedOn"
+    },
+    {
+      "type": "hasJurisdiction",
+      "start_node_label": "tax authority",
+      "end_node_label": "jurisdiction",
+      "properties": [],
+      "description": "Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.",
+      "uri": "https://www.omg.org/spec/Commons/RegulatoryAgencies/hasJurisdiction"
+    },
+    {
+      "type": "isEmployedBy",
+      "start_node_label": "person",
+      "end_node_label": "employer",
+      "properties": [],
+      "description": "indicates the employer",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
+    },
+    {
+      "type": "isSubmittedTo",
+      "start_node_label": "individual tax return",
+      "end_node_label": "Internal Revenue Service",
+      "properties": [],
+      "description": "identifies the party to which the report is submitted",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
+    },
+    {
+      "type": "hasTaxableIncome",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
+    },
+    {
+      "type": "hasReportStatus",
+      "start_node_label": "individual tax return",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
+    },
+    {
+      "type": "hasAGI",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
+    },
+    {
+      "type": "hasTotalTax",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
+    },
+    {
+      "type": "hasTotalPayments",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
+    },
+    {
+      "type": "hasRefundAmount",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
+    },
+    {
+      "type": "hasAmountOwed",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
+    },
+    {
+      "type": "hasLine1aWages",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
+      "uri": "https://example.org/tax/irs/hasLine1a"
+    },
+    {
+      "type": "hasLine2bTaxableInterest",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
+      "uri": "https://example.org/tax/irs/hasLine2b"
+    },
+    {
+      "type": "hasLine3bOrdinaryDividends",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
+      "uri": "https://example.org/tax/irs/hasLine3b"
+    },
+    {
+      "type": "hasLine6bTaxableSocialSecurity",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
+      "uri": "https://example.org/tax/irs/hasLine6b"
+    },
+    {
+      "type": "hasLine12StandardDeduction",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
+      "uri": "https://example.org/tax/irs/hasLine12"
+    },
+    {
+      "type": "hasLine16TaxValue",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
+      "uri": "https://example.org/tax/irs/hasLine16"
+    },
+    {
+      "type": "hasLine19ChildTaxCredit",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
+      "uri": "https://example.org/tax/irs/hasLine19"
+    },
+    {
+      "type": "hasLine24TotalTax",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
+      "uri": "https://example.org/tax/irs/hasLine24"
+    },
+    {
+      "type": "hasLine33TotalPayments",
+      "start_node_label": "individual tax return",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
+      "uri": "https://example.org/tax/irs/hasLine33"
+    },
+    {
+      "type": "isDenominatedIn",
+      "start_node_label": "monetary amount",
+      "end_node_label": "currency",
+      "properties": [],
+      "description": "Relates a monetary amount to the currency in which that amount is expressed.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/isDenominatedIn"
+    },
+    {
+      "type": "isSubmittedTo",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "Internal Revenue Service",
+      "properties": [],
+      "description": "identifies the party to which the report is submitted",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
+    },
+    {
+      "type": "hasTaxableIncome",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
+    },
+    {
+      "type": "hasReportStatus",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
+    },
+    {
+      "type": "hasAGI",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
+    },
+    {
+      "type": "hasTotalTax",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
+    },
+    {
+      "type": "hasTotalPayments",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
+    },
+    {
+      "type": "hasRefundAmount",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
+    },
+    {
+      "type": "hasAmountOwed",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
+    },
+    {
+      "type": "hasLine1aWages",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
+      "uri": "https://example.org/tax/irs/hasLine1a"
+    },
+    {
+      "type": "hasLine2bTaxableInterest",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
+      "uri": "https://example.org/tax/irs/hasLine2b"
+    },
+    {
+      "type": "hasLine3bOrdinaryDividends",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
+      "uri": "https://example.org/tax/irs/hasLine3b"
+    },
+    {
+      "type": "hasLine6bTaxableSocialSecurity",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
+      "uri": "https://example.org/tax/irs/hasLine6b"
+    },
+    {
+      "type": "hasLine12StandardDeduction",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
+      "uri": "https://example.org/tax/irs/hasLine12"
+    },
+    {
+      "type": "hasLine16TaxValue",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
+      "uri": "https://example.org/tax/irs/hasLine16"
+    },
+    {
+      "type": "hasLine19ChildTaxCredit",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
+      "uri": "https://example.org/tax/irs/hasLine19"
+    },
+    {
+      "type": "hasLine24TotalTax",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
+      "uri": "https://example.org/tax/irs/hasLine24"
+    },
+    {
+      "type": "hasLine33TotalPayments",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "monetary amount",
+      "properties": [],
+      "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
+      "uri": "https://example.org/tax/irs/hasLine33"
+    },
+    {
+      "type": "isEmployedBy",
+      "start_node_label": "tax payer",
+      "end_node_label": "employer",
+      "properties": [],
+      "description": "indicates the employer",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
+    }
+  ],
+  "metadata": {
+    "source_classes": [
+      "organization",
+      "exchange",
+      "W-2 form",
+      "crypto asset",
+      "tax authority",
+      "person",
+      "jurisdiction",
+      "physical address",
+      "filing status concept",
+      "reportStatus",
+      "Form 1120 U.S. Corporation Income Tax Return",
+      "individual tax return",
+      "monetary amount",
+      "currency",
+      "2025 Form 1040",
+      "tax payer",
+      "employer"
+    ],
+    "engine": "Onto2AI-Materialized",
+    "database": "stagingdb"
+  }
+}

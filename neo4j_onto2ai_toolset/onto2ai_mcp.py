@@ -1,6 +1,8 @@
 import json
 import sys
 import os
+import keyword
+import re
 from typing import List, Union, Optional, Dict, Any
 
 # Add project root to sys.path to allow running as a script
@@ -35,6 +37,256 @@ def to_camel_case(text):
     if not parts: return text_str
     # Return camelCase
     return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+
+def _to_pascal_case_label(label: str) -> str:
+    """Convert ontology labels/predicates to valid PascalCase Python class names."""
+    tokens = re.findall(r"[A-Za-z0-9]+", str(label or ""))
+    if not tokens:
+        return "Model"
+
+    # If label starts with a numeric token, move it to a suffix for a valid identifier.
+    if tokens and tokens[0].isdigit():
+        suffix = tokens[0]
+        head = "".join(t.capitalize() for t in tokens[1:]) or "Model"
+        return f"{head}_{suffix}"
+
+    name = "".join(t.capitalize() for t in tokens)
+    if not name:
+        return "Model"
+    if name[0].isdigit():
+        name = f"Model_{name}"
+    return name
+
+def _to_snake_case(name: str) -> str:
+    s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", str(name or ""))
+    s = re.sub(r"[^A-Za-z0-9]+", "_", s).strip("_").lower()
+    if not s:
+        s = "field"
+    if s[0].isdigit():
+        s = f"f_{s}"
+    if keyword.iskeyword(s):
+        s = f"{s}_"
+    return s
+
+def _map_type(type_name: str, class_by_norm: Dict[str, str]) -> str:
+    """Map ontology/graph types to Python type names."""
+    raw = str(type_name or "").strip()
+    if not raw:
+        return "str"
+
+    norm = raw.lower().replace(" ", "").replace("_", "")
+    if norm.startswith("xsd:"):
+        norm = norm[4:]
+
+    if norm in {"string", "str"}:
+        return "str"
+    if norm in {"integer", "int"}:
+        return "int"
+    if norm in {"decimal"}:
+        return "Decimal"
+    if norm in {"float", "double", "number"}:
+        return "float"
+    if norm in {"boolean", "bool"}:
+        return "bool"
+    if norm == "date":
+        return "date"
+    if norm in {"datetime", "datetimeoffset", "timestamp"}:
+        return "datetime"
+
+    return class_by_norm.get(norm, "str")
+
+def _merge_cardinality(cards: List[str], has_duplicates: bool) -> str:
+    """Conservative cardinality merge when same predicate appears multiple times."""
+    normalized = [str(c or "").strip() for c in cards if c is not None]
+    if has_duplicates:
+        return "0..*"
+    if "1..*" in normalized:
+        return "1..*"
+    if "0..*" in normalized:
+        return "0..*"
+    if "1" in normalized and "0..1" not in normalized and "optional" not in normalized:
+        return "1"
+    if "1" in normalized and ("0..1" in normalized or "optional" in normalized):
+        return "0..1"
+    if "0..1" in normalized:
+        return "0..1"
+    if "optional" in normalized:
+        return "0..1"
+    return "0..1"
+
+def _render_field_line(field_name: str, alias: str, py_type: str, cardinality: str, description: Optional[str]) -> str:
+    desc = json.dumps(description if description is not None else "")
+    if cardinality == "1":
+        return f'    {field_name}: {py_type} = Field(alias="{alias}", description={desc})'
+    if cardinality == "1..*":
+        return (
+            f'    {field_name}: List[{py_type}] = Field('
+            f'default_factory=list, min_length=1, alias="{alias}", description={desc})'
+        )
+    if cardinality == "0..*":
+        return f'    {field_name}: List[{py_type}] = Field(default_factory=list, alias="{alias}", description={desc})'
+    return f'    {field_name}: Optional[{py_type}] = Field(default=None, alias="{alias}", description={desc})'
+
+def _generate_pydantic_strict(data_model: DataModel) -> str:
+    """Deterministic strict-parity generator from DataModel to Pydantic v2 code."""
+    nodes = data_model.nodes or []
+    relationships = data_model.relationships or []
+
+    class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in nodes}
+    class_by_norm = {
+        re.sub(r"[^a-z0-9]+", "", n.label.lower()): class_name_by_label[n.label]
+        for n in nodes
+    }
+
+    # Build per-class predicate entries from node properties and relationships.
+    by_class: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    for n in nodes:
+        by_class[n.label] = {}
+
+        for p in (n.properties or []):
+            alias = p.name
+            by_class[n.label].setdefault(alias, []).append(
+                {
+                    "type": _map_type(p.type, class_by_norm),
+                    "cardinality": p.cardinality or ("1" if p.mandatory else "0..1"),
+                    "description": p.description,
+                }
+            )
+
+    for r in relationships:
+        src = r.start_node_label
+        if src not in by_class:
+            continue
+        alias = r.type
+        tgt_class = class_name_by_label.get(r.end_node_label, "str")
+        by_class[src].setdefault(alias, []).append(
+            {
+                "type": tgt_class,
+                "cardinality": "0..1",  # relationship cardinality isn't present on Relationship model
+                "description": r.description,
+            }
+        )
+
+    lines: List[str] = [
+        "from __future__ import annotations",
+        "",
+        "from datetime import date, datetime",
+        "from decimal import Decimal",
+        "from typing import List, Optional",
+        "",
+        "from pydantic import BaseModel, ConfigDict, Field",
+        "",
+    ]
+
+    for n in nodes:
+        cls = class_name_by_label[n.label]
+        lines.append(f"class {cls}(BaseModel):")
+        doc = n.description or ""
+        lines.append(f'    """{doc}"""')
+        lines.append("")
+        lines.append('    model_config = ConfigDict(populate_by_name=True, extra="forbid")')
+        lines.append("")
+
+        alias_map = by_class.get(n.label, {})
+        for alias, entries in alias_map.items():
+            field_name = _to_snake_case(alias)
+            card = _merge_cardinality([e.get("cardinality") for e in entries], has_duplicates=len(entries) > 1)
+            # Choose most specific non-str type when possible.
+            type_candidates = [e.get("type") for e in entries if e.get("type")]
+            py_type = "str"
+            for t in type_candidates:
+                if t != "str":
+                    py_type = t
+                    break
+            desc = next((e.get("description") for e in entries if e.get("description")), "")
+            lines.append(_render_field_line(field_name, alias, py_type, card, desc))
+
+        if not alias_map:
+            lines.append("    pass")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+def _format_schema_prompt_markdown(data_model: DataModel) -> str:
+    """Render schema in markdown prompt format with 4 sections."""
+    nodes = data_model.nodes or []
+    relationships = data_model.relationships or []
+
+    class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in nodes}
+
+    # Section 1: Node Labels (Classes)
+    node_rows = [
+        (class_name_by_label.get(n.label, n.label), n.uri or "", n.description or "")
+        for n in nodes
+    ]
+
+    # Section 2: Relationship Types (deduplicated by type)
+    rel_agg: Dict[str, Dict[str, str]] = {}
+    for r in relationships:
+        rel_type = r.type
+        if rel_type not in rel_agg:
+            rel_agg[rel_type] = {
+                "uri": r.uri or "",
+                "definition": r.description or "",
+                "cardinality": "",  # not available in Relationship model
+            }
+        else:
+            if not rel_agg[rel_type]["uri"] and r.uri:
+                rel_agg[rel_type]["uri"] = r.uri
+            if not rel_agg[rel_type]["definition"] and r.description:
+                rel_agg[rel_type]["definition"] = r.description
+
+    rel_rows = [(k, v["uri"], v["definition"], v["cardinality"]) for k, v in sorted(rel_agg.items())]
+
+    # Section 3: Node Properties
+    prop_rows = []
+    for n in nodes:
+        cls = class_name_by_label.get(n.label, n.label)
+        for p in (n.properties or []):
+            card = (p.cardinality or "").strip()
+            mandatory = "Yes" if card.startswith("1") else "No"
+            prop_rows.append((cls, p.name, p.type, mandatory))
+
+    # Section 4: Graph Topology
+    topology_rows = []
+    for r in relationships:
+        start = class_name_by_label.get(r.start_node_label, _to_pascal_case_label(r.start_node_label))
+        end = class_name_by_label.get(r.end_node_label, _to_pascal_case_label(r.end_node_label))
+        topology_rows.append(f"(:{start})-[:{r.type}]->(:{end})")
+
+    lines: List[str] = []
+    lines.append("# Neo4j Schema Prompt")
+    lines.append("")
+    lines.append("## Section 1: Node Labels (Classes)")
+    lines.append("")
+    lines.append("| Label | URI | Definition |")
+    lines.append("| --- | --- | --- |")
+    for label, uri, definition in node_rows:
+        lines.append(f"| {label} | {uri} | {definition} |")
+
+    lines.append("")
+    lines.append("## Section 2: Relationship Types")
+    lines.append("")
+    lines.append("| Relationship | URI | Definition | Cardinality |")
+    lines.append("| --- | --- | --- | --- |")
+    for rel, uri, definition, card in rel_rows:
+        lines.append(f"| {rel} | {uri} | {definition} | {card} |")
+
+    lines.append("")
+    lines.append("## Section 3: Node Properties")
+    lines.append("")
+    lines.append("| Node Label | Property | Data Type | Mandatory |")
+    lines.append("| --- | --- | --- | --- |")
+    for node_label, prop, dtype, mandatory in prop_rows:
+        lines.append(f"| {node_label} | {prop} | {dtype} | {mandatory} |")
+
+    lines.append("")
+    lines.append("## Section 4: Graph Topology")
+    lines.append("")
+    for topology in topology_rows:
+        lines.append(f"- `{topology}`")
+
+    return "\n".join(lines).rstrip() + "\n"
 
 # --- MCP TOOLS ---
 
@@ -582,6 +834,10 @@ async def generate_schema_code(
             data_model = await enhance_schema(class_names, instructions, database=database)
         else:
             data_model = await extract_data_model(class_names, database=database)
+
+        # Deterministic strict-parity Pydantic generation from extracted DataModel.
+        if target_type == "pydantic":
+            return _generate_pydantic_strict(data_model)
             
         # 2. Generate code
         prompt = f"""
@@ -1516,26 +1772,20 @@ async def get_ontology_schema_description(
     use_heuristics: bool = True
 ) -> str:
     """
-    Retrieve said database schema description (Nodes, Relationships, Properties) as a string.
-    Useful for LLM context or schema management.
+    Retrieve schema description in markdown prompt format:
+    1) Node Labels (Classes), 2) Relationship Types, 3) Node Properties, 4) Graph Topology.
     
     Args:
         database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.
-        use_heuristics: If True, filters out metadata classes (Enums/Datatypes) using instance counts and topology.
+        use_heuristics: Kept for backward compatibility. Currently ignored because the output
+                        is generated directly from extract_data_model for strict schema parity.
     """
-    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
-    
-    db = get_staging_db(database) if database else semanticdb
     try:
-        # get_full_schema now supports heuristics
-        schema_text = get_full_schema(db, use_heuristics=use_heuristics)
-        return schema_text
+        data_model = await extract_data_model(class_names=None, database=database)
+        return _format_schema_prompt_markdown(data_model)
     except Exception as e:
         logger.error(f"Error getting ontology schema: {e}")
         return f"Error: {e}"
-    finally:
-        if database:
-            db.close()
 
 if __name__ == "__main__":
     # Support HTTP transport if requested via command line
@@ -1556,4 +1806,3 @@ if __name__ == "__main__":
     else:
         # By default, run using stdio for MCP integration
         mcp.run()
-
