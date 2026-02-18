@@ -11,7 +11,12 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from mcp.server.fastmcp import FastMCP
-from neo4j_onto2ai_toolset.onto2ai_tool_config import semanticdb, get_llm, get_staging_db
+from neo4j_onto2ai_toolset.onto2ai_tool_config import (
+    semanticdb,
+    get_llm,
+    get_staging_db,
+    NEO4J_STAGING_DB_NAME,
+)
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
 from neo4j_onto2ai_toolset.onto2ai_utility import get_full_schema, get_schema
@@ -452,8 +457,8 @@ async def get_materialized_schema(
     
     Args:
         class_names: One or more class labels to query (e.g., "person" or ["person", "account"])
-        database: Optional database name to query. Defaults to the main ontology database.
-                  Use "stagingdb" to query the staging database.
+        database: Optional database name. This tool only supports the master ontology
+                  database. If provided, it must match the master DB name.
     
     Formatting Instructions (CRITICAL):
     - ALWAYS show the output in two distinct sections: (1) Classes and (2) Relationships.
@@ -473,11 +478,33 @@ async def get_materialized_schema(
         class_names = [class_names]
     
     labels = [label.strip() for label in class_names]
-    
-    # Use specified database or default to semanticdb
-    db = get_staging_db(database) if database else semanticdb
-    
-    logger.info(f"Fetching enhanced materialized schema for: {labels} from database: {database or 'default'}")
+
+    master_db_name = getattr(semanticdb, "_database_name", None)
+    if database:
+        requested_db = database.strip()
+        is_staging_name = requested_db.lower() == str(NEO4J_STAGING_DB_NAME).lower()
+        if is_staging_name or (master_db_name and requested_db != master_db_name):
+            logger.warning(
+                "Rejected get_materialized_schema request for non-master database",
+                extra={
+                    "requested_database": requested_db,
+                    "master_database": master_db_name,
+                    "staging_database": NEO4J_STAGING_DB_NAME,
+                },
+            )
+            return {
+                "error": (
+                    "get_materialized_schema is master-only and cannot query staging databases. "
+                    "Use staging_materialized_schema to extract from master into stagingdb."
+                ),
+                "database": requested_db,
+                "master_database": master_db_name,
+            }
+
+    db = semanticdb
+    logger.info(
+        f"Fetching enhanced materialized schema for: {labels} from master database: {master_db_name or 'semanticdb'}"
+    )
     try:
         results = db.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="get_materialized_schema_tool")
         
@@ -517,24 +544,19 @@ async def get_materialized_schema(
             })
             
         return {
-
-
-            "database": database or "default",
+            "database": master_db_name or "semanticdb",
             "section_1_classes": list(classes_section.values()),
             "section_2_relationships": relationships_section
         }
     except Exception as e:
         logger.error(f"Error fetching enhanced materialized schema: {e}")
         return {"error": str(e)}
-    finally:
-        # Close the connection if using a custom database
-        if database:
-            db.close()
 
 @mcp.tool()
 async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """
-    Retrieve the raw ontological schema (meta-model view) for one or more classes.
+    Retrieve the raw ontological schema (meta-model view) for one or more classes
+    from the master ontology database.
     
     Formatting Instructions (CRITICAL):
     - ALWAYS show the output in two distinct sections: (1) Classes and (2) Ontological Definitions.
