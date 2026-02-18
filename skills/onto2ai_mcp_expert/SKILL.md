@@ -22,8 +22,8 @@ async def my_new_tool(param: str) -> str:
 
 ### Execution Modes
 The server supports two primary transports:
-- **Stdio (Default)**: Best for direct integration with local agents. Run with `python neo4j_onto2ai_toolset/onto2ai_mcp.py`.
-- **HTTP (SSE)**: Best for remote or shared access. Run with `python neo4j_onto2ai_toolset/onto2ai_mcp.py http [port]`.
+- **Stdio (Default)**: Best for direct integration with local agents. Run with `onto2ai-mcp` or `python -m neo4j_onto2ai_toolset.onto2ai_mcp`.
+- **HTTP (SSE)**: Best for remote or shared access. Run with `onto2ai-mcp http [port]` or `python -m neo4j_onto2ai_toolset.onto2ai_mcp http [port]`.
 
 ### Key Dependencies
 - **FastMCP**: The core framework for tool registration.
@@ -31,8 +31,15 @@ The server supports two primary transports:
 - **Logger**: All events should be logged via the standard project `logger`.
 
 ### Specialized Schema Tools
-- **`get_ontology_schema_description`**: Generates a full textual/Markdown summary of a Neo4j database schema (Labels, Relationships, Properties, Metadata).
+- **`get_ontology_schema_description`**: Generates a full textual/Markdown summary with:
+  1) Node Labels (including node type),
+  2) Relationship Types,
+  3) Node Properties,
+  4) Graph Topology,
+  5) Enumeration Members.
 - **`generate_schema_code` (target_type='graph_schema')**: Invokes the schema description logic to produce a deployment-ready representation of the graph model.
+- **`generate_schema_code` (target_type='pydantic')**: Deterministically emits Python `Enum` classes when `owl__NamedIndividual` members are linked via `rdf__type`.
+- **`generate_schema_constraints`**: Emits datatype `IS NOT NULL` constraints and enum-aware mandatory relationship comments.
 
 ## Maintenance & Debugging
 - **JSON Outputs**: When returning complex data, prefer returning Pydantic models (like `DataModel`) or well-structured dictionaries.

@@ -8,6 +8,23 @@
 // URI: https://example.org/tax/filings/2025-Form1040
 // Mandatory property: isProvidedBy (cardinality: 1..*)
 CREATE CONSTRAINT Form1040_2025_isProvidedBy_Required IF NOT EXISTS FOR (n:`Form1040_2025`) REQUIRE n.`isProvidedBy` IS NOT NULL;
+// Mandatory named_individual relationship: isSubmittedTo -> Internal Revenue Service (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService)
+// Mandatory class relationship: hasTaxableIncome -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory enum relationship: hasReportStatus -> reportStatus (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept). members=['Accepted', 'Draft', 'Rejected', 'Submitted']
+// Mandatory class relationship: hasAGI -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasTotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasTotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasRefundAmount -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasAmountOwed -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine1aWages -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine2bTaxableInterest -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine3bOrdinaryDividends -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine6bTaxableSocialSecurity -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine12StandardDeduction -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine16TaxValue -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine19ChildTaxCredit -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine24TotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine33TotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
 
 // Class: Form 1120 U.S. Corporation Income Tax Return
 // Definition: An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability.
@@ -32,6 +49,9 @@ CREATE CONSTRAINT W2Form_hasMedicareWagesAndTips_Required IF NOT EXISTS FOR (n:`
 CREATE CONSTRAINT W2Form_hasMedicareTaxWithheld_Required IF NOT EXISTS FOR (n:`W2Form`) REQUIRE n.`hasMedicareTaxWithheld` IS NOT NULL;
 // Mandatory property: hasTaxYear (cardinality: 1)
 CREATE CONSTRAINT W2Form_hasTaxYear_Required IF NOT EXISTS FOR (n:`W2Form`) REQUIRE n.`hasTaxYear` IS NOT NULL;
+// Mandatory enum relationship: hasReportStatus -> reportStatus (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept). members=['Accepted', 'Draft', 'Rejected', 'Submitted']
+// Mandatory class relationship: issuedBy -> employer (cardinality: 1, uri: https://example.org/ontology/Employer)
+// Mandatory class relationship: issuedTo -> person (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person)
 
 // Class: crypto asset
 // Definition: A digital asset designed to work as a medium of exchange.
@@ -66,6 +86,23 @@ CREATE CONSTRAINT Employer_hasEIN_Required IF NOT EXISTS FOR (n:`Employer`) REQU
 // URI: https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn
 // Mandatory property: isProvidedBy (cardinality: 1..*)
 CREATE CONSTRAINT IndividualTaxReturn_isProvidedBy_Required IF NOT EXISTS FOR (n:`IndividualTaxReturn`) REQUIRE n.`isProvidedBy` IS NOT NULL;
+// Mandatory named_individual relationship: isSubmittedTo -> Internal Revenue Service (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService)
+// Mandatory class relationship: hasTaxableIncome -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory enum relationship: hasReportStatus -> reportStatus (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept). members=['Accepted', 'Draft', 'Rejected', 'Submitted']
+// Mandatory class relationship: hasAGI -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasTotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasTotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasRefundAmount -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasAmountOwed -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine1aWages -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine2bTaxableInterest -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine3bOrdinaryDividends -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine6bTaxableSocialSecurity -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine12StandardDeduction -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine16TaxValue -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine19ChildTaxCredit -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine24TotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasLine33TotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
 
 // Class: jurisdiction
 // Definition: power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area
@@ -74,6 +111,7 @@ CREATE CONSTRAINT IndividualTaxReturn_isProvidedBy_Required IF NOT EXISTS FOR (n
 // Class: monetary amount
 // Definition: A quantity of money, denominated in a specific currency.
 // URI: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount
+// Mandatory enum relationship: isDenominatedIn -> currency (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency). members=['Australian Dollar', 'British Pound (Sterling)', 'Canadian Dollar', 'Chinese Yuan', 'Euro']
 
 // Class: organization
 // Definition: framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals
@@ -98,6 +136,7 @@ CREATE CONSTRAINT Person_hasPlaceOfBirth_Required IF NOT EXISTS FOR (n:`Person`)
 // Class: tax authority
 // Definition: functional entity that is responsible for the administration and enforcement of tax laws
 // URI: https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority
+// Mandatory enum relationship: hasJurisdiction -> jurisdiction (cardinality: 1..*, uri: https://www.omg.org/spec/Commons/RegulatoryAgencies/Jurisdiction). members=['United States jurisdiction']
 
 // Class: tax payer
 // Definition: A person who is obligated to pay taxes and is identified by a tax identifier.

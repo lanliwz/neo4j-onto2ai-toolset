@@ -65,3 +65,10 @@ Open: `http://localhost:8180`
 - Extract full model view: `extract_data_model`
 - Run staging copy: `staging_materialized_schema`
 - Run staging consolidation: `consolidate_inheritance` or `consolidate_staging_db`
+
+## 9. Regenerate Local Schema Artifacts (Recommended)
+After enum/NamedIndividual or schema updates, regenerate local artifacts:
+- `staging/full_schema_data_model.json` from `extract_data_model`
+- `staging/schema_models.py` from `generate_schema_code(target_type='pydantic')`
+- `staging/schema_description.md` from `get_ontology_schema_description`
+- `staging/stagingdb_constraints_mcp.cypher` from `generate_schema_constraints`

@@ -20,10 +20,13 @@ ORDER BY memberCount DESC
 ```
 
 ## Pydantic Modeling
-When an enum class is identified, use the `generate_schema_code` tool with explicit instructions to render it as a Python `Enum`.
+When an enum class is identified, `generate_schema_code(target_type='pydantic')` now renders it as a Python `Enum` automatically when `owl__NamedIndividual` members exist via `rdf__type`.
 
-### Instruction Template
-> "Render the '{className}' class as a standard Python enum.Enum named '{PascalCaseName}'. Use the rdfs__label of its owl__NamedIndividual members to create the enum members. Referenced classes should use this Enum for their fields."
+### Verification Pattern
+After regeneration, confirm:
+- `staging/schema_models.py` contains `from enum import Enum`
+- Enum classes are present (for example, `class Currency(Enum):`)
+- Member constants are present (for example, `US_DOLLAR`, `MARRIED_FILING_JOINTLY`)
 
 ## UML Visualization
 In UML diagrams, ensure these classes use the `«enumeration»` stereotype.
@@ -33,3 +36,8 @@ In UML diagrams, ensure these classes use the `«enumeration»` stereotype.
 ## Maintenance
 - **New Members**: When adding new individuals to the database, always ensure they are linked to the correct class via `rdf__type`.
 - **Deduplication**: Periodically run deduplication queries to ensure that enumeration members are not duplicated across different URIs.
+- **Regeneration Workflow**: After enum changes, regenerate:
+  1. `staging/full_schema_data_model.json` via `extract_data_model`
+  2. `staging/schema_models.py` via `generate_schema_code(target_type='pydantic')`
+  3. `staging/schema_description.md` via `get_ontology_schema_description`
+  4. `staging/stagingdb_constraints_mcp.cypher` via `generate_schema_constraints`

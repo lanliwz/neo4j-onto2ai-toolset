@@ -34,6 +34,14 @@ Use MCP tools:
 - `consolidate_inheritance`
 - `consolidate_staging_db`
 - `get_ontology_schema_description`
+- `generate_schema_constraints`
+
+### Artifact Regeneration Workflow
+After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship changes:
+1. Regenerate full model data: `extract_data_model` -> `staging/full_schema_data_model.json`
+2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/schema_models.py`
+3. Regenerate schema docs: `get_ontology_schema_description` -> `staging/schema_description.md`
+4. Regenerate constraints: `generate_schema_constraints` -> `staging/stagingdb_constraints_mcp.cypher`
 
 ## Smoke Checks
 - MCP stdio startup succeeds.
@@ -41,6 +49,8 @@ Use MCP tools:
 - Client connects and lists tools.
 - At least one class query returns schema data.
 - Staging tools execute against `NEO4J_STAGING_DB_NAME`.
+- Enum members appear in schema description Section 5.
+- Pydantic output includes `Enum` classes when `owl__NamedIndividual` members exist.
 
 ## Common Failures
 

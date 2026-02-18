@@ -211,6 +211,10 @@ Maintain a textual representation of the entire graph schema for easy reference 
 
 **Standard**: Ensure the Markdown output includes dedicated columns for `Data Type` and `Mandatory` in the properties section.
 
+**Enum Visibility Standard**:
+- Ensure `owl__NamedIndividual` members and `rdf__type` links are represented in schema artifacts.
+- Ensure the schema description includes an explicit enumeration members section for review.
+
 ### Data Schema Constraints (Archival)
 To ensure data integrity, maintain a Cypher constraints file (for example, `staging/staging_schema_constraint.cypher`) that defines the physical constraints of the Neo4j database.
 
@@ -218,6 +222,14 @@ To ensure data integrity, maintain a Cypher constraints file (for example, `stag
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
 2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`).
 3. **Keep in Sync**: Generate or update the constraints file from current graph metadata as part of your release workflow (scripted or manual), and verify it against `stagingdb` before applying.
+4. **Enum-Aware Notes**: Keep mandatory enum/class relationships documented as comments in the generated constraints output (while reserving physical `IS NOT NULL` constraints for datatype-backed node properties).
+
+### Regeneration Workflow (After Enum or Relationship Updates)
+After changing enum classes, named individuals, or mandatory relationships, regenerate in this order:
+1. `extract_data_model(database='stagingdb')` -> `staging/full_schema_data_model.json`
+2. `generate_schema_code(target_type='pydantic', database='stagingdb')` -> `staging/schema_models.py`
+3. `get_ontology_schema_description(database='stagingdb')` -> `staging/schema_description.md`
+4. `generate_schema_constraints(database='stagingdb')` -> `staging/stagingdb_constraints_mcp.cypher`
 
 ### Domain Model Consistency (Pydantic)
 To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:

@@ -36,6 +36,7 @@ When generating Pydantic classes using the `generate_schema_code` tool:
 5. **Enums as Enums**: Ensure that `owl__Class` nodes enriched with individuals are rendered as standard Python `enum.Enum` classes.
     - **Canonical Example (Currency)**: `Currency` should be modeled as an `Enum` containing members like `US_DOLLAR = "US Dollar"`, `EURO = "Euro"`, etc.
     - **Usage**: Reference the Enum directly in parent classes (e.g., `MonetaryAmount.has_currency: Currency`).
+6. **Artifact Regeneration**: After enum-related changes, regenerate `staging/full_schema_data_model.json`, `staging/schema_models.py`, and `staging/schema_description.md` so downstream review/code remain in sync.
 
 ## Modeller Customization
 When extending the Modeller's model support:
