@@ -897,9 +897,13 @@ async def generate_schema_constraints(
     try:
         query = """
         MATCH (n:owl__Class)
-        OPTIONAL MATCH (n)-[r]->(m:rdfs__Datatype)
-        RETURN n.rdfs__label as class_label, 
-               n.skos__definition as class_definition, 
+        OPTIONAL MATCH (n)-[:rdfs__subClassOf*0..]->(ancestor:owl__Class)
+        WITH n, collect(DISTINCT ancestor) AS lineage
+        UNWIND lineage AS src
+        OPTIONAL MATCH (src)-[r]->(m:rdfs__Datatype)
+        WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith', 'owl__equivalentClass']
+        RETURN n.rdfs__label as class_label,
+               n.skos__definition as class_definition,
                n.uri as class_uri,
                type(r) as prop_name,
                r.cardinality as prop_cardinality
@@ -918,13 +922,23 @@ async def generate_schema_constraints(
                 schema_data[cls_label] = {
                     "definition": row['class_definition'],
                     "uri": row['class_uri'],
-                    "properties": []
+                    "properties": {}
                 }
             if row['prop_name']:
-                schema_data[cls_label]["properties"].append({
-                    "name": row['prop_name'],
-                    "cardinality": row['prop_cardinality']
-                })
+                prop_name = row['prop_name']
+                prop_cardinality = row['prop_cardinality']
+                current = schema_data[cls_label]["properties"].get(prop_name)
+                if current:
+                    candidates = [str(current or "").strip(), str(prop_cardinality or "").strip()]
+                    if any(c.startswith("1") for c in candidates):
+                        merged_cardinality = "1..*" if "1..*" in candidates else "1"
+                    elif "0..*" in candidates:
+                        merged_cardinality = "0..*"
+                    else:
+                        merged_cardinality = "0..1"
+                    schema_data[cls_label]["properties"][prop_name] = merged_cardinality
+                else:
+                    schema_data[cls_label]["properties"][prop_name] = prop_cardinality
 
         cypher_output = [
             "// ===========================================================",
@@ -934,7 +948,12 @@ async def generate_schema_constraints(
         ]
         
         for cls_label, data in schema_data.items():
-            actual_label = cls_label.replace(" ", "").replace("-", "")
+            actual_label = _to_pascal_case_label(cls_label)
+            class_uri = data.get("uri") or ""
+            form_match = re.search(r"/(\d{4})-Form(\d+)$", class_uri)
+            if form_match:
+                actual_label = f"Form{form_match.group(2)}_{form_match.group(1)}"
+            safe_label = f"`{actual_label}`"
             
             cypher_output.append(f"// Class: {cls_label}")
             if data['definition']:
@@ -945,12 +964,18 @@ async def generate_schema_constraints(
             # Note: metadata fields like labels and URIs do not get physical constraints
             
             # Property constraints (Existence for mandatory fields)
-            for prop in data['properties']:
-                card = prop['cardinality'] or ""
+            for prop_name, prop_cardinality in data['properties'].items():
+                card = prop_cardinality or ""
                 if card.startswith("1"):
-                    constraint_name = f"{actual_label}_{prop['name']}_Required"
-                    cypher_output.append(f"// Mandatory property: {prop['name']} (cardinality: {card})")
-                    cypher_output.append(f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS FOR (n:{actual_label}) REQUIRE n.{prop['name']} IS NOT NULL;")
+                    safe_prop = re.sub(r'[^A-Za-z0-9_]', '_', prop_name)
+                    constraint_name = re.sub(r'[^A-Za-z0-9_]', '_', f"{actual_label}_{safe_prop}_Required")
+                    if constraint_name and constraint_name[0].isdigit():
+                        constraint_name = f"C_{constraint_name}"
+                    cypher_output.append(f"// Mandatory property: {prop_name} (cardinality: {card})")
+                    cypher_output.append(
+                        f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS "
+                        f"FOR (n:{safe_label}) REQUIRE n.`{prop_name}` IS NOT NULL;"
+                    )
             
             cypher_output.append("")
             
