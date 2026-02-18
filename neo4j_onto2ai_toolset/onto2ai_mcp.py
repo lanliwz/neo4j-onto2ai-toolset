@@ -68,6 +68,18 @@ def _to_snake_case(name: str) -> str:
         s = f"{s}_"
     return s
 
+def _to_enum_member_name(name: str) -> str:
+    """Convert arbitrary labels to safe UPPER_SNAKE_CASE enum member names."""
+    s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", str(name or ""))
+    s = re.sub(r"[^A-Za-z0-9]+", "_", s).strip("_").upper()
+    if not s:
+        s = "UNKNOWN"
+    if s[0].isdigit():
+        s = f"VALUE_{s}"
+    if keyword.iskeyword(s.lower()):
+        s = f"{s}_"
+    return s
+
 def _map_type(type_name: str, class_by_norm: Dict[str, str]) -> str:
     """Map ontology/graph types to Python type names."""
     raw = str(type_name or "").strip()
@@ -132,15 +144,36 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
     nodes = data_model.nodes or []
     relationships = data_model.relationships or []
 
-    class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in nodes}
+    class_nodes = [n for n in nodes if (n.type or "owl__Class") == "owl__Class"]
+    named_individual_nodes = [n for n in nodes if n.type == "owl__NamedIndividual"]
+    named_individual_labels = {n.label for n in named_individual_nodes}
+
+    class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in class_nodes}
     class_by_norm = {
         re.sub(r"[^a-z0-9]+", "", n.label.lower()): class_name_by_label[n.label]
-        for n in nodes
+        for n in class_nodes
     }
+
+    # Build enum discovery from rdf__type links: NamedIndividual -> Class.
+    enum_members_by_class: Dict[str, List[str]] = {}
+    individual_to_enum_class: Dict[str, str] = {}
+    for r in relationships:
+        if r.type != "rdf__type":
+            continue
+        if r.start_node_label not in named_individual_labels:
+            continue
+        if r.end_node_label not in class_name_by_label:
+            continue
+        enum_members_by_class.setdefault(r.end_node_label, []).append(r.start_node_label)
+        individual_to_enum_class[r.start_node_label] = r.end_node_label
+
+    enum_class_labels = set(enum_members_by_class.keys())
 
     # Build per-class predicate entries from node properties and relationships.
     by_class: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
-    for n in nodes:
+    for n in class_nodes:
+        if n.label in enum_class_labels:
+            continue
         by_class[n.label] = {}
 
         for p in (n.properties or []):
@@ -154,11 +187,18 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
             )
 
     for r in relationships:
+        if r.type == "rdf__type":
+            continue
         src = r.start_node_label
         if src not in by_class:
             continue
         alias = r.type
-        tgt_class = class_name_by_label.get(r.end_node_label, "str")
+        if r.end_node_label in enum_class_labels:
+            tgt_class = class_name_by_label[r.end_node_label]
+        elif r.end_node_label in individual_to_enum_class:
+            tgt_class = class_name_by_label[individual_to_enum_class[r.end_node_label]]
+        else:
+            tgt_class = class_name_by_label.get(r.end_node_label, "str")
         by_class[src].setdefault(alias, []).append(
             {
                 "type": tgt_class,
@@ -172,13 +212,40 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
         "",
         "from datetime import date, datetime",
         "from decimal import Decimal",
+        "from enum import Enum",
         "from typing import List, Optional",
         "",
         "from pydantic import BaseModel, ConfigDict, Field",
         "",
     ]
 
-    for n in nodes:
+    # Render enum classes first.
+    for enum_label in [n.label for n in class_nodes if n.label in enum_class_labels]:
+        cls = class_name_by_label[enum_label]
+        enum_node = next((n for n in class_nodes if n.label == enum_label), None)
+        lines.append(f"class {cls}(Enum):")
+        doc = (enum_node.description if enum_node else "") or ""
+        lines.append(f'    """{doc}"""')
+        used_members = set()
+        members = sorted(set(enum_members_by_class.get(enum_label, [])))
+        if not members:
+            lines.append("    pass")
+        else:
+            for member in members:
+                member_name = _to_enum_member_name(member)
+                base_name = member_name
+                idx = 2
+                while member_name in used_members:
+                    member_name = f"{base_name}_{idx}"
+                    idx += 1
+                used_members.add(member_name)
+                lines.append(f'    {member_name} = {json.dumps(member)}')
+        lines.append("")
+
+    # Render regular class models (skip enum classes and named individuals).
+    for n in class_nodes:
+        if n.label in enum_class_labels:
+            continue
         cls = class_name_by_label[n.label]
         lines.append(f"class {cls}(BaseModel):")
         doc = n.description or ""
@@ -213,10 +280,16 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
     relationships = data_model.relationships or []
 
     class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in nodes}
+    node_by_label = {n.label: n for n in nodes}
 
-    # Section 1: Node Labels (Classes)
+    # Section 1: Node Labels
     node_rows = [
-        (class_name_by_label.get(n.label, n.label), n.uri or "", n.description or "")
+        (
+            class_name_by_label.get(n.label, n.label),
+            n.type or "owl__Class",
+            n.uri or "",
+            n.description or "",
+        )
         for n in nodes
     ]
 
@@ -242,6 +315,17 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
         merged_card = _merge_cardinality(agg["cards"], has_duplicates=False)
         rel_rows.append((rel_type, agg["uri"], agg["definition"], merged_card))
 
+    # Enumeration members (NamedIndividuals grouped by rdf__type class).
+    enum_rows = []
+    for r in relationships:
+        if r.type != "rdf__type":
+            continue
+        enum_class = class_name_by_label.get(r.end_node_label, _to_pascal_case_label(r.end_node_label))
+        ind_node = node_by_label.get(r.start_node_label)
+        ind_uri = (ind_node.uri if ind_node else "") or ""
+        enum_rows.append((enum_class, r.start_node_label, ind_uri))
+    enum_rows.sort(key=lambda x: (x[0], x[1]))
+
     # Section 3: Node Properties
     prop_rows = []
     for n in nodes:
@@ -261,12 +345,12 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
     lines: List[str] = []
     lines.append("# Neo4j Schema Prompt")
     lines.append("")
-    lines.append("## Section 1: Node Labels (Classes)")
+    lines.append("## Section 1: Node Labels")
     lines.append("")
-    lines.append("| Label | URI | Definition |")
-    lines.append("| --- | --- | --- |")
-    for label, uri, definition in node_rows:
-        lines.append(f"| {label} | {uri} | {definition} |")
+    lines.append("| Label | Type | URI | Definition |")
+    lines.append("| --- | --- | --- | --- |")
+    for label, node_type, uri, definition in node_rows:
+        lines.append(f"| {label} | {node_type} | {uri} | {definition} |")
 
     lines.append("")
     lines.append("## Section 2: Relationship Types")
@@ -289,6 +373,14 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
     lines.append("")
     for topology in topology_rows:
         lines.append(f"- `{topology}`")
+
+    lines.append("")
+    lines.append("## Section 5: Enumeration Members")
+    lines.append("")
+    lines.append("| Enum Class | Member Label | Member URI |")
+    lines.append("| --- | --- | --- |")
+    for enum_class, member_label, member_uri in enum_rows:
+        lines.append(f"| {enum_class} | {member_label} | {member_uri} |")
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -425,6 +517,8 @@ async def get_materialized_schema(
             })
             
         return {
+
+
             "database": database or "default",
             "section_1_classes": list(classes_section.values()),
             "section_2_relationships": relationships_section
@@ -613,10 +707,39 @@ async def extract_data_model(
     labels = [label.strip() for label in class_names]
     
     try:
+        # Seed all requested classes so leaf/enum classes without outgoing relationships
+        # are still represented in the extracted model.
+        class_seed_rows = db.execute_cypher(
+            """
+            MATCH (c:owl__Class)
+            WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+            RETURN DISTINCT
+              c.rdfs__label AS SourceClassLabel,
+              c.uri AS SourceClassURI,
+              c.skos__definition AS SourceClassDef
+            """,
+            params={"labels": labels},
+            name="internal_extract_data_model_seed_classes",
+        )
+
         results = db.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="internal_extract_data_model")
         
         nodes_dict = {}
+        individual_nodes = {}
+        relationship_keys = set()
         relationships = []
+
+        for row in class_seed_rows:
+            cls_name = row.get("SourceClassLabel")
+            if not cls_name:
+                continue
+            if cls_name not in nodes_dict:
+                nodes_dict[cls_name] = Node(
+                    label=cls_name,
+                    description=row.get("SourceClassDef"),
+                    properties=[],
+                    uri=row.get("SourceClassURI"),
+                )
         
         for row in results:
             cls_name = row['SourceClassLabel']
@@ -651,11 +774,76 @@ async def extract_data_model(
                 ))
             else:
                 nodes_dict[cls_name].properties.append(prop_obj)
+
+        # Include named individuals that belong to in-scope classes.
+        named_individual_rows = db.execute_cypher(
+            """
+            MATCH (i:owl__NamedIndividual)-[t:rdf__type]->(c:owl__Class)
+            WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+            RETURN DISTINCT
+              i.rdfs__label AS IndividualLabel,
+              i.uri AS IndividualURI,
+              i.skos__definition AS IndividualDef,
+              c.rdfs__label AS ClassLabel,
+              c.uri AS ClassURI,
+              t.uri AS TypeRelURI
+            ORDER BY ClassLabel, IndividualLabel
+            """,
+            params={"labels": labels},
+            name="internal_extract_data_model_named_individuals",
+        )
+
+        for row in named_individual_rows:
+            class_label = row.get("ClassLabel")
+            if not class_label:
+                continue
+
+            # Ensure parent class exists (covers cases where class is leaf-only).
+            if class_label not in nodes_dict:
+                nodes_dict[class_label] = Node(
+                    label=class_label,
+                    description=None,
+                    properties=[],
+                    uri=row.get("ClassURI"),
+                )
+
+            ind_label = row.get("IndividualLabel") or row.get("IndividualURI")
+            if not ind_label:
+                continue
+            ind_key = row.get("IndividualURI") or ind_label
+            if ind_key not in individual_nodes:
+                individual_nodes[ind_key] = Node(
+                    label=ind_label,
+                    type="owl__NamedIndividual",
+                    properties=[],
+                    description=row.get("IndividualDef"),
+                    uri=row.get("IndividualURI"),
+                )
+
+            rel_key = ("rdf__type", ind_label, class_label)
+            if rel_key not in relationship_keys:
+                relationship_keys.add(rel_key)
+                relationships.append(
+                    Relationship(
+                        type="rdf__type",
+                        start_node_label=ind_label,
+                        end_node_label=class_label,
+                        cardinality="1",
+                        requirement="Mandatory",
+                        description="instance-of relationship",
+                        uri=row.get("TypeRelURI"),
+                    )
+                )
         
         return DataModel(
-            nodes=list(nodes_dict.values()),
+            nodes=list(nodes_dict.values()) + list(individual_nodes.values()),
             relationships=relationships,
-            metadata={"source_classes": labels, "engine": "Onto2AI-Materialized", "database": database or "semanticdb"}
+            metadata={
+                "source_classes": labels,
+                "engine": "Onto2AI-Materialized",
+                "database": database or "semanticdb",
+                "named_individual_count": len(individual_nodes),
+            }
         )
     except Exception as e:
         logger.error(f"Error in extract_data_model: {e}")
@@ -906,16 +1094,36 @@ async def generate_schema_constraints(
         OPTIONAL MATCH (n)-[:rdfs__subClassOf*0..]->(ancestor:owl__Class)
         WITH n, collect(DISTINCT ancestor) AS lineage
         UNWIND lineage AS src
-        OPTIONAL MATCH (src)-[r]->(m:rdfs__Datatype)
+        OPTIONAL MATCH (src)-[r]->(m)
         WHERE NOT type(r) IN ['rdfs__subClassOf', 'owl__isDefinedBy', 'owl__disjointWith', 'owl__equivalentClass']
+          AND (m:rdfs__Datatype OR m:owl__Class OR m:owl__NamedIndividual)
         RETURN n.rdfs__label as class_label,
                n.skos__definition as class_definition,
                n.uri as class_uri,
                type(r) as prop_name,
-               r.cardinality as prop_cardinality
+               r.cardinality as prop_cardinality,
+               coalesce(m.rdfs__label, m.uri) as target_label,
+               m.uri as target_uri,
+               CASE
+                 WHEN m:rdfs__Datatype THEN 'datatype'
+                 WHEN m:owl__NamedIndividual THEN 'named_individual'
+                 WHEN m:owl__Class THEN 'class'
+                 ELSE 'other'
+               END as target_kind
         ORDER BY class_label
         """
         results = db.execute_cypher(query, name="generate_schema_constraints")
+
+        enum_query = """
+        MATCH (i:owl__NamedIndividual)-[:rdf__type]->(c:owl__Class)
+        RETURN c.rdfs__label AS class_label, collect(DISTINCT i.rdfs__label) AS members
+        """
+        enum_rows = db.execute_cypher(enum_query, name="generate_schema_constraints_enum_members")
+        enum_members_map = {
+            row.get("class_label"): sorted([m for m in (row.get("members") or []) if m])
+            for row in enum_rows
+            if row.get("class_label")
+        }
         
         # Group by class
         schema_data = {}
@@ -928,23 +1136,41 @@ async def generate_schema_constraints(
                 schema_data[cls_label] = {
                     "definition": row['class_definition'],
                     "uri": row['class_uri'],
-                    "properties": {}
+                    "properties": {},
+                    "mandatory_relationships": []
                 }
             if row['prop_name']:
                 prop_name = row['prop_name']
-                prop_cardinality = row['prop_cardinality']
-                current = schema_data[cls_label]["properties"].get(prop_name)
-                if current:
-                    candidates = [str(current or "").strip(), str(prop_cardinality or "").strip()]
-                    if any(c.startswith("1") for c in candidates):
-                        merged_cardinality = "1..*" if "1..*" in candidates else "1"
-                    elif "0..*" in candidates:
-                        merged_cardinality = "0..*"
+                prop_cardinality = row.get('prop_cardinality')
+                target_kind = row.get("target_kind")
+                target_label = row.get("target_label")
+                target_uri = row.get("target_uri")
+
+                if target_kind == "datatype":
+                    current = schema_data[cls_label]["properties"].get(prop_name)
+                    if current:
+                        candidates = [str(current or "").strip(), str(prop_cardinality or "").strip()]
+                        if any(c.startswith("1") for c in candidates):
+                            merged_cardinality = "1..*" if "1..*" in candidates else "1"
+                        elif "0..*" in candidates:
+                            merged_cardinality = "0..*"
+                        else:
+                            merged_cardinality = "0..1"
+                        schema_data[cls_label]["properties"][prop_name] = merged_cardinality
                     else:
-                        merged_cardinality = "0..1"
-                    schema_data[cls_label]["properties"][prop_name] = merged_cardinality
+                        schema_data[cls_label]["properties"][prop_name] = prop_cardinality
                 else:
-                    schema_data[cls_label]["properties"][prop_name] = prop_cardinality
+                    if str(prop_cardinality or "").strip().startswith("1"):
+                        schema_data[cls_label]["mandatory_relationships"].append(
+                            {
+                                "name": prop_name,
+                                "cardinality": prop_cardinality,
+                                "target_label": target_label,
+                                "target_uri": target_uri,
+                                "target_kind": target_kind,
+                                "is_enum_target": bool(target_label and target_label in enum_members_map),
+                            }
+                        )
 
         cypher_output = [
             "// ===========================================================",
@@ -981,6 +1207,36 @@ async def generate_schema_constraints(
                     cypher_output.append(
                         f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS "
                         f"FOR (n:{safe_label}) REQUIRE n.`{prop_name}` IS NOT NULL;"
+                    )
+
+            # Relationship requirements are documented as comments only.
+            # Neo4j does not support direct relationship-existence constraints on nodes.
+            seen_rels = set()
+            for rel in data.get("mandatory_relationships", []):
+                rel_key = (
+                    rel.get("name"),
+                    rel.get("target_label"),
+                    rel.get("cardinality"),
+                )
+                if rel_key in seen_rels:
+                    continue
+                seen_rels.add(rel_key)
+                rel_name = rel.get("name")
+                rel_card = rel.get("cardinality")
+                tgt_label = rel.get("target_label") or "Resource"
+                tgt_uri = rel.get("target_uri") or ""
+                tgt_kind = rel.get("target_kind")
+                if rel.get("is_enum_target"):
+                    sample_members = enum_members_map.get(tgt_label, [])[:5]
+                    members_note = f" members={sample_members}" if sample_members else ""
+                    cypher_output.append(
+                        f"// Mandatory enum relationship: {rel_name} -> {tgt_label} "
+                        f"(cardinality: {rel_card}, uri: {tgt_uri}).{members_note}"
+                    )
+                else:
+                    cypher_output.append(
+                        f"// Mandatory {tgt_kind} relationship: {rel_name} -> {tgt_label} "
+                        f"(cardinality: {rel_card}, uri: {tgt_uri})"
                     )
             
             cypher_output.append("")
@@ -1804,7 +2060,8 @@ async def get_ontology_schema_description(
 ) -> str:
     """
     Retrieve schema description in markdown prompt format:
-    1) Node Labels (Classes), 2) Relationship Types, 3) Node Properties, 4) Graph Topology.
+    1) Node Labels, 2) Relationship Types, 3) Node Properties, 4) Graph Topology,
+    5) Enumeration Members.
     
     Args:
         database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.

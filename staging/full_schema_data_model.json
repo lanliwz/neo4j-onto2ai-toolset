@@ -1,6 +1,37 @@
 {
   "nodes": [
     {
+      "label": "organization",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "hasEIN",
+          "type": "ein",
+          "description": "Links an organization to its employer identification number.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasEIN"
+        },
+        {
+          "name": "hasTaxId",
+          "type": "ein",
+          "description": "Relates an organization to its Employer Identification Number (EIN) used as the organization’s tax identification identifier.",
+          "mandatory": false,
+          "cardinality": "optional",
+          "uri": "https://example.org/ontology/hasTaxId"
+        }
+      ],
+      "description": "framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals",
+      "uri": "https://www.omg.org/spec/Commons/Organizations/Organization"
+    },
+    {
+      "label": "exchange",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "A marketplace where securities, commodities, derivatives and other financial instruments are traded.",
+      "uri": "https://model.onto2ai.com/schema/Exchange"
+    },
+    {
       "label": "W-2 form",
       "type": "owl__Class",
       "properties": [
@@ -264,6 +295,41 @@
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person"
     },
     {
+      "label": "jurisdiction",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area",
+      "uri": "https://www.omg.org/spec/Commons/RegulatoryAgencies/Jurisdiction"
+    },
+    {
+      "label": "physical address",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "A physical address is a structured specification of the real-world location of a premises, such as a residence or business site, used to identify where a party is situated or an activity occurs for financial operations, regulatory reporting, and tax jurisdiction determination.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/PhysicalAddress"
+    },
+    {
+      "label": "filing status concept",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "concept representing the legal status of a taxpayer for filing purposes",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/FilingStatusConcept"
+    },
+    {
+      "label": "reportStatus",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "lifecycle status of a report",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept"
+    },
+    {
+      "label": "Form 1120 U.S. Corporation Income Tax Return",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/Form1120"
+    },
+    {
       "label": "individual tax return",
       "type": "owl__Class",
       "properties": [
@@ -301,6 +367,13 @@
       "properties": [],
       "description": "A quantity of money, denominated in a specific currency.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount"
+    },
+    {
+      "label": "currency",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "medium of exchange",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency"
     },
     {
       "label": "2025 Form 1040",
@@ -463,28 +536,116 @@
       "uri": "https://example.org/ontology/Employer"
     },
     {
-      "label": "organization",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasEIN",
-          "type": "ein",
-          "description": "Links an organization to its employer identification number.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasEIN"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "ein",
-          "description": "Relates an organization to its Employer Identification Number (EIN) used as the organization’s tax identification identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        }
-      ],
-      "description": "framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals",
-      "uri": "https://www.omg.org/spec/Commons/Organizations/Organization"
+      "label": "Australian Dollar",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/AustralianDollar"
+    },
+    {
+      "label": "British Pound (Sterling)",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/PoundSterling"
+    },
+    {
+      "label": "Canadian Dollar",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/CanadianDollar"
+    },
+    {
+      "label": "Chinese Yuan",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/ChineseYuan"
+    },
+    {
+      "label": "Euro",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/Euro"
+    },
+    {
+      "label": "Japanese Yen",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/JapaneseYen"
+    },
+    {
+      "label": "Swiss Franc",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/SwissFranc"
+    },
+    {
+      "label": "US Dollar",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/USDollar"
+    },
+    {
+      "label": "married filing jointly",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/MarriedFilingJointly"
+    },
+    {
+      "label": "single",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/Single"
+    },
+    {
+      "label": "United States jurisdiction",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": null,
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/USGovernmentEntitiesAndJurisdictions/UnitedStatesJurisdiction"
+    },
+    {
+      "label": "Accepted",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Report was successfully received and processed.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/AcceptedStatus"
+    },
+    {
+      "label": "Draft",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Report is being edited.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/DraftStatus"
+    },
+    {
+      "label": "Rejected",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Report failed validation or processing.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/RejectedStatus"
+    },
+    {
+      "label": "Submitted",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Report has been sent to the authority.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/SubmittedStatus"
+    },
+    {
+      "label": "Internal Revenue Service",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "The Internal Revenue Service is the revenue service of the United States federal government.",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService"
     }
   ],
   "relationships": [
@@ -907,6 +1068,166 @@
       "requirement": null,
       "description": "indicates the employer",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Australian Dollar",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "British Pound (Sterling)",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Canadian Dollar",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Chinese Yuan",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Euro",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Japanese Yen",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Swiss Franc",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "US Dollar",
+      "end_node_label": "currency",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "married filing jointly",
+      "end_node_label": "filing status concept",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "single",
+      "end_node_label": "filing status concept",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "United States jurisdiction",
+      "end_node_label": "jurisdiction",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Accepted",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Draft",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Rejected",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Submitted",
+      "end_node_label": "reportStatus",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "Internal Revenue Service",
+      "end_node_label": "tax authority",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "instance-of relationship",
+      "uri": null
     }
   ],
   "metadata": {
@@ -930,6 +1251,7 @@
       "employer"
     ],
     "engine": "Onto2AI-Materialized",
-    "database": "stagingdb"
+    "database": "stagingdb",
+    "named_individual_count": 16
   }
 }

@@ -1,19 +1,42 @@
 # Neo4j Schema Prompt
 
-## Section 1: Node Labels (Classes)
+## Section 1: Node Labels
 
-| Label | URI | Definition |
-| --- | --- | --- |
-| W2Form | https://example.org/ontology/W2Form | IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee. |
-| CryptoAsset | https://model.onto2ai.com/schema/CryptoAsset | A digital asset designed to work as a medium of exchange. |
-| TaxAuthority | https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority | functional entity that is responsible for the administration and enforcement of tax laws |
-| Person | https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person | individual human being, with consciousness of self |
-| IndividualTaxReturn | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn | A tax return filed by an individual person. |
-| MonetaryAmount | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount | A quantity of money, denominated in a specific currency. |
-| Form1040_2025 | https://example.org/tax/filings/2025-Form1040 | The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability. |
-| TaxPayer | https://example.org/ontology/TaxPayer | A person who is obligated to pay taxes and is identified by a tax identifier. |
-| Employer | https://example.org/ontology/Employer | A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes. |
-| Organization | https://www.omg.org/spec/Commons/Organizations/Organization | framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals |
+| Label | Type | URI | Definition |
+| --- | --- | --- | --- |
+| Organization | owl__Class | https://www.omg.org/spec/Commons/Organizations/Organization | framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals |
+| Exchange | owl__Class | https://model.onto2ai.com/schema/Exchange | A marketplace where securities, commodities, derivatives and other financial instruments are traded. |
+| W2Form | owl__Class | https://example.org/ontology/W2Form | IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee. |
+| CryptoAsset | owl__Class | https://model.onto2ai.com/schema/CryptoAsset | A digital asset designed to work as a medium of exchange. |
+| TaxAuthority | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority | functional entity that is responsible for the administration and enforcement of tax laws |
+| Person | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person | individual human being, with consciousness of self |
+| Jurisdiction | owl__Class | https://www.omg.org/spec/Commons/RegulatoryAgencies/Jurisdiction | power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area |
+| PhysicalAddress | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/PhysicalAddress | A physical address is a structured specification of the real-world location of a premises, such as a residence or business site, used to identify where a party is situated or an activity occurs for financial operations, regulatory reporting, and tax jurisdiction determination. |
+| FilingStatusConcept | owl__Class | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/FilingStatusConcept | concept representing the legal status of a taxpayer for filing purposes |
+| Reportstatus | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept | lifecycle status of a report |
+| Form1120USCorporationIncomeTaxReturn | owl__Class | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/Form1120 | An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability. |
+| IndividualTaxReturn | owl__Class | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn | A tax return filed by an individual person. |
+| MonetaryAmount | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount | A quantity of money, denominated in a specific currency. |
+| Currency | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency | medium of exchange |
+| Form1040_2025 | owl__Class | https://example.org/tax/filings/2025-Form1040 | The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability. |
+| TaxPayer | owl__Class | https://example.org/ontology/TaxPayer | A person who is obligated to pay taxes and is identified by a tax identifier. |
+| Employer | owl__Class | https://example.org/ontology/Employer | A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes. |
+| AustralianDollar | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/AustralianDollar |  |
+| BritishPoundSterling | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/PoundSterling |  |
+| CanadianDollar | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/CanadianDollar |  |
+| ChineseYuan | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/ChineseYuan |  |
+| Euro | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/Euro |  |
+| JapaneseYen | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/JapaneseYen |  |
+| SwissFranc | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/SwissFranc |  |
+| UsDollar | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/USDollar |  |
+| MarriedFilingJointly | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/MarriedFilingJointly |  |
+| Single | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/Single |  |
+| UnitedStatesJurisdiction | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/USGovernmentEntitiesAndJurisdictions/UnitedStatesJurisdiction |  |
+| Accepted | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/AcceptedStatus | Report was successfully received and processed. |
+| Draft | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/DraftStatus | Report is being edited. |
+| Rejected | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/RejectedStatus | Report failed validation or processing. |
+| Submitted | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/SubmittedStatus | Report has been sent to the authority. |
+| InternalRevenueService | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService | The Internal Revenue Service is the revenue service of the United States federal government. |
 
 ## Section 2: Relationship Types
 
@@ -42,11 +65,14 @@
 | isTradedOn | https://model.onto2ai.com/schema/isTradedOn | Indicates the exchange where the asset is listed. | 0..* |
 | issuedBy |  | employer that issued the W-2 | 1 |
 | issuedTo |  | employee who received the W-2 | 1 |
+| rdf__type |  | instance-of relationship | 1 |
 
 ## Section 3: Node Properties
 
 | Node Label | Property | Data Type | Mandatory |
 | --- | --- | --- | --- |
+| Organization | hasEIN | ein | No |
+| Organization | hasTaxId | ein | No |
 | W2Form | hasAllocatedTips | allocatedTips | No |
 | W2Form | hasBox12Codes | box12Codes | No |
 | W2Form | hasDependentCareBenefits | dependentCareBenefits | No |
@@ -96,8 +122,6 @@
 | Employer | hasEIN | ein | Yes |
 | Employer | hasEmployerName | employerName | Yes |
 | Employer | hasPhoneNumber | phoneNumber | No |
-| Organization | hasEIN | ein | No |
-| Organization | hasTaxId | ein | No |
 
 ## Section 4: Graph Topology
 
@@ -143,3 +167,40 @@
 - `(:Form1040_2025)-[:hasLine24TotalTax]->(:MonetaryAmount)`
 - `(:Form1040_2025)-[:hasLine33TotalPayments]->(:MonetaryAmount)`
 - `(:TaxPayer)-[:isEmployedBy]->(:Employer)`
+- `(:AustralianDollar)-[:rdf__type]->(:Currency)`
+- `(:BritishPoundSterling)-[:rdf__type]->(:Currency)`
+- `(:CanadianDollar)-[:rdf__type]->(:Currency)`
+- `(:ChineseYuan)-[:rdf__type]->(:Currency)`
+- `(:Euro)-[:rdf__type]->(:Currency)`
+- `(:JapaneseYen)-[:rdf__type]->(:Currency)`
+- `(:SwissFranc)-[:rdf__type]->(:Currency)`
+- `(:UsDollar)-[:rdf__type]->(:Currency)`
+- `(:MarriedFilingJointly)-[:rdf__type]->(:FilingStatusConcept)`
+- `(:Single)-[:rdf__type]->(:FilingStatusConcept)`
+- `(:UnitedStatesJurisdiction)-[:rdf__type]->(:Jurisdiction)`
+- `(:Accepted)-[:rdf__type]->(:Reportstatus)`
+- `(:Draft)-[:rdf__type]->(:Reportstatus)`
+- `(:Rejected)-[:rdf__type]->(:Reportstatus)`
+- `(:Submitted)-[:rdf__type]->(:Reportstatus)`
+- `(:InternalRevenueService)-[:rdf__type]->(:TaxAuthority)`
+
+## Section 5: Enumeration Members
+
+| Enum Class | Member Label | Member URI |
+| --- | --- | --- |
+| Currency | Australian Dollar | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/AustralianDollar |
+| Currency | British Pound (Sterling) | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/PoundSterling |
+| Currency | Canadian Dollar | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/CanadianDollar |
+| Currency | Chinese Yuan | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/ChineseYuan |
+| Currency | Euro | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/Euro |
+| Currency | Japanese Yen | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/JapaneseYen |
+| Currency | Swiss Franc | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/SwissFranc |
+| Currency | US Dollar | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/USDollar |
+| FilingStatusConcept | married filing jointly | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/MarriedFilingJointly |
+| FilingStatusConcept | single | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/Single |
+| Jurisdiction | United States jurisdiction | https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/USGovernmentEntitiesAndJurisdictions/UnitedStatesJurisdiction |
+| Reportstatus | Accepted | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/AcceptedStatus |
+| Reportstatus | Draft | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/DraftStatus |
+| Reportstatus | Rejected | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/RejectedStatus |
+| Reportstatus | Submitted | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/SubmittedStatus |
+| TaxAuthority | Internal Revenue Service | https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService |

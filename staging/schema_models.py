@@ -2,9 +2,56 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+class TaxAuthority(Enum):
+    """functional entity that is responsible for the administration and enforcement of tax laws"""
+    INTERNAL_REVENUE_SERVICE = "Internal Revenue Service"
+
+class Jurisdiction(Enum):
+    """power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area"""
+    UNITED_STATES_JURISDICTION = "United States jurisdiction"
+
+class FilingStatusConcept(Enum):
+    """concept representing the legal status of a taxpayer for filing purposes"""
+    MARRIED_FILING_JOINTLY = "married filing jointly"
+    SINGLE = "single"
+
+class Reportstatus(Enum):
+    """lifecycle status of a report"""
+    ACCEPTED = "Accepted"
+    DRAFT = "Draft"
+    REJECTED = "Rejected"
+    SUBMITTED = "Submitted"
+
+class Currency(Enum):
+    """medium of exchange"""
+    AUSTRALIAN_DOLLAR = "Australian Dollar"
+    BRITISH_POUND_STERLING = "British Pound (Sterling)"
+    CANADIAN_DOLLAR = "Canadian Dollar"
+    CHINESE_YUAN = "Chinese Yuan"
+    EURO = "Euro"
+    JAPANESE_YEN = "Japanese Yen"
+    SWISS_FRANC = "Swiss Franc"
+    US_DOLLAR = "US Dollar"
+
+class Organization(BaseModel):
+    """framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals"""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    has_ein: Optional[str] = Field(default=None, alias="hasEIN", description="Links an organization to its employer identification number.")
+    has_tax_id: Optional[str] = Field(default=None, alias="hasTaxId", description="Relates an organization to its Employer Identification Number (EIN) used as the organization\u2019s tax identification identifier.")
+
+class Exchange(BaseModel):
+    """A marketplace where securities, commodities, derivatives and other financial instruments are traded."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    pass
 
 class W2Form(BaseModel):
     """IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee."""
@@ -30,7 +77,7 @@ class W2Form(BaseModel):
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates a W-2 form to the reporting party that provides and issues it for wage and tax reporting purposes.")
     is_statutory_employee: Optional[str] = Field(default=None, alias="isStatutoryEmployee", description="")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates a W-2 form to the submitter that files or submits it to the appropriate authority or recipient.")
-    has_report_status: str = Field(alias="hasReportStatus", description="Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.")
+    has_report_status: Reportstatus = Field(alias="hasReportStatus", description="Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.")
     issued_by: Employer = Field(alias="issuedBy", description="employer that issued the W-2")
     issued_to: Person = Field(alias="issuedTo", description="employee who received the W-2")
 
@@ -40,14 +87,7 @@ class CryptoAsset(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     has_token_symbol: str = Field(alias="hasTokenSymbol", description="The ticker symbol for the crypto asset.")
-    is_traded_on: List[str] = Field(default_factory=list, alias="isTradedOn", description="Indicates the exchange where the asset is listed.")
-
-class TaxAuthority(BaseModel):
-    """functional entity that is responsible for the administration and enforcement of tax laws"""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    has_jurisdiction: List[str] = Field(default_factory=list, min_length=1, alias="hasJurisdiction", description="Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.")
+    is_traded_on: List[Exchange] = Field(default_factory=list, alias="isTradedOn", description="Indicates the exchange where the asset is listed.")
 
 class Person(BaseModel):
     """individual human being, with consciousness of self"""
@@ -64,6 +104,20 @@ class Person(BaseModel):
     has_tax_id: List[str] = Field(default_factory=list, alias="hasTaxId", description="Links a person to their tax identifier.")
     is_employed_by: List[Employer] = Field(default_factory=list, alias="isEmployedBy", description="indicates the employer")
 
+class PhysicalAddress(BaseModel):
+    """A physical address is a structured specification of the real-world location of a premises, such as a residence or business site, used to identify where a party is situated or an activity occurs for financial operations, regulatory reporting, and tax jurisdiction determination."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    pass
+
+class Form1120USCorporationIncomeTaxReturn(BaseModel):
+    """An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    pass
+
 class IndividualTaxReturn(BaseModel):
     """A tax return filed by an individual person."""
 
@@ -72,9 +126,9 @@ class IndividualTaxReturn(BaseModel):
     has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Links an individual tax return to the date and time at which it was reported or filed.")
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.")
-    is_submitted_to: str = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
+    is_submitted_to: TaxAuthority = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
     has_taxable_income: MonetaryAmount = Field(alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
-    has_report_status: str = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
+    has_report_status: Reportstatus = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
     has_agi: MonetaryAmount = Field(alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
     has_total_tax: MonetaryAmount = Field(alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
     has_total_payments: MonetaryAmount = Field(alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
@@ -95,7 +149,7 @@ class MonetaryAmount(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    is_denominated_in: str = Field(alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
+    is_denominated_in: Currency = Field(alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
 
 class Form1040_2025(BaseModel):
     """The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability."""
@@ -105,9 +159,9 @@ class Form1040_2025(BaseModel):
     has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Links an individual tax return to the date and time at which it was reported or filed.")
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.")
-    is_submitted_to: str = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
+    is_submitted_to: TaxAuthority = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
     has_taxable_income: MonetaryAmount = Field(alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
-    has_report_status: str = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
+    has_report_status: Reportstatus = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
     has_agi: MonetaryAmount = Field(alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
     has_total_tax: MonetaryAmount = Field(alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
     has_total_payments: MonetaryAmount = Field(alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
@@ -147,11 +201,3 @@ class Employer(BaseModel):
     has_ein: str = Field(alias="hasEIN", description="Employer Identification Number")
     has_employer_name: str = Field(alias="hasEmployerName", description="legal name of the employer")
     has_phone_number: List[str] = Field(default_factory=list, alias="hasPhoneNumber", description="contact phone number")
-
-class Organization(BaseModel):
-    """framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals"""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    has_ein: Optional[str] = Field(default=None, alias="hasEIN", description="Links an organization to its employer identification number.")
-    has_tax_id: Optional[str] = Field(default=None, alias="hasTaxId", description="Relates an organization to its Employer Identification Number (EIN) used as the organization\u2019s tax identification identifier.")
