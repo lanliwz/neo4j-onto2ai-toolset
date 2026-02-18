@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import uuid
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
@@ -159,8 +160,25 @@ def apply_constraints(driver, db_name: str, constraints_path: Path) -> int:
     return applied
 
 
-def load_sample_data(driver, db_name: str, test_run: str) -> Dict[str, str]:
-    """Load sample entities using generated schema_models classes."""
+def _to_neo4j_props(data: Dict[str, object]) -> Dict[str, object]:
+    """Keep only Neo4j property-compatible values."""
+    out: Dict[str, object] = {}
+    for key, value in data.items():
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            out[key] = value
+            continue
+        if isinstance(value, list) and all(isinstance(v, (str, int, float, bool)) for v in value):
+            out[key] = value
+    return out
+
+
+def load_sample_data(
+    driver,
+    db_name: str,
+    test_run: str,
+    enum_members_by_class: Dict[str, Set[str]],
+) -> Set[str]:
+    """Load sample entities for each class using generated schema_models classes."""
 
     employer = schema_models.Employer(
         has_address=["1 Main St, New York, NY 10001"],
@@ -173,79 +191,212 @@ def load_sample_data(driver, db_name: str, test_run: str) -> Dict[str, str]:
         has_place_of_birth="New York",
         has_name=["Alex Doe"],
         has_tax_id=["999-88-7777"],
+        is_employed_by=[employer],
     )
     money = schema_models.MonetaryAmount(
         is_denominated_in=schema_models.Currency.US_DOLLAR,
     )
-
-    employer_props = employer.model_dump(by_alias=True, exclude_none=True, mode="json")
-    person_props = person.model_dump(by_alias=True, exclude_none=True, mode="json")
-
-    # MonetaryAmount has only relationship-based enum field in this model.
-    money_props = {
-        "testRun": test_run,
-        "sampleTag": "schema_workflow",
+    exchange = schema_models.Exchange()
+    organization = schema_models.Organization(
+        has_ein="98-7654321",
+        has_tax_id="98-7654321",
+    )
+    taxpayer = schema_models.TaxPayer(
+        has_date_of_birth="1990-01-01",
+        has_place_of_birth="Boston",
+        has_name=["Jamie Taxpayer"],
+        has_tax_id=["123-45-6789"],
+        is_employed_by=[employer],
+    )
+    w2_form = schema_models.W2Form(
+        has_federal_income_tax_withheld="2000.00",
+        has_medicare_tax_withheld="725.00",
+        has_medicare_wages_and_tips="50000.00",
+        has_social_security_tax_withheld="3100.00",
+        has_social_security_wages="50000.00",
+        has_tax_year="2025",
+        has_wages_tips_other_comp="50000.00",
+        is_provided_by=["Acme Corp Payroll"],
+        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        issued_by=employer,
+        issued_to=person,
+    )
+    crypto_asset = schema_models.CryptoAsset(
+        has_token_symbol="BTC",
+        is_traded_on=[exchange],
+    )
+    individual_return = schema_models.IndividualTaxReturn(
+        is_provided_by=["Tax Software Inc"],
+        is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
+        has_taxable_income=money,
+        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        has_agi=money,
+        has_total_tax=money,
+        has_total_payments=money,
+        has_refund_amount=money,
+        has_amount_owed=money,
+        has_line1a_wages=money,
+        has_line2b_taxable_interest=money,
+        has_line3b_ordinary_dividends=money,
+        has_line6b_taxable_social_security=money,
+        has_line12_standard_deduction=money,
+        has_line16_tax_value=money,
+        has_line19_child_tax_credit=money,
+        has_line24_total_tax=money,
+        has_line33_total_payments=money,
+    )
+    form_1040 = schema_models.Form1040_2025(
+        is_provided_by=["Tax Software Inc"],
+        is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
+        has_taxable_income=money,
+        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        has_agi=money,
+        has_total_tax=money,
+        has_total_payments=money,
+        has_refund_amount=money,
+        has_amount_owed=money,
+        has_line1a_wages=money,
+        has_line2b_taxable_interest=money,
+        has_line3b_ordinary_dividends=money,
+        has_line6b_taxable_social_security=money,
+        has_line12_standard_deduction=money,
+        has_line16_tax_value=money,
+        has_line19_child_tax_credit=money,
+        has_line24_total_tax=money,
+        has_line33_total_payments=money,
+    )
+    model_instances = {
+        "Organization": organization,
+        "Exchange": exchange,
+        "W2Form": w2_form,
+        "CryptoAsset": crypto_asset,
+        "Person": person,
+        "PhysicalAddress": schema_models.PhysicalAddress(),
+        "Form1120USCorporationIncomeTaxReturn": schema_models.Form1120USCorporationIncomeTaxReturn(),
+        "IndividualTaxReturn": individual_return,
+        "MonetaryAmount": money,
+        "Form1040_2025": form_1040,
+        "TaxPayer": taxpayer,
+        "Employer": employer,
     }
-    employer_props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
-    person_props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
 
-    ids = {
-        "employer": str(uuid.uuid4()),
-        "person": str(uuid.uuid4()),
-        "money": str(uuid.uuid4()),
-        "currency_member": str(uuid.uuid4()),
-    }
+    created_labels: Set[str] = set()
+    model_node_ids: Dict[str, str] = {}
+    enum_node_ids: Dict[Tuple[str, str], str] = {}
 
     with driver.session(database=db_name) as session:
         # Clean previous data for idempotent reruns.
-        session.run(
-            "MATCH (n {testRun: $run}) DETACH DELETE n",
-            run=test_run,
-        )
+        session.run("MATCH (n {testRun: $run}) DETACH DELETE n", run=test_run)
 
-        session.run(
-            "CREATE (n:Employer {id: $id}) SET n += $props",
-            id=ids["employer"],
-            props=employer_props,
-        )
-        session.run(
-            "CREATE (n:Person {id: $id}) SET n += $props",
-            id=ids["person"],
-            props=person_props,
-        )
-        session.run(
-            "CREATE (n:MonetaryAmount {id: $id}) SET n += $props",
-            id=ids["money"],
-            props=money_props,
-        )
+        # Create sample enum/named individual nodes for enum classes.
+        for enum_class, members in sorted(enum_members_by_class.items()):
+            for member_label in sorted(members):
+                node_id = str(uuid.uuid4())
+                session.run(
+                    f"""
+                    CREATE (n:`{enum_class}`:owl__NamedIndividual {{
+                      id: $id,
+                      rdfs__label: $label,
+                      testRun: $run,
+                      sampleTag: 'schema_workflow',
+                      sampleCreatedAt: $ts
+                    }})
+                    """,
+                    id=node_id,
+                    label=member_label,
+                    run=test_run,
+                    ts=datetime.now(timezone.utc).isoformat(),
+                )
+                enum_node_ids[(enum_class, member_label)] = node_id
+                created_labels.add(enum_class)
 
-        # Enum member node for Currency (as a test data instance-like node).
+        # Create one sample node for each model class.
+        for label, instance in model_instances.items():
+            node_id = str(uuid.uuid4())
+            dumped = instance.model_dump(by_alias=True, exclude_none=True, mode="json")
+            props = _to_neo4j_props(dumped)
+            props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
+            session.run(
+                f"CREATE (n:`{label}` {{id: $id}}) SET n += $props",
+                id=node_id,
+                props=props,
+            )
+            model_node_ids[label] = node_id
+            created_labels.add(label)
+
+        # Build a core set of relationships for validation and topology smoke-testing.
         session.run(
             """
-            CREATE (c:Currency:owl__NamedIndividual {
-              id: $id,
-              rdfs__label: $label,
-              testRun: $run,
-              sampleTag: 'schema_workflow'
-            })
-            """,
-            id=ids["currency_member"],
-            label=schema_models.Currency.US_DOLLAR.value,
-            run=test_run,
-        )
-
-        session.run(
-            """
-            MATCH (m:MonetaryAmount {id: $mid, testRun: $run})
-            MATCH (c:Currency {id: $cid, testRun: $run})
+            MATCH (m:MonetaryAmount {id: $money_id, testRun: $run})
+            MATCH (c:Currency {id: $currency_id, testRun: $run})
             CREATE (m)-[:isDenominatedIn]->(c)
             """,
-            mid=ids["money"],
-            cid=ids["currency_member"],
+            money_id=model_node_ids["MonetaryAmount"],
+            currency_id=enum_node_ids[("Currency", schema_models.Currency.US_DOLLAR.value)],
+            run=test_run,
+        )
+        session.run(
+            """
+            MATCH (w:W2Form {id: $w2_id, testRun: $run})
+            MATCH (e:Employer {id: $emp_id, testRun: $run})
+            MATCH (p:Person {id: $person_id, testRun: $run})
+            MATCH (s:Reportstatus {rdfs__label: $status, testRun: $run})
+            CREATE (w)-[:issuedBy]->(e)
+            CREATE (w)-[:issuedTo]->(p)
+            CREATE (w)-[:hasReportStatus]->(s)
+            """,
+            w2_id=model_node_ids["W2Form"],
+            emp_id=model_node_ids["Employer"],
+            person_id=model_node_ids["Person"],
+            status=schema_models.Reportstatus.SUBMITTED.value,
+            run=test_run,
+        )
+        session.run(
+            """
+            MATCH (p:Person {id: $person_id, testRun: $run})
+            MATCH (t:TaxPayer {id: $taxpayer_id, testRun: $run})
+            MATCH (e:Employer {id: $emp_id, testRun: $run})
+            CREATE (p)-[:isEmployedBy]->(e)
+            CREATE (t)-[:isEmployedBy]->(e)
+            """,
+            person_id=model_node_ids["Person"],
+            taxpayer_id=model_node_ids["TaxPayer"],
+            emp_id=model_node_ids["Employer"],
+            run=test_run,
+        )
+        session.run(
+            """
+            MATCH (c:CryptoAsset {id: $crypto_id, testRun: $run})
+            MATCH (x:Exchange {id: $exchange_id, testRun: $run})
+            CREATE (c)-[:isTradedOn]->(x)
+            """,
+            crypto_id=model_node_ids["CryptoAsset"],
+            exchange_id=model_node_ids["Exchange"],
+            run=test_run,
+        )
+        session.run(
+            """
+            MATCH (r1:IndividualTaxReturn {id: $itr_id, testRun: $run})
+            MATCH (r2:Form1040_2025 {id: $f1040_id, testRun: $run})
+            MATCH (m:MonetaryAmount {id: $money_id, testRun: $run})
+            MATCH (ta:TaxAuthority {rdfs__label: $irs_label, testRun: $run})
+            MATCH (status:Reportstatus {rdfs__label: $status_label, testRun: $run})
+            CREATE (r1)-[:isSubmittedTo]->(ta)
+            CREATE (r2)-[:isSubmittedTo]->(ta)
+            CREATE (r1)-[:hasReportStatus]->(status)
+            CREATE (r2)-[:hasReportStatus]->(status)
+            CREATE (r1)-[:hasTaxableIncome]->(m)
+            CREATE (r2)-[:hasTaxableIncome]->(m)
+            """,
+            itr_id=model_node_ids["IndividualTaxReturn"],
+            f1040_id=model_node_ids["Form1040_2025"],
+            money_id=model_node_ids["MonetaryAmount"],
+            irs_label=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE.value,
+            status_label=schema_models.Reportstatus.SUBMITTED.value,
             run=test_run,
         )
 
-    return ids
+    return created_labels
 
 
 def validate_sample_data(
@@ -255,10 +406,11 @@ def validate_sample_data(
     mandatory_props_by_class: Dict[str, Set[str]],
     enum_members_by_class: Dict[str, Set[str]],
     topology_map: Dict[str, Dict[str, Set[str]]],
-) -> None:
+    expected_labels: Set[str],
+) -> List[str]:
     """Validate loaded sample data against schema description artifacts."""
 
-    target_classes = ["Employer", "Person", "MonetaryAmount"]
+    target_classes = sorted(expected_labels)
 
     with driver.session(database=db_name) as session:
         rows = session.run(
@@ -270,12 +422,18 @@ def validate_sample_data(
         ).data()
 
     props_by_class: Dict[str, Dict[str, object]] = {}
+    present_labels: Set[str] = set()
     for row in rows:
         labels = row.get("labels") or []
         props = row.get("props") or {}
         for lbl in labels:
             if lbl in target_classes:
                 props_by_class[lbl] = props
+                present_labels.add(lbl)
+
+    missing_labels = [lbl for lbl in target_classes if lbl not in present_labels]
+    if missing_labels:
+        raise AssertionError(f"Missing sample nodes for labels: {missing_labels}")
 
     # Validate mandatory properties for our sample classes.
     for cls in target_classes:
@@ -317,6 +475,7 @@ def validate_sample_data(
                     raise AssertionError(
                         f"Enum value '{label}' is not allowed for {enum_cls}; allowed={sorted(allowed)}"
                     )
+    return target_classes
 
 
 def main() -> int:
@@ -358,21 +517,24 @@ def main() -> int:
         ensure_test_database(driver, args.test_db)
         active_db = resolve_database_with_fallback(driver, args.test_db)
         applied = apply_constraints(driver, active_db, constraints_path)
-        load_sample_data(driver, active_db, args.test_run)
-        validate_sample_data(
+        created_labels = load_sample_data(
+            driver, active_db, args.test_run, enum_members_by_class
+        )
+        validated_labels = validate_sample_data(
             driver,
             active_db,
             args.test_run,
             mandatory_props_by_class,
             enum_members_by_class,
             topology_map,
+            created_labels,
         )
 
         print("Schema workflow test passed")
         print(f"Database: {active_db}")
         print(f"Test run: {args.test_run}")
         print(f"Constraints applied: {applied}")
-        print("Sample classes validated: Employer, Person, MonetaryAmount")
+        print(f"Sample labels validated ({len(validated_labels)}): {', '.join(validated_labels)}")
         return 0
     finally:
         driver.close()
