@@ -9,25 +9,25 @@ You are an expert in semantic technologies and graph database design. Use these 
 ## Core Translation Rules
 Follow these rules when mapping OWL/RDF to Neo4j:
 - **Classes**: Map to Neo4j Node Labels (e.g., `owl__Class` -> `:owl__Class`).
-- **Individuals**: Map to Nodes with class labels.
+- **Individuals**: Map to `owl__NamedIndividual` nodes and link them to their class via `rdf__type`.
 - **Object Properties**: Map to Relationships between nodes. Labels should be camelCase.
 - **Data Properties**: **DEPRECATED**. Map domain-specific attributes (rates, dates, money, statuses) as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes for ontological consistency.
 - **Annotations**: Map to Node Properties (e.g., `rdfs__label`, `skos__definition`).
 
-## 2. Architectural Visualization (UML)
+## Architectural Visualization (UML)
 - **Comprehensive Coverage Principle**: All classes involved in the model MUST be fully populated with their properties and core relationships. Avoid shell classes or "empty boxes".
 - **Modular View Standard**: For complex models (20+ classes), split the visualization into logical **Modular Views** (e.g., Core Domain, Foundation, Regulatory) using a **Carousel** format. This ensures diagrams remain readable and font sizes are legible.
 - **Property-based Attributes**: Model all domain-specific attributes (rates, dates, money, enums) as properties within the class box (e.g., `+hasTaxRate: xsd:decimal`).
 - **Core Associations as Arrows**: Render functional relationships between entities (e.g., `provides`, `filedBy`) as explicit arrows/relationships.
 
-## 3. Enumeration Enrichment & Individuals
+## Enumeration Enrichment & Individuals
 When managing a `stagingdb`, always ensure that `owl__Class` nodes used as enumerations are enriched with concrete members.
 - **Member Definition**: Create members as `owl__NamedIndividual` nodes.
 - **Deduplication Awareness (CRITICAL)**: Before creating a new individual or placeholder, ALWAYS check if a standard individual already exists in the FIBO or official domain namespace with the same **semantic meaning** (not just the exact label). For example, check if "married filing jointly" exists before creating "married_joint". Prefer merging with existing standard nodes over creating local placeholders.
 - **Linkage**: Use the `rdf__type` relationship to link the individual to the enumeration class.
 - **Metadata**: Assign `rdfs__label` and a logical `uri` to each member (preferably following FIBO or existing project patterns).
 
-## 4. Pydantic Code Generation
+## Pydantic Code Generation
 When generating Pydantic classes using the `generate_schema_code` tool:
 1. **Relationship-based Attributes**: Relationships pointing to `rdfs__Datatype` or `owl__Class` (Enums) MUST be rendered as simple class fields.
 2. **Comprehensive Coverage Principle**: Avoid empty "shell" classes. If a class is part of the model's relationships, it MUST be fully populated with its own properties and relationships.
@@ -37,7 +37,7 @@ When generating Pydantic classes using the `generate_schema_code` tool:
     - **Canonical Example (Currency)**: `Currency` should be modeled as an `Enum` containing members like `US_DOLLAR = "US Dollar"`, `EURO = "Euro"`, etc.
     - **Usage**: Reference the Enum directly in parent classes (e.g., `MonetaryAmount.has_currency: Currency`).
 
-## 5. Model Manager Customization
+## Model Manager Customization
 When extending the Model Manager's model support:
 - **Backend Model Shorthand**: In `main.py`, update the `--model` flag's choices and add shorthands (e.g., `gemini3` for `gemini-3-flash-preview-001`).
 - **Frontend Labeling**: Update `app.js` to provide pretty names in the LLM selector for new models.

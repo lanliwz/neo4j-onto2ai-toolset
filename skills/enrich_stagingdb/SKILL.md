@@ -8,12 +8,12 @@ You are a master of the Staging Database (typically `stagingdb`). Use this skill
 
 ## Core Operations
 
-### 1. Staging Data
+### Staging Data
 Use `staging_materialized_schema` to copy classes and relationships to the staging database.
 - **Goal**: Create a self-contained subset of the ontology.
 - **Options**: Set `flatten_inheritance=True` if you want to copy ancestor relationships directly to the child classes during extraction.
 
-### 2. Enriching Classes from FIBO Ontology
+### Enriching Classes from FIBO Ontology
 Use `get_materialized_schema` to discover available properties for a class, then write them to staging with Cypher.
 
 **Workflow:**
@@ -45,7 +45,7 @@ CREATE (person)-[:hasName {
 - Use `MERGE` for target nodes (to avoid duplicates) and `CREATE` for relationships
 - Standard cardinality values: `1`, `0..1`, `0..*`, `1..*`
 
-### 3. Creating Custom Classes
+### Creating Custom Classes
 When FIBO doesn't have a class you need, create it in staging with a custom URI namespace.
 
 **Example — Creating Tax Payer:**
@@ -82,7 +82,7 @@ CREATE (tp)-[:hasTaxId {
 - Always include `skos__definition`
 - Use `rdfs__subClassOf` for inheritance relationships
 
-### 4. Enriching with Datatype Properties (Inline)
+### Enriching with Datatype Properties (Inline)
 For simple value-type properties, create `rdfs__Datatype` nodes directly instead of full classes.
 
 **Example — Enriching Conventional Street Address as US Physical Address:**
@@ -116,7 +116,7 @@ CREATE (addr)-[:hasState {materialized: true, cardinality: '1'}]->(state)
 - `xsd:decimal` — monetary amounts
 - `xsd:boolean` — true/false flags
 
-### 5. Creating Named Individuals
+### Creating Named Individuals
 Create instances of classes using `owl__NamedIndividual` nodes with `rdf__type` links.
 
 **Example — Creating United States of America:**
@@ -126,11 +126,7 @@ MATCH (country:owl__Class {rdfs__label: 'country'})
 CREATE (usa:owl__NamedIndividual {
   rdfs__label: 'United States of America',
   uri: 'https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedStatesOfAmerica',
-  skos__definition: 'country in North America',
-  countryName: 'United States of America',
-  isoAlpha2Code: 'US',
-  isoAlpha3Code: 'USA',
-  isoNumericCode: '840'
+  skos__definition: 'country in North America'
 })
 CREATE (usa)-[:rdf__type {materialized: true}]->(country)
 
@@ -140,18 +136,21 @@ MATCH (addr:owl__Class {rdfs__label: 'conventional street address'})
 CREATE (addr)-[:defaultCountry {materialized: true, cardinality: '1'}]->(usa)
 ```
 
+If you need instance data attributes (for example, ISO codes), model them as relationships to `rdfs__Datatype` nodes instead of inline properties.
+
 **Rules for named individuals:**
 - Label: `owl__NamedIndividual`
 - Must have `rdf__type` relationship to its class
-- Include instance-specific property values directly on the node
+- Keep only metadata properties on the node (`rdfs__label`, `uri`, `skos__definition`)
+- Model all domain data attributes as relationships to `rdfs__Datatype` nodes
 - Use official URIs (e.g., FIBO/LCC) when available
 
-### 6. Consolidating Inheritance
+### Consolidating Inheritance
 If data is already in staging but still has parent-child links, use `consolidate_inheritance`.
 - **Purpose**: Flatten the hierarchy so each class is fully descriptive on its own.
 - **When**: Use this after staging classes if you didn't use `flatten_inheritance` during the initial copy.
 
-### 7. Structural Consolidation (Class → Datatype)
+### Structural Consolidation (Class → Datatype)
 Use `consolidate_staging_db` to convert complex classes into simpler datatypes.
 
 **Example — Converting date classes to datatypes:**
@@ -169,7 +168,7 @@ consolidate_staging_db(transformations=[
 - Class represents a simple scalar type (date, string, number)
 - You want to simplify the UML diagram by reducing class boxes
 
-### 8. Enriching Location Classes
+### Enriching Location Classes
 For location-type classes (place of birth, headquarters, etc.), use a mix of datatypes and class references.
 
 **Example — Enriching Place of Birth:**
@@ -188,7 +187,7 @@ CREATE (pob)-[:hasCountry {materialized: true, cardinality: '1'}]->(country)
 
 **Pattern**: Use datatypes for simple text fields (city, state names) and class references for complex objects (country with its own properties).
 
-### 9. Metadata Enrichment (AI-Driven)
+### Metadata Enrichment (AI-Driven)
 For nodes (Classes) and relationships in `stagingdb` that are missing semantic documentation, use the LLM to generate `skos__definition` based on the context.
 
 **Class Enrichment Workflow:**
@@ -201,7 +200,7 @@ For nodes (Classes) and relationships in `stagingdb` that are missing semantic d
 2. Generate with AI: Provide the relationship URI and the source/target labels to the LLM.
 3. Update Staging: Set the generated definition on the relationship property in `stagingdb`.
 
-### 10. Full Schema Documentation
+### Full Schema Documentation
 Maintain a textual representation of the entire graph schema for easy reference and LLM context.
 
 **Tool:** `get_ontology_schema_description(database='stagingdb')`
@@ -212,15 +211,15 @@ Maintain a textual representation of the entire graph schema for easy reference 
 
 **Standard**: Ensure the Markdown output includes dedicated columns for `Data Type` and `Mandatory` in the properties section.
 
-### 11. Data Schema Constraints (Archival)
-To ensure data integrity, maintain a `staging_schema_contraint.cypher` file that defines the physical constraints of the Neo4j database. 
+### Data Schema Constraints (Archival)
+To ensure data integrity, maintain a Cypher constraints file (for example, `staging/staging_schema_constraint.cypher`) that defines the physical constraints of the Neo4j database.
 
 **Core Principles:**
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
 2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`).
-3. **Automate**: Use a script (e.g., `generate_archival_cypher.py`) to keep the Cypher file synchronized with the graph metadata.
+3. **Keep in Sync**: Generate or update the constraints file from current graph metadata as part of your release workflow (scripted or manual), and verify it against `stagingdb` before applying.
 
-### 12. Domain Model Consistency (Pydantic)
+### Domain Model Consistency (Pydantic)
 To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:
 
 **Key Patterns:**
@@ -231,7 +230,7 @@ To ensure the generated code is fully compatible with the graph, follow these Py
 
 **Why**: This 1:1 parity between the domain model and the graph schema enables type-safe, automated data ingestion and extraction without manual Cypher mapping.
 
-### 13. Effective Node Label Heuristic (Documentation Filtering)
+### Effective Node Label Heuristic (Documentation Filtering)
 When generating final documentation (like `staging_schema.md`), use instance counts and topological activity to distinguish between primary Entity Classes and metadata/flattened classes.
 
 **Filtering Logic (Effective Label Calculation):**
