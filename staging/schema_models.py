@@ -30,9 +30,9 @@ class W2Form(BaseModel):
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates a W-2 form to the reporting party that provides and issues it for wage and tax reporting purposes.")
     is_statutory_employee: Optional[str] = Field(default=None, alias="isStatutoryEmployee", description="")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates a W-2 form to the submitter that files or submits it to the appropriate authority or recipient.")
-    has_report_status: Optional[str] = Field(default=None, alias="hasReportStatus", description="Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.")
-    issued_by: Optional[Employer] = Field(default=None, alias="issuedBy", description="employer that issued the W-2")
-    issued_to: Optional[Person] = Field(default=None, alias="issuedTo", description="employee who received the W-2")
+    has_report_status: str = Field(alias="hasReportStatus", description="Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.")
+    issued_by: Employer = Field(alias="issuedBy", description="employer that issued the W-2")
+    issued_to: Person = Field(alias="issuedTo", description="employee who received the W-2")
 
 class CryptoAsset(BaseModel):
     """A digital asset designed to work as a medium of exchange."""
@@ -40,14 +40,14 @@ class CryptoAsset(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     has_token_symbol: str = Field(alias="hasTokenSymbol", description="The ticker symbol for the crypto asset.")
-    is_traded_on: Optional[str] = Field(default=None, alias="isTradedOn", description="Indicates the exchange where the asset is listed.")
+    is_traded_on: List[str] = Field(default_factory=list, alias="isTradedOn", description="Indicates the exchange where the asset is listed.")
 
 class TaxAuthority(BaseModel):
     """functional entity that is responsible for the administration and enforcement of tax laws"""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_jurisdiction: Optional[str] = Field(default=None, alias="hasJurisdiction", description="Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.")
+    has_jurisdiction: List[str] = Field(default_factory=list, min_length=1, alias="hasJurisdiction", description="Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.")
 
 class Person(BaseModel):
     """individual human being, with consciousness of self"""
@@ -62,7 +62,7 @@ class Person(BaseModel):
     has_place_of_birth: str = Field(alias="hasPlaceOfBirth", description="identifies the location where an individual was born")
     has_residence: List[str] = Field(default_factory=list, alias="hasResidence", description="identifies a dwelling where an individual lives")
     has_tax_id: List[str] = Field(default_factory=list, alias="hasTaxId", description="Links a person to their tax identifier.")
-    is_employed_by: Optional[Employer] = Field(default=None, alias="isEmployedBy", description="indicates the employer")
+    is_employed_by: List[Employer] = Field(default_factory=list, alias="isEmployedBy", description="indicates the employer")
 
 class IndividualTaxReturn(BaseModel):
     """A tax return filed by an individual person."""
@@ -72,30 +72,30 @@ class IndividualTaxReturn(BaseModel):
     has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Links an individual tax return to the date and time at which it was reported or filed.")
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.")
-    is_submitted_to: Optional[str] = Field(default=None, alias="isSubmittedTo", description="identifies the party to which the report is submitted")
-    has_taxable_income: Optional[MonetaryAmount] = Field(default=None, alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
-    has_report_status: Optional[str] = Field(default=None, alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
-    has_agi: Optional[MonetaryAmount] = Field(default=None, alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
-    has_total_tax: Optional[MonetaryAmount] = Field(default=None, alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
-    has_total_payments: Optional[MonetaryAmount] = Field(default=None, alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
-    has_refund_amount: Optional[MonetaryAmount] = Field(default=None, alias="hasRefundAmount", description="Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.")
-    has_amount_owed: Optional[MonetaryAmount] = Field(default=None, alias="hasAmountOwed", description="Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.")
-    has_line1a_wages: Optional[MonetaryAmount] = Field(default=None, alias="hasLine1aWages", description="Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.")
-    has_line2b_taxable_interest: Optional[MonetaryAmount] = Field(default=None, alias="hasLine2bTaxableInterest", description="Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.")
-    has_line3b_ordinary_dividends: Optional[MonetaryAmount] = Field(default=None, alias="hasLine3bOrdinaryDividends", description="Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.")
-    has_line6b_taxable_social_security: Optional[MonetaryAmount] = Field(default=None, alias="hasLine6bTaxableSocialSecurity", description="Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.")
-    has_line12_standard_deduction: Optional[MonetaryAmount] = Field(default=None, alias="hasLine12StandardDeduction", description="Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.")
-    has_line16_tax_value: Optional[MonetaryAmount] = Field(default=None, alias="hasLine16TaxValue", description="Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.")
-    has_line19_child_tax_credit: Optional[MonetaryAmount] = Field(default=None, alias="hasLine19ChildTaxCredit", description="Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.")
-    has_line24_total_tax: Optional[MonetaryAmount] = Field(default=None, alias="hasLine24TotalTax", description="Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.")
-    has_line33_total_payments: Optional[MonetaryAmount] = Field(default=None, alias="hasLine33TotalPayments", description="Relates an individual tax return to the monetary amount reported as the total payments on Line 33.")
+    is_submitted_to: str = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
+    has_taxable_income: MonetaryAmount = Field(alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
+    has_report_status: str = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
+    has_agi: MonetaryAmount = Field(alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
+    has_total_tax: MonetaryAmount = Field(alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
+    has_total_payments: MonetaryAmount = Field(alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
+    has_refund_amount: MonetaryAmount = Field(alias="hasRefundAmount", description="Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.")
+    has_amount_owed: MonetaryAmount = Field(alias="hasAmountOwed", description="Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.")
+    has_line1a_wages: MonetaryAmount = Field(alias="hasLine1aWages", description="Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.")
+    has_line2b_taxable_interest: MonetaryAmount = Field(alias="hasLine2bTaxableInterest", description="Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.")
+    has_line3b_ordinary_dividends: MonetaryAmount = Field(alias="hasLine3bOrdinaryDividends", description="Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.")
+    has_line6b_taxable_social_security: MonetaryAmount = Field(alias="hasLine6bTaxableSocialSecurity", description="Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.")
+    has_line12_standard_deduction: MonetaryAmount = Field(alias="hasLine12StandardDeduction", description="Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.")
+    has_line16_tax_value: MonetaryAmount = Field(alias="hasLine16TaxValue", description="Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.")
+    has_line19_child_tax_credit: MonetaryAmount = Field(alias="hasLine19ChildTaxCredit", description="Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.")
+    has_line24_total_tax: MonetaryAmount = Field(alias="hasLine24TotalTax", description="Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.")
+    has_line33_total_payments: MonetaryAmount = Field(alias="hasLine33TotalPayments", description="Relates an individual tax return to the monetary amount reported as the total payments on Line 33.")
 
 class MonetaryAmount(BaseModel):
     """A quantity of money, denominated in a specific currency."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    is_denominated_in: Optional[str] = Field(default=None, alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
+    is_denominated_in: str = Field(alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
 
 class Form1040_2025(BaseModel):
     """The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability."""
@@ -105,23 +105,23 @@ class Form1040_2025(BaseModel):
     has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Links an individual tax return to the date and time at which it was reported or filed.")
     is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.")
     is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.")
-    is_submitted_to: Optional[str] = Field(default=None, alias="isSubmittedTo", description="identifies the party to which the report is submitted")
-    has_taxable_income: Optional[MonetaryAmount] = Field(default=None, alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
-    has_report_status: Optional[str] = Field(default=None, alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
-    has_agi: Optional[MonetaryAmount] = Field(default=None, alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
-    has_total_tax: Optional[MonetaryAmount] = Field(default=None, alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
-    has_total_payments: Optional[MonetaryAmount] = Field(default=None, alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
-    has_refund_amount: Optional[MonetaryAmount] = Field(default=None, alias="hasRefundAmount", description="Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.")
-    has_amount_owed: Optional[MonetaryAmount] = Field(default=None, alias="hasAmountOwed", description="Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.")
-    has_line1a_wages: Optional[MonetaryAmount] = Field(default=None, alias="hasLine1aWages", description="Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.")
-    has_line2b_taxable_interest: Optional[MonetaryAmount] = Field(default=None, alias="hasLine2bTaxableInterest", description="Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.")
-    has_line3b_ordinary_dividends: Optional[MonetaryAmount] = Field(default=None, alias="hasLine3bOrdinaryDividends", description="Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.")
-    has_line6b_taxable_social_security: Optional[MonetaryAmount] = Field(default=None, alias="hasLine6bTaxableSocialSecurity", description="Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.")
-    has_line12_standard_deduction: Optional[MonetaryAmount] = Field(default=None, alias="hasLine12StandardDeduction", description="Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.")
-    has_line16_tax_value: Optional[MonetaryAmount] = Field(default=None, alias="hasLine16TaxValue", description="Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.")
-    has_line19_child_tax_credit: Optional[MonetaryAmount] = Field(default=None, alias="hasLine19ChildTaxCredit", description="Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.")
-    has_line24_total_tax: Optional[MonetaryAmount] = Field(default=None, alias="hasLine24TotalTax", description="Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.")
-    has_line33_total_payments: Optional[MonetaryAmount] = Field(default=None, alias="hasLine33TotalPayments", description="Relates an individual tax return to the monetary amount reported as the total payments on Line 33.")
+    is_submitted_to: str = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
+    has_taxable_income: MonetaryAmount = Field(alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
+    has_report_status: str = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
+    has_agi: MonetaryAmount = Field(alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
+    has_total_tax: MonetaryAmount = Field(alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
+    has_total_payments: MonetaryAmount = Field(alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
+    has_refund_amount: MonetaryAmount = Field(alias="hasRefundAmount", description="Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.")
+    has_amount_owed: MonetaryAmount = Field(alias="hasAmountOwed", description="Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.")
+    has_line1a_wages: MonetaryAmount = Field(alias="hasLine1aWages", description="Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.")
+    has_line2b_taxable_interest: MonetaryAmount = Field(alias="hasLine2bTaxableInterest", description="Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.")
+    has_line3b_ordinary_dividends: MonetaryAmount = Field(alias="hasLine3bOrdinaryDividends", description="Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.")
+    has_line6b_taxable_social_security: MonetaryAmount = Field(alias="hasLine6bTaxableSocialSecurity", description="Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.")
+    has_line12_standard_deduction: MonetaryAmount = Field(alias="hasLine12StandardDeduction", description="Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.")
+    has_line16_tax_value: MonetaryAmount = Field(alias="hasLine16TaxValue", description="Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.")
+    has_line19_child_tax_credit: MonetaryAmount = Field(alias="hasLine19ChildTaxCredit", description="Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.")
+    has_line24_total_tax: MonetaryAmount = Field(alias="hasLine24TotalTax", description="Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.")
+    has_line33_total_payments: MonetaryAmount = Field(alias="hasLine33TotalPayments", description="Relates an individual tax return to the monetary amount reported as the total payments on Line 33.")
 
 class TaxPayer(BaseModel):
     """A person who is obligated to pay taxes and is identified by a tax identifier."""
@@ -136,7 +136,7 @@ class TaxPayer(BaseModel):
     has_place_of_birth: str = Field(alias="hasPlaceOfBirth", description="identifies the location where an individual was born")
     has_residence: List[str] = Field(default_factory=list, alias="hasResidence", description="identifies a dwelling where an individual lives")
     has_tax_id: List[str] = Field(default_factory=list, alias="hasTaxId", description="Links a person to their tax identifier.")
-    is_employed_by: Optional[Employer] = Field(default=None, alias="isEmployedBy", description="indicates the employer")
+    is_employed_by: List[Employer] = Field(default_factory=list, alias="isEmployedBy", description="indicates the employer")
 
 class Employer(BaseModel):
     """A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes."""

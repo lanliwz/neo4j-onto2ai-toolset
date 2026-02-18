@@ -493,6 +493,8 @@
       "start_node_label": "W-2 form",
       "end_node_label": "reportStatus",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
       "description": "Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
     },
@@ -501,6 +503,8 @@
       "start_node_label": "W-2 form",
       "end_node_label": "employer",
       "properties": [],
+      "cardinality": "1",
+      "requirement": null,
       "description": "employer that issued the W-2",
       "uri": null
     },
@@ -509,6 +513,8 @@
       "start_node_label": "W-2 form",
       "end_node_label": "person",
       "properties": [],
+      "cardinality": "1",
+      "requirement": null,
       "description": "employee who received the W-2",
       "uri": null
     },
@@ -517,6 +523,8 @@
       "start_node_label": "crypto asset",
       "end_node_label": "exchange",
       "properties": [],
+      "cardinality": "0..*",
+      "requirement": null,
       "description": "Indicates the exchange where the asset is listed.",
       "uri": "https://model.onto2ai.com/schema/isTradedOn"
     },
@@ -525,6 +533,8 @@
       "start_node_label": "tax authority",
       "end_node_label": "jurisdiction",
       "properties": [],
+      "cardinality": "1..*",
+      "requirement": "Mandatory",
       "description": "Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.",
       "uri": "https://www.omg.org/spec/Commons/RegulatoryAgencies/hasJurisdiction"
     },
@@ -533,6 +543,8 @@
       "start_node_label": "person",
       "end_node_label": "employer",
       "properties": [],
+      "cardinality": "0..*",
+      "requirement": null,
       "description": "indicates the employer",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
     },
@@ -541,6 +553,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "Internal Revenue Service",
       "properties": [],
+      "cardinality": "1",
+      "requirement": null,
       "description": "identifies the party to which the report is submitted",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
     },
@@ -549,6 +563,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
     },
@@ -557,6 +573,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "reportStatus",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
       "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
     },
@@ -565,6 +583,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
     },
@@ -573,6 +593,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
     },
@@ -581,6 +603,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
     },
@@ -589,6 +613,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
     },
@@ -597,6 +623,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
     },
@@ -605,6 +633,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
       "uri": "https://example.org/tax/irs/hasLine1a"
     },
@@ -613,6 +643,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
       "uri": "https://example.org/tax/irs/hasLine2b"
     },
@@ -621,6 +653,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
       "uri": "https://example.org/tax/irs/hasLine3b"
     },
@@ -629,6 +663,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
       "uri": "https://example.org/tax/irs/hasLine6b"
     },
@@ -637,6 +673,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
       "uri": "https://example.org/tax/irs/hasLine12"
     },
@@ -645,6 +683,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
       "uri": "https://example.org/tax/irs/hasLine16"
     },
@@ -653,6 +693,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
       "uri": "https://example.org/tax/irs/hasLine19"
     },
@@ -661,6 +703,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
       "uri": "https://example.org/tax/irs/hasLine24"
     },
@@ -669,6 +713,8 @@
       "start_node_label": "individual tax return",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
       "uri": "https://example.org/tax/irs/hasLine33"
     },
@@ -677,6 +723,8 @@
       "start_node_label": "monetary amount",
       "end_node_label": "currency",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
       "description": "Relates a monetary amount to the currency in which that amount is expressed.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/isDenominatedIn"
     },
@@ -685,6 +733,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "Internal Revenue Service",
       "properties": [],
+      "cardinality": "1",
+      "requirement": null,
       "description": "identifies the party to which the report is submitted",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
     },
@@ -693,6 +743,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
     },
@@ -701,6 +753,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "reportStatus",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
       "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
     },
@@ -709,6 +763,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
     },
@@ -717,6 +773,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
     },
@@ -725,6 +783,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
     },
@@ -733,6 +793,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
     },
@@ -741,6 +803,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
     },
@@ -749,6 +813,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
       "uri": "https://example.org/tax/irs/hasLine1a"
     },
@@ -757,6 +823,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
       "uri": "https://example.org/tax/irs/hasLine2b"
     },
@@ -765,6 +833,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
       "uri": "https://example.org/tax/irs/hasLine3b"
     },
@@ -773,6 +843,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
       "uri": "https://example.org/tax/irs/hasLine6b"
     },
@@ -781,6 +853,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
       "uri": "https://example.org/tax/irs/hasLine12"
     },
@@ -789,6 +863,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
       "uri": "https://example.org/tax/irs/hasLine16"
     },
@@ -797,6 +873,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
       "uri": "https://example.org/tax/irs/hasLine19"
     },
@@ -805,6 +883,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
       "uri": "https://example.org/tax/irs/hasLine24"
     },
@@ -813,6 +893,8 @@
       "start_node_label": "2025 Form 1040",
       "end_node_label": "monetary amount",
       "properties": [],
+      "cardinality": "1",
+      "requirement": "Optional",
       "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
       "uri": "https://example.org/tax/irs/hasLine33"
     },
@@ -821,6 +903,8 @@
       "start_node_label": "tax payer",
       "end_node_label": "employer",
       "properties": [],
+      "cardinality": "0..*",
+      "requirement": null,
       "description": "indicates the employer",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
     }

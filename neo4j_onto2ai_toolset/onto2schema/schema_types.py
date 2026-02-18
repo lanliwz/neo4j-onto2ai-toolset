@@ -21,6 +21,8 @@ class Relationship(BaseModel):
     start_node_label: str
     end_node_label: str
     properties: List[Property] = []
+    cardinality: str = "0..1"
+    requirement: Optional[str] = None
     description: Optional[str] = None
     uri: Optional[str] = None
 

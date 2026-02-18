@@ -162,7 +162,7 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
         by_class[src].setdefault(alias, []).append(
             {
                 "type": tgt_class,
-                "cardinality": "0..1",  # relationship cardinality isn't present on Relationship model
+                "cardinality": getattr(r, "cardinality", "0..1"),
                 "description": r.description,
             }
         )
@@ -221,22 +221,26 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
     ]
 
     # Section 2: Relationship Types (deduplicated by type)
-    rel_agg: Dict[str, Dict[str, str]] = {}
+    rel_agg: Dict[str, Dict[str, Any]] = {}
     for r in relationships:
         rel_type = r.type
         if rel_type not in rel_agg:
             rel_agg[rel_type] = {
                 "uri": r.uri or "",
                 "definition": r.description or "",
-                "cardinality": "",  # not available in Relationship model
+                "cards": [str(getattr(r, "cardinality", "") or "").strip()],
             }
         else:
             if not rel_agg[rel_type]["uri"] and r.uri:
                 rel_agg[rel_type]["uri"] = r.uri
             if not rel_agg[rel_type]["definition"] and r.description:
                 rel_agg[rel_type]["definition"] = r.description
+            rel_agg[rel_type]["cards"].append(str(getattr(r, "cardinality", "") or "").strip())
 
-    rel_rows = [(k, v["uri"], v["definition"], v["cardinality"]) for k, v in sorted(rel_agg.items())]
+    rel_rows = []
+    for rel_type, agg in sorted(rel_agg.items()):
+        merged_card = _merge_cardinality(agg["cards"], has_duplicates=False)
+        rel_rows.append((rel_type, agg["uri"], agg["definition"], merged_card))
 
     # Section 3: Node Properties
     prop_rows = []
@@ -640,6 +644,8 @@ async def extract_data_model(
                     type=row['RelType'],
                     start_node_label=cls_name,
                     end_node_label=row['TargetClassLabel'],
+                    cardinality=row['Cardinality'],
+                    requirement=row['Requirement'],
                     description=row['RelDef'],
                     uri=row['RelURI']
                 ))

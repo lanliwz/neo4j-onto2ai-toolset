@@ -19,29 +19,29 @@
 
 | Relationship | URI | Definition | Cardinality |
 | --- | --- | --- | --- |
-| hasAGI | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI | Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return. |  |
-| hasAmountOwed | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed | Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period. |  |
-| hasJurisdiction | https://www.omg.org/spec/Commons/RegulatoryAgencies/hasJurisdiction | Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws. |  |
-| hasLine12StandardDeduction | https://example.org/tax/irs/hasLine12 | Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return. |  |
-| hasLine16TaxValue | https://example.org/tax/irs/hasLine16 | Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return. |  |
-| hasLine19ChildTaxCredit | https://example.org/tax/irs/hasLine19 | Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year. |  |
-| hasLine1aWages | https://example.org/tax/irs/hasLine1a | Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return. |  |
-| hasLine24TotalTax | https://example.org/tax/irs/hasLine24 | Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24. |  |
-| hasLine2bTaxableInterest | https://example.org/tax/irs/hasLine2b | Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b. |  |
-| hasLine33TotalPayments | https://example.org/tax/irs/hasLine33 | Relates an individual tax return to the monetary amount reported as the total payments on Line 33. |  |
-| hasLine3bOrdinaryDividends | https://example.org/tax/irs/hasLine3b | Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b. |  |
-| hasLine6bTaxableSocialSecurity | https://example.org/tax/irs/hasLine6b | Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b. |  |
-| hasRefundAmount | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount | Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return. |  |
-| hasReportStatus | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus | Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes. |  |
-| hasTaxableIncome | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome | Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules. |  |
-| hasTotalPayments | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments | Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return. |  |
-| hasTotalTax | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax | Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year. |  |
-| isDenominatedIn | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/isDenominatedIn | Relates a monetary amount to the currency in which that amount is expressed. |  |
-| isEmployedBy | https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy | indicates the employer |  |
-| isSubmittedTo | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo | identifies the party to which the report is submitted |  |
-| isTradedOn | https://model.onto2ai.com/schema/isTradedOn | Indicates the exchange where the asset is listed. |  |
-| issuedBy |  | employer that issued the W-2 |  |
-| issuedTo |  | employee who received the W-2 |  |
+| hasAGI | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI | Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return. | 1 |
+| hasAmountOwed | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed | Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period. | 1 |
+| hasJurisdiction | https://www.omg.org/spec/Commons/RegulatoryAgencies/hasJurisdiction | Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws. | 1..* |
+| hasLine12StandardDeduction | https://example.org/tax/irs/hasLine12 | Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return. | 1 |
+| hasLine16TaxValue | https://example.org/tax/irs/hasLine16 | Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return. | 1 |
+| hasLine19ChildTaxCredit | https://example.org/tax/irs/hasLine19 | Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year. | 1 |
+| hasLine1aWages | https://example.org/tax/irs/hasLine1a | Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return. | 1 |
+| hasLine24TotalTax | https://example.org/tax/irs/hasLine24 | Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24. | 1 |
+| hasLine2bTaxableInterest | https://example.org/tax/irs/hasLine2b | Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b. | 1 |
+| hasLine33TotalPayments | https://example.org/tax/irs/hasLine33 | Relates an individual tax return to the monetary amount reported as the total payments on Line 33. | 1 |
+| hasLine3bOrdinaryDividends | https://example.org/tax/irs/hasLine3b | Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b. | 1 |
+| hasLine6bTaxableSocialSecurity | https://example.org/tax/irs/hasLine6b | Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b. | 1 |
+| hasRefundAmount | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount | Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return. | 1 |
+| hasReportStatus | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus | Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes. | 1 |
+| hasTaxableIncome | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome | Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules. | 1 |
+| hasTotalPayments | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments | Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return. | 1 |
+| hasTotalTax | https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax | Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year. | 1 |
+| isDenominatedIn | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/isDenominatedIn | Relates a monetary amount to the currency in which that amount is expressed. | 1 |
+| isEmployedBy | https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy | indicates the employer | 0..* |
+| isSubmittedTo | https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo | identifies the party to which the report is submitted | 1 |
+| isTradedOn | https://model.onto2ai.com/schema/isTradedOn | Indicates the exchange where the asset is listed. | 0..* |
+| issuedBy |  | employer that issued the W-2 | 1 |
+| issuedTo |  | employee who received the W-2 | 1 |
 
 ## Section 3: Node Properties
 
