@@ -1,5 +1,5 @@
 """
-Schema API endpoints for the Onto2AI Model Manager.
+Schema API endpoints for the Onto2AI Modeller.
 """
 import os
 import logging

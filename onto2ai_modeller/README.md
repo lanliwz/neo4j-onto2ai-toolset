@@ -1,4 +1,4 @@
-# Onto2AI Model Manager
+# Onto2AI Modeller
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)](https://neo4j.com/)
@@ -6,8 +6,6 @@
 [![GoJS](https://img.shields.io/badge/GoJS-FF9900?style=for-the-badge&logo=javascript&logoColor=white)](https://gojs.net/)
 
 A premium, interactive web application designed to review, visualize, and enhance ontology schemas within a Neo4j staging environment. Powered by AI and interactive graph technology.
-
-![Screenshot](../docs/model_manager_screenshot.png)
 
 ## ✨ Features
 
@@ -21,7 +19,7 @@ A premium, interactive web application designed to review, visualize, and enhanc
 
 ### Requirements
 
--   **Python 3.10+**
+-   **Python 3.12+**
 -   **Neo4j** (with FIBO ontology or similar loaded into a `stagingdb`)
 -   **OpenAI API Key** (for advanced chat features)
 
@@ -57,7 +55,7 @@ Launch the backend server:
 
 ```bash
 # Start with Gemini
-cd model_manager
+cd onto2ai_modeller
 python main.py --model gemini
 
 # Or start with GPT
@@ -85,7 +83,7 @@ Access the application at: **[http://localhost:8180](http://localhost:8180)**
 ## 📂 Structure
 
 ```text
-model_manager/
+onto2ai_modeller/
 ├── main.py              # FastAPI Application Entry
 ├── api/
 │   ├── models.py        # Pydantic Response/Request Models

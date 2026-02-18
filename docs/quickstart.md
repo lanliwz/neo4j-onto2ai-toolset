@@ -53,9 +53,9 @@ onto2ai-mcp http 8082
 onto2ai-client
 ```
 
-## 7. Start Model Manager (Optional)
+## 7. Start Modeller (Optional)
 ```bash
-cd model_manager
+cd onto2ai_modeller
 python main.py --model gemini --port 8180
 ```
 Open: `http://localhost:8180`

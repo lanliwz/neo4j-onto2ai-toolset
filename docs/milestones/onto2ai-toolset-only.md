@@ -53,7 +53,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 
 ### Proposed In-Scope (keep)
 - `neo4j_onto2ai_toolset/`
-- `model_manager/`
+- `onto2ai_modeller/`
 - `skills/`
 - `staging/`
 - `scripts/` (only scripts that support Onto2AI workflows)
@@ -78,7 +78,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 
 ### Keep In This Repository
 - `neo4j_onto2ai_toolset/`
-- `model_manager/`
+- `onto2ai_modeller/`
 - `skills/`
 - `staging/`
 - `scripts/` (Onto2AI-only scripts)
@@ -114,7 +114,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 - Phase 4 completed:
   - added canonical config contract: `docs/configuration.md`
   - unified model-manager defaults to `LLM_MODEL_NAME` with `GPT_MODEL_NAME` fallback
-  - aligned shorthand models in `model_manager/main.py` to `gpt-5.2` and `gemini-3-flash-preview-001`
+  - aligned shorthand models in `onto2ai_modeller/main.py` to `gpt-5.2` and `gemini-3-flash-preview-001`
   - updated core LLM resolution in `neo4j_onto2ai_toolset/onto2ai_tool_config.py` with compatibility handling
 - Phase 5 completed:
   - added stable interface specification: `docs/interface-contract.md`
@@ -125,7 +125,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
   - rewrote top-level onboarding in `README.md` to a workflow-first structure
   - added `docs/quickstart.md`
   - added `docs/operator-runbook.md`
-  - aligned model manager doc defaults in `model_manager/README.md`
+  - aligned modeller doc defaults in `onto2ai_modeller/README.md`
 - Phase 7 progress:
   - completed static smoke validation (compile + import + entrypoint checks)
   - executed live `onto2ai-client` startup; MCP tool discovery succeeded

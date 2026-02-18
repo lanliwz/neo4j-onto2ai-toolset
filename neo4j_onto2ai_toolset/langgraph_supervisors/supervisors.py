@@ -3,7 +3,7 @@ from neo4j_onto2ai_toolset.langraph_agents.model_agents import *
 
 from neo4j_onto2ai_toolset.onto2ai_tool_config import get_llm
 
-model_manager = create_supervisor(
+onto2ai_modeller = create_supervisor(
     # Each message in messages should follow the Chat Message format:
     # {
     # "role": "user" | "assistant" | "system" | "tool",

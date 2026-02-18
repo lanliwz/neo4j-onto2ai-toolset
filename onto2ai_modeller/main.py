@@ -1,5 +1,5 @@
 """
-Onto2AI Model Manager - FastAPI Backend
+Onto2AI Modeller - FastAPI Backend
 
 A web application for reviewing and enhancing ontology schemas in stagingdb.
 """
@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.schemas import router as schemas_router
 
 app = FastAPI(
-    title="Onto2AI Model Manager",
+    title="Onto2AI Modeller",
     description="Web application to review and enhance ontology schemas",
     version="1.0.0"
 )
@@ -59,11 +59,11 @@ async def root(request: Request):
 @app.get("/health")
 async def health():
     """Health check endpoint."""
-    return {"status": "healthy", "app": "Onto2AI Model Manager"}
+    return {"status": "healthy", "app": "Onto2AI Modeller"}
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Start the Onto2AI Model Manager")
+    parser = argparse.ArgumentParser(description="Start the Onto2AI Modeller")
     parser.add_argument(
         "--model", "-m",
         type=str,
@@ -104,9 +104,9 @@ if __name__ == "__main__":
         elif model_name.lower() == "gpt":
             model_name = "gpt-5.2"
             
-        print(f"🚀 Starting Model Manager with model: {model_name}")
+        print(f"🚀 Starting Modeller with model: {model_name}")
         os.environ["LLM_MODEL_NAME"] = model_name
     else:
-        print(f"🚀 Starting Model Manager with default model")
+        print(f"🚀 Starting Modeller with default model")
 
     uvicorn.run(app, host=args.host, port=args.port)

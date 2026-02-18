@@ -37,8 +37,8 @@ When generating Pydantic classes using the `generate_schema_code` tool:
     - **Canonical Example (Currency)**: `Currency` should be modeled as an `Enum` containing members like `US_DOLLAR = "US Dollar"`, `EURO = "Euro"`, etc.
     - **Usage**: Reference the Enum directly in parent classes (e.g., `MonetaryAmount.has_currency: Currency`).
 
-## Model Manager Customization
-When extending the Model Manager's model support:
+## Modeller Customization
+When extending the Modeller's model support:
 - **Backend Model Shorthand**: In `main.py`, update the `--model` flag's choices and add shorthands (e.g., `gemini3` for `gemini-3-flash-preview-001`).
 - **Frontend Labeling**: Update `app.js` to provide pretty names in the LLM selector for new models.
 

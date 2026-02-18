@@ -1,5 +1,5 @@
 /**
- * GoJS Graph Visualization for Onto2AI Model Manager
+ * GoJS Graph Visualization for Onto2AI Modeller
  */
 
 let myDiagram = null;

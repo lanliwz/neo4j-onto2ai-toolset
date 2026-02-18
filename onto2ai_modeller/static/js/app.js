@@ -1,5 +1,5 @@
 /**
- * Onto2AI Model Manager - Main Application Logic
+ * Onto2AI Modeller - Main Application Logic
  */
 
 let currentClassName = null;

@@ -6,7 +6,7 @@
 3. Start MCP server: `onto2ai-mcp`.
 4. Start client/UI as needed:
    - CLI: `onto2ai-client`
-   - UI: `cd model_manager && python main.py --port 8180`
+   - UI: `cd onto2ai_modeller && python main.py --port 8180`
 
 ## Core Operating Flows
 

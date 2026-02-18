@@ -42,7 +42,7 @@ This is the canonical environment-variable contract for Onto2AI Toolset runtime 
 - Uses `LLM_MODEL_NAME` for model selection.
 - Handles provider-specific fallback based on available keys.
 
-### Model Manager
+### Modeller
 - Uses the same `LLM_MODEL_NAME` contract and Neo4j variables.
 - CLI shorthand `--model gpt` maps to `gpt-5.2`.
 - CLI shorthand `--model gemini` maps to `gemini-3-flash-preview-001`.

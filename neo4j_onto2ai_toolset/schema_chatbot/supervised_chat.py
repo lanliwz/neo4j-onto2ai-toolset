@@ -29,7 +29,7 @@ def get_last_ai_content(messages: List) -> Optional[str]:
 config = {"configurable": {"thread_id": "checkpoint-thread-1"}}
 def start_cli_chat():
     checkpointer=InMemorySaver()
-    app = model_manager.compile(checkpointer=checkpointer)
+    app = onto2ai_modeller.compile(checkpointer=checkpointer)
     context = ModelContextSchema(userid='weizhang')
     print("🤖 Chat started. Type `exit` to stop.")
     while True:

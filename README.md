@@ -7,14 +7,14 @@ This repository is scoped to Onto2AI workflows only:
 - ontology load and materialization
 - MCP schema tooling and AI-assisted enhancement
 - staging database enrichment/consolidation
-- model-manager web UI for review and operations
+- Onto2AI Modeller web UI for review and operations
 
 ## Primary Workflow
 1. Configure environment variables (Neo4j + model/API keys).
 2. Load ontology data into Neo4j.
 3. Run MCP server/client for schema extraction and enhancement.
 4. Stage and consolidate schema for implementation.
-5. Review in Model Manager UI.
+5. Review in Modeller UI.
 
 ## Quickstart
 See: [docs/quickstart.md](./docs/quickstart.md)
@@ -48,9 +48,9 @@ onto2ai-mcp http 8082
 python -m neo4j_onto2ai_toolset.onto2ai_loader
 ```
 
-### Model Manager
+### Modeller
 ```bash
-cd model_manager
+cd onto2ai_modeller
 python main.py --model gemini --port 8180
 ```
 

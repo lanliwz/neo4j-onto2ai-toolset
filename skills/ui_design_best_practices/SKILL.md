@@ -1,10 +1,10 @@
 ---
 name: "UI Design Best Practices"
-description: "Guidelines and patterns for implementing modern, theme-aware, and accessible UI components in Onto2AI Model Manager."
+description: "Guidelines and patterns for implementing modern, theme-aware, and accessible UI components in Onto2AI Modeller."
 ---
 # UI Design Best Practices
 
-Use these instructions when designing or modifying the Model Manager UI, especially when implementing themes, complex visualizations, or interactive components.
+Use these instructions when designing or modifying the Modeller UI, especially when implementing themes, complex visualizations, or interactive components.
 
 ## Modern Theming (CSS)
 Always implement a dual-theme system (Dark/Light) using CSS variables.
