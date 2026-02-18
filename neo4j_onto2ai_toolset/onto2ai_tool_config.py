@@ -6,7 +6,8 @@ from langchain_openai import ChatOpenAI
 from neo4j_onto2ai_toolset.onto2ai_logger_config import *
 from neo4j_onto2ai_toolset.onto2ai_utility import Neo4jDatabase
 
-GPT_MODEL_NAME = os.getenv("GPT_MODEL_NAME")
+LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME")
+GPT_MODEL_NAME = os.getenv("GPT_MODEL_NAME")  # Backward-compatible alias
 GPT_REASONING_EFFORT = os.getenv("GPT_REASONING_EFFORT")
 
 
@@ -82,12 +83,36 @@ def get_staging_db(staging_db_name: str = None) -> Neo4jDatabase:
 # LLM Model Config
 _llm = None
 
+
+def _resolve_openai_model_name() -> str:
+    """
+    Resolve the OpenAI model used by internal LangChain flows.
+
+    Priority:
+    1. GPT_MODEL_NAME (legacy, OpenAI-specific)
+    2. LLM_MODEL_NAME (canonical cross-component variable)
+    3. gpt-5.2 (safe default)
+    """
+    candidate = GPT_MODEL_NAME or LLM_MODEL_NAME
+    if not candidate:
+        return "gpt-5.2"
+
+    # ChatOpenAI cannot load Gemini IDs; keep OpenAI model resolution explicit.
+    if candidate.lower().startswith("gemini"):
+        logger.warning(
+            "LLM_MODEL_NAME points to a Gemini model, but internal LangChain "
+            "flows require an OpenAI ChatOpenAI model. Falling back to gpt-5.2."
+        )
+        return "gpt-5.2"
+    return candidate
+
 def get_llm():
     """Lazy initialization of the LLM."""
     global _llm
     if _llm is None:
-        logger.info(f"Initializing LLM: {GPT_MODEL_NAME}")
-        _llm = ChatOpenAI(model=GPT_MODEL_NAME)
+        model_name = _resolve_openai_model_name()
+        logger.info(f"Initializing OpenAI LLM for internal flows: {model_name}")
+        _llm = ChatOpenAI(model=model_name)
     return _llm
 
 # Graph Database Config
@@ -129,6 +154,5 @@ def cleanup():
             pass
 
 atexit.register(cleanup)
-
 
 

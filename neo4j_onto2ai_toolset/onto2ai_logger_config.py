@@ -45,6 +45,7 @@ logger.info(f"Neo4j Logger Level: {NEO4J_LOG_LEVEL}")
 logger.info(f"Neo4j Model DB Name: {os.getenv('NEO4J_MODEL_DB_NAME')}")
 logger.info(f"Neo4j TAX DB Name: {os.getenv('NEO4J_TAX62N_DB_NAME')}")
 logger.info(f"Neo4j RDF DB Name: {os.getenv('NEO4J_RDF_DB_NAME')}")
+logger.info(f"LLM Model Name (canonical): {os.getenv('LLM_MODEL_NAME')}")
 logger.info(f"LLM GPT Model Name: {os.getenv('GPT_MODEL_NAME')}")
 logger.info(f"LLM Model Reasoning Effort: {os.getenv('GPT_REASONING_EFFORT')}")
 

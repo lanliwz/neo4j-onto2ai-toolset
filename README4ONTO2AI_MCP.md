@@ -1,4 +1,4 @@
-# Onto2AI MCP: Ontology Modeling Tools
+# Onto2AI Toolset MCP: Ontology Modeling Tools
 
 This project provides a powerful **Model Context Protocol (MCP)** server and an AI-driven client designed to interrogate, enhance, and materialize schemas from an OWL ontology loaded into Neo4j.
 
@@ -46,7 +46,7 @@ export LLM_MODEL_NAME="gemini-3-flash-preview" # or "gpt-5.2"
 
 ## Project Structure
 
-- `neo4j_onto2ai_toolset/onto2ai_mcp.py`: The MCP server providing the oncology tools.
+- `neo4j_onto2ai_toolset/onto2ai_mcp.py`: The MCP server providing the ontology modeling tools.
 - `neo4j_onto2ai_toolset/onto2ai_client.py`: The AI agent client that connects to the server and handles user queries.
 - `neo4j_onto2ai_toolset/onto2ai_tool_config.py`: Central configuration manager.
 
@@ -59,7 +59,12 @@ export LLM_MODEL_NAME="gemini-3-flash-preview" # or "gpt-5.2"
 The client serves as your primary interface. It automatically starts the MCP server as a subprocess.
 
 ```bash
-python neo4j_onto2ai_toolset/onto2ai_client.py
+onto2ai-client
+```
+
+Alternative:
+```bash
+python -m neo4j_onto2ai_toolset.onto2ai_client
 ```
 
 Upon startup, the client will:
@@ -75,12 +80,12 @@ To force the client to use a specific model without changing your environment gl
 
 **Using OpenAI:**
 ```bash
-LLM_MODEL_NAME=gpt-5.2 python neo4j_onto2ai_toolset/onto2ai_client.py
+LLM_MODEL_NAME=gpt-5.2 python -m neo4j_onto2ai_toolset.onto2ai_client
 ```
 
 **Using Gemini (requires GOOGLE_API_KEY):**
 ```bash
-LLM_MODEL_NAME=gemini-3-flash-preview python neo4j_onto2ai_toolset/onto2ai_client.py
+LLM_MODEL_NAME=gemini-3-flash-preview python -m neo4j_onto2ai_toolset.onto2ai_client
 ```
 
 ### Running as an HTTP Server (SSE)
@@ -89,7 +94,7 @@ If you prefer to run the MCP server over HTTP (Server-Sent Events) instead of `s
 
 ```bash
 # Start the server on port 8082
-python neo4j_onto2ai_toolset/onto2ai_mcp.py http 8082
+python -m neo4j_onto2ai_toolset.onto2ai_mcp http 8082
 ```
 
 > [!NOTE]
@@ -123,7 +128,7 @@ This mode starts the server automatically when the AI agent starts.
     "onto2ai": {
       "command": "python",
       "args": [
-        "/Users/weizhang/github/neo4j-onto2ai-toolset/neo4j_onto2ai_toolset/onto2ai_mcp.py"
+        "/path/to/onto2ai-toolset/neo4j_onto2ai_toolset/onto2ai_mcp.py"
       ],
       "env": {
         "NEO4J_MODEL_DB_URL": "bolt://localhost:7687",

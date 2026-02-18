@@ -1,4 +1,4 @@
-# 🌌 Onto2AI Model Manager
+# Onto2AI Model Manager
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)](https://neo4j.com/)
@@ -11,7 +11,7 @@ A premium, interactive web application designed to review, visualize, and enhanc
 
 ## ✨ Features
 
--   **🧠 Extractive AI Chat**: Powered by GPT-2.0-Flash. Includes true "Chat-to-Graph" extraction—when the AI uses schema tools, the resulting structured data is captured and rendered with high fidelity.
+-   **🧠 Extractive AI Chat**: Powered by the configured `LLM_MODEL_NAME`. Includes true "Chat-to-Graph" extraction—when the AI uses schema tools, the resulting structured data is captured and rendered with high fidelity.
 -   **🎨 High-Fidelity Visualization**: Interactive graph powered by GoJS. Automatically visualizes both classes and datatype properties as separate nodes for a complete semantic view.
 -   **🎨 Interactive Graph Visualization**: Powered by GoJS. Features custom styling for classes and datatypes, smooth animations, and automatic layout.
 -   **🌓 Modern Dark UI**: Slick, resizable three-panel interface designed for deep focus.
@@ -28,8 +28,8 @@ A premium, interactive web application designed to review, visualize, and enhanc
 ### Installation
 
 ```bash
-# Clone the repository and navigate to the toolset root
-cd neo4j-onto2ai-toolset
+# Navigate to the toolset root
+cd onto2ai-toolset
 
 # Install dependencies
 pip install fastapi uvicorn neo4j openai
@@ -48,7 +48,7 @@ NEO4J_STAGING_DB_NAME=stagingdb
 
 # AI configuration
 OPENAI_API_KEY=your_api_key
-GPT_MODEL_NAME=gpt-4o-2024-05-13
+LLM_MODEL_NAME=gpt-5.2
 ```
 
 ### Execution
@@ -56,12 +56,12 @@ GPT_MODEL_NAME=gpt-4o-2024-05-13
 Launch the backend server:
 
 ```bash
-# Start with Gemini (default)
+# Start with Gemini
 cd model_manager
 python main.py --model gemini
 
 # Or start with GPT
-python python main.py --model gpt-5.2 --port 8081
+python main.py --model gpt --port 8081
 ```
 
 Access the application at: **[http://localhost:8180](http://localhost:8180)**
@@ -99,4 +99,4 @@ model_manager/
 ```
 
 ---
-*Part of the Neo4j-Onto2AI Toolset.*
+Part of the Onto2AI Toolset.

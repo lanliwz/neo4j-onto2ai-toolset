@@ -20,7 +20,7 @@ The `onto2ai_loader.py` script is designed to load FIBO (Financial Industry Busi
 3.  **Run Loader**:
     ```bash
     export PYTHONPATH=$PYTHONPATH:.
-    python neo4j_onto2ai_toolset/onto2ai_loader.py
+    python -m neo4j_onto2ai_toolset.onto2ai_loader
     ```
 
 ## Prefix Management

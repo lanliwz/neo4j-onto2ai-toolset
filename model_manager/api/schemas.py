@@ -25,7 +25,11 @@ _onto2ai_client = None
 async def get_onto2ai_client():
     global _onto2ai_client, _current_llm
     if _current_llm is None:
-        _current_llm = os.getenv("LLM_MODEL_NAME") or "gemini-2.0-flash-exp"
+        _current_llm = (
+            os.getenv("LLM_MODEL_NAME")
+            or os.getenv("GPT_MODEL_NAME")
+            or "gemini-3-flash-preview-001"
+        )
         
     if _onto2ai_client is None:
         _onto2ai_client = Onto2AIClient(model_name=_current_llm)
@@ -36,7 +40,7 @@ async def get_onto2ai_client():
 _db_connection = None
 
 # LLM State
-AVAILABLE_LLMS = ["gemini-2.0-flash-exp", "gemini-3-flash-preview-001", "gpt-4o-2024-05-13"]
+AVAILABLE_LLMS = ["gemini-3-flash-preview-001", "gpt-5.2"]
 _current_llm = None  # Lazy init in get_llm_status/get_onto2ai_client
 
 def get_db():
@@ -1244,7 +1248,7 @@ async def get_llm_status():
     # Refresh from env if not manually set yet
     env_model = os.getenv("LLM_MODEL_NAME")
     if _current_llm is None:
-        _current_llm = env_model or "gemini-2.0-flash-exp"
+        _current_llm = env_model or os.getenv("GPT_MODEL_NAME") or "gemini-3-flash-preview-001"
         
     # Ensure current model is in available list
     if _current_llm not in AVAILABLE_LLMS:

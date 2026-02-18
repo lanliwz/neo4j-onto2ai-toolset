@@ -1,13 +1,7 @@
-# __init__.py in neo4j_onto2ai_toolset/schema_chatbot/
-# This file makes the directory a package
-
-# You can import chatbot functions here if needed
-
-# setup.py
 from setuptools import setup, find_packages
 
 setup(
-    name="neo4j-onto2ai-toolset",
+    name="onto2ai-toolset",
     version="0.3.0",
     packages=find_packages(),
     install_requires=[
@@ -20,15 +14,16 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "neo4j-chatbot=neo4j_onto2ai_toolset.schema_chatbot.chatbot:main"
+            "onto2ai-client=neo4j_onto2ai_toolset.onto2ai_client:cli_main",
+            "onto2ai-mcp=neo4j_onto2ai_toolset.onto2ai_mcp:cli_main"
         ],
     },
     author="Wei Zhang",
     author_email="zhang.wei.ny@gmail.com",
-    description="A toolset for integrating Neo4j with AI-driven ontology processing",
+    description="Onto2AI toolset for ontology-driven modeling with Neo4j and MCP",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/lanliwz/neo4j-onto2ai-toolset",
+    url="https://github.com/lanliwz/onto2ai-toolset",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

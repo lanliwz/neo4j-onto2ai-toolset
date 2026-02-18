@@ -1818,7 +1818,8 @@ async def get_ontology_schema_description(
         logger.error(f"Error getting ontology schema: {e}")
         return f"Error: {e}"
 
-if __name__ == "__main__":
+def cli_main():
+    """Console entrypoint for running the Onto2AI MCP server."""
     # Support HTTP transport if requested via command line
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "http":
@@ -1837,3 +1838,7 @@ if __name__ == "__main__":
     else:
         # By default, run using stdio for MCP integration
         mcp.run()
+
+
+if __name__ == "__main__":
+    cli_main()

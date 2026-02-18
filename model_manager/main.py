@@ -98,11 +98,11 @@ if __name__ == "__main__":
     if args.model:
         model_name = args.model
         if model_name.lower() == "gemini":
-            model_name = "gemini-2.0-flash-exp"
+            model_name = "gemini-3-flash-preview-001"
         elif model_name.lower() == "gemini3":
             model_name = "gemini-3-flash-preview-001"
         elif model_name.lower() == "gpt":
-            model_name = "gpt-4o-2024-05-13"
+            model_name = "gpt-5.2"
             
         print(f"🚀 Starting Model Manager with model: {model_name}")
         os.environ["LLM_MODEL_NAME"] = model_name

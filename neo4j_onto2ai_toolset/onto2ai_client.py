@@ -163,5 +163,9 @@ async def main():
     print("\n=== AI Response ===")
     print(response)
 
-if __name__ == "__main__":
+def cli_main():
+    """Synchronous CLI entrypoint for console_scripts."""
     asyncio.run(main())
+
+if __name__ == "__main__":
+    cli_main()

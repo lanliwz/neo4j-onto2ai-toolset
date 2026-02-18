@@ -1,4 +1,4 @@
-# Neo4j Ontology MCP Server
+# Onto2AI Toolset MCP Server
 
 This MCP server provides a powerful set of tools to interrogate, enhance, and materialize schemas from an OWL ontology loaded into Neo4j. It supports the **Model Context Protocol** (MCP), enabling seamless integration with AI agents.
 
@@ -31,7 +31,7 @@ Ensure your `PYTHONPATH` includes the project root and start the server:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:.
-python3 neo4j_onto2ai_toolset/onto2ai_mcp.py
+python3 -m neo4j_onto2ai_toolset.onto2ai_mcp
 ```
 
 ## Configuration
