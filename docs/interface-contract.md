@@ -21,13 +21,13 @@ The following tools are part of the stabilized Onto2AI MCP surface:
 - `get_materialized_schema`
 - `get_ontological_schema`
 - `extract_data_model`
-- `enhance_schema`
 - `generate_schema_code`
 - `generate_shacl_for_modelling`
 - `staging_materialized_schema`
 - `consolidate_inheritance`
 - `consolidate_staging_db`
 - `generate_neo4j_schema_description`
+- `generate_neo4j_schema_constraint`
 
 ## Deprecated Interfaces and Migration
 

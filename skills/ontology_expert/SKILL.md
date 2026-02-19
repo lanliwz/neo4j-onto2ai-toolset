@@ -52,4 +52,4 @@ When extending the Modeller's model support:
 ## Tool Integration
 - Use `get_materialized_schema` to see production-ready views.
 - Use `get_ontological_schema` to understand the underlying logic/restrictions.
-- Use `enhance_schema` to refine models based on natural language instructions.
+- Use `extract_data_model` as the deterministic base for schema/code generation flows.

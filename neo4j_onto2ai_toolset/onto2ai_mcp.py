@@ -875,145 +875,13 @@ async def extract_data_model(
             db.close()
 
 @mcp.tool()
-async def enhance_schema(
-    class_names: Optional[Union[str, List[str]]] = None, 
-    instructions: str = "",
-    database: Optional[str] = None
-) -> DataModel:
-    """
-    Extract a model from ontology and enhance it using AI instructions.
-    Returns the updated DataModel (JSON).
-    """
-    try:
-        data_model = await extract_data_model(class_names, database=database)
-        
-        prompt = f"""
-        You are a data architect. Modify the following Neo4j DataModel based on these instructions: "{instructions}"
-        
-        Current DataModel (JSON):
-        {data_model.model_dump_json(indent=2)}
-        
-        Return ONLY a JSON object. NO EXPLANATIONS.
-        
-        Example Structure:
-        {{
-          "nodes": [
-            {{
-              "label": "mailing address",
-              "type": "owl__Class",
-              "uri": "https://model.onto2ai.com/schema/mailingAddress",
-              "properties": [{{
-                "name": "cityName",
-                "type": "string",
-                "uri": "https://model.onto2ai.com/schema/cityName",
-                "mandatory": false,
-                "cardinality": "0..1"
-              }}]
-            }},
-            {{
-              "label": "postal code",
-              "type": "rdfs__Datatype",
-              "uri": "https://model.onto2ai.com/schema/postalCode",
-              "properties": []
-            }}
-          ],
-          "relationships": [
-            {{
-              "type": "isPlayedBy",
-              "start_node_label": "mailing address",
-              "end_node_label": "party",
-              "uri": "https://model.onto2ai.com/schema/isPlayedBy"
-            }}
-          ]
-        }}
-
-        MANDATORY RULES (ZERO TOLERANCE):
-        1. Node Type: Every node MUST have a 'type' field set to either 'owl__Class' or 'rdfs__Datatype'.
-        2. Node Labels: MUST be lowercase with spaces (e.g. 'account holder'). FORBIDDEN: 'AccountHolder', 'ACCOUNT_HOLDER'.
-        3. Relationship Types: MUST be camelCase only (e.g. 'isPlayedBy'). FORBIDDEN: 'IS_PLAYED_BY', 'has_amount'.
-        4. Property Names: MUST be camelCase only (e.g. 'cityName').
-        5. URIs: MUST start with 'https://model.onto2ai.com/schema/' followed by the name in camelCase.
-           Note: Even if the label has spaces, the URI suffix MUST be camelCase.
-           Example: label 'mailing address' -> URI 'https://model.onto2ai.com/schema/mailingAddress'
-           FORBIDDEN: 'fibo...', 'cmns...', 'omg...', etc. REPLACE ALL OF THEM.
-        6. RELATIONSHIP-BASED ATTRIBUTES: Instead of primitive properties on class nodes, domain-specific attributes (e.g., money, rates, dates, codes, or statuses) MUST be modeled as RELATIONSHIPS to 'rdfs__Datatype' nodes or 'owl__Class' enumeration nodes.
-           Example: Instead of setting 'taxRate' as a property on 'tax authority', create a relationship 'hasTaxRate' from 'tax authority' to an 'rdfs__Datatype' node with label 'xsd:decimal'.
-
-        Constraint: EVERY property in the 'properties' list MUST be an OBJECT (not a string).
-        
-        Do not include markdown fences.
-        """
-        
-        response = await get_llm().ainvoke(prompt)
-        content = str(response.content).strip()
-        if content.startswith("```json"):
-            content = content.split("```json")[1].split("```")[0].strip()
-        elif content.startswith("```"):
-            content = content.split("```")[1].split("```")[0].strip()
-            
-        updated_model_dict = json.loads(content)
-        
-        # Robustness: Fix common AI mistakes
-        def fix_model(obj_list, is_node=True):
-            for item in obj_list:
-                # 1. Fix Labels (lowercase with space if node)
-                if is_node and 'label' in item:
-                    item['label'] = str(item['label']).lower().strip()
-                
-                # 2. Fix Relationship types (camelCase)
-                if not is_node and 'type' in item:
-                    item['type'] = to_camel_case(str(item['type']))
-
-                # 3. Fix properties (objects instead of strings)
-                if 'properties' in item and isinstance(item['properties'], list):
-                    item['properties'] = [
-                        {
-                            "name": to_camel_case(p), 
-                            "type": "STRING", 
-                            "uri": f"https://model.onto2ai.com/schema/{to_camel_case(p)}",
-                            "mandatory": False,
-                            "cardinality": "0..1"
-                        } 
-                        if isinstance(p, str) else p 
-                        for p in item['properties']
-                    ]
-                    # Also fix existing property names and URIs
-                    for p in item['properties']:
-                        if isinstance(p, dict):
-                            if 'name' in p:
-                                p['name'] = to_camel_case(p['name'])
-                            if 'uri' not in p or not p['uri'] or 'model.onto2ai.com' not in p['uri']:
-                                p['uri'] = f"https://model.onto2ai.com/schema/{p['name']}"
-
-                # 4. Fix URIs (enforce mandatory prefix and camelCase name)
-                name = item.get('label') if is_node else item.get('type')
-                if name:
-                    item['uri'] = f"https://model.onto2ai.com/schema/{to_camel_case(str(name))}"
-                
-                # 5. Fix Node Types
-                if is_node and ('type' not in item or not item['type']):
-                    item['type'] = "owl__Class"
-
-        if 'nodes' in updated_model_dict:
-            fix_model(updated_model_dict['nodes'], is_node=True)
-        if 'relationships' in updated_model_dict:
-            fix_model(updated_model_dict['relationships'], is_node=False)
-            
-        return DataModel(**updated_model_dict)
-    except Exception as e:
-        logger.error(f"Error enhancing schema: {e}")
-        raise
-
-@mcp.tool()
 async def generate_schema_code(
     class_names: Optional[Union[str, List[str]]] = None, 
     target_type: str = "pydantic", 
-    instructions: Optional[str] = None,
     database: Optional[str] = None
 ) -> str:
     """
     Generate production-ready code (SQL, Pydantic, Neo4j, GraphSchema) for one or more ontology classes.
-    Optional 'instructions' allows on-the-fly AI enhancement of the base ontology schema.
     
     target_type options:
     - 'pydantic': Python Pydantic v2 models.
@@ -1045,11 +913,8 @@ async def generate_schema_code(
                 db.close()
 
     try:
-        # 1. Extract base model
-        if instructions:
-            data_model = await enhance_schema(class_names, instructions, database=database)
-        else:
-            data_model = await extract_data_model(class_names, database=database)
+        # 1. Extract base model deterministically from ontology metadata.
+        data_model = await extract_data_model(class_names, database=database)
 
         # Deterministic strict-parity Pydantic generation from extracted DataModel.
         if target_type == "pydantic":
@@ -1274,8 +1139,7 @@ async def generate_neo4j_schema_constraint(
 
 @mcp.tool()
 async def generate_shacl_for_modelling(
-    class_names: Union[str, List[str]], 
-    instructions: Optional[str] = None
+    class_names: Union[str, List[str]]
 ) -> str:
     """
     Generate modeling-ready SHACL files for one or more ontology classes.
@@ -1288,10 +1152,7 @@ async def generate_shacl_for_modelling(
     """
     try:
         # Extract base model (includes URIs)
-        if instructions:
-            data_model = await enhance_schema(class_names, instructions)
-        else:
-            data_model = await extract_data_model(class_names)
+        data_model = await extract_data_model(class_names)
             
         prompt = f"""
         You are a semantic modeling expert. Generate SHACL code in Turtle format for the following DataModel.

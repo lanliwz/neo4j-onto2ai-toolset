@@ -22,9 +22,8 @@ Use MCP tools:
 - `get_ontological_schema`
 - `extract_data_model`
 
-### Schema Enhancement
+### Schema Generation
 Use MCP tools:
-- `enhance_schema`
 - `generate_schema_code`
 - `generate_shacl_for_modelling`
 
