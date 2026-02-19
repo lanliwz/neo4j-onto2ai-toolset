@@ -70,5 +70,5 @@ Open: `http://localhost:8180`
 After enum/NamedIndividual or schema updates, regenerate local artifacts:
 - `staging/full_schema_data_model.json` from `extract_data_model`
 - `staging/schema_models.py` from `generate_schema_code(target_type='pydantic')`
-- `staging/schema_description.md` from `get_ontology_schema_description`
-- `staging/stagingdb_constraints_mcp.cypher` from `generate_schema_constraints`
+- `staging/schema_description.md` from `generate_neo4j_schema_description`
+- `staging/stagingdb_constraints_mcp.cypher` from `generate_neo4j_schema_constraint`

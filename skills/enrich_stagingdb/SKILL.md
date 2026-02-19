@@ -203,7 +203,7 @@ For nodes (Classes) and relationships in `stagingdb` that are missing semantic d
 ### Full Schema Documentation
 Maintain a textual representation of the entire graph schema for easy reference and LLM context.
 
-**Tool:** `get_ontology_schema_description(database='stagingdb')`
+**Tool:** `generate_neo4j_schema_description(database='stagingdb')`
 **Purpose**: Generates a structured Markdown/text description:
 1. **Node Labels**: URI and semantic definition.
 2. **Relationship Types**: URI, definition, source/target, and cardinality.
@@ -228,8 +228,8 @@ To ensure data integrity, maintain a Cypher constraints file (for example, `stag
 After changing enum classes, named individuals, or mandatory relationships, regenerate in this order:
 1. `extract_data_model(database='stagingdb')` -> `staging/full_schema_data_model.json`
 2. `generate_schema_code(target_type='pydantic', database='stagingdb')` -> `staging/schema_models.py`
-3. `get_ontology_schema_description(database='stagingdb')` -> `staging/schema_description.md`
-4. `generate_schema_constraints(database='stagingdb')` -> `staging/stagingdb_constraints_mcp.cypher`
+3. `generate_neo4j_schema_description(database='stagingdb')` -> `staging/schema_description.md`
+4. `generate_neo4j_schema_constraint(database='stagingdb')` -> `staging/stagingdb_constraints_mcp.cypher`
 
 ### Domain Model Consistency (Pydantic)
 To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:

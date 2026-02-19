@@ -39,5 +39,5 @@ In UML diagrams, ensure these classes use the `«enumeration»` stereotype.
 - **Regeneration Workflow**: After enum changes, regenerate:
   1. `staging/full_schema_data_model.json` via `extract_data_model`
   2. `staging/schema_models.py` via `generate_schema_code(target_type='pydantic')`
-  3. `staging/schema_description.md` via `get_ontology_schema_description`
-  4. `staging/stagingdb_constraints_mcp.cypher` via `generate_schema_constraints`
+  3. `staging/schema_description.md` via `generate_neo4j_schema_description`
+  4. `staging/stagingdb_constraints_mcp.cypher` via `generate_neo4j_schema_constraint`

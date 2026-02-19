@@ -31,7 +31,7 @@ The server supports two primary transports:
 - **Logger**: All events should be logged via the standard project `logger`.
 
 ### Specialized Schema Tools
-- **`get_ontology_schema_description`**: Generates a full textual/Markdown summary with:
+- **`generate_neo4j_schema_description`**: Generates a full textual/Markdown summary with:
   1) Node Labels (including node type),
   2) Relationship Types,
   3) Node Properties,
@@ -39,7 +39,7 @@ The server supports two primary transports:
   5) Enumeration Members.
 - **`generate_schema_code` (target_type='graph_schema')**: Invokes the schema description logic to produce a deployment-ready representation of the graph model.
 - **`generate_schema_code` (target_type='pydantic')**: Deterministically emits Python `Enum` classes when `owl__NamedIndividual` members are linked via `rdf__type`.
-- **`generate_schema_constraints`**: Emits datatype `IS NOT NULL` constraints and enum-aware mandatory relationship comments.
+- **`generate_neo4j_schema_constraint`**: Emits datatype `IS NOT NULL` constraints and enum-aware mandatory relationship comments.
 
 ## Maintenance & Debugging
 - **JSON Outputs**: When returning complex data, prefer returning Pydantic models (like `DataModel`) or well-structured dictionaries.

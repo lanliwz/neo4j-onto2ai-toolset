@@ -105,6 +105,7 @@
 | IndividualTaxReturn | hasReportDateTime | dateTime | No |
 | IndividualTaxReturn | isProvidedBy | reportingParty | Yes |
 | IndividualTaxReturn | isSubmittedBy | submitter | No |
+| MonetaryAmount | hasAmount | decimal | Yes |
 | Form1040_2025 | hasReportDateTime | dateTime | No |
 | Form1040_2025 | isProvidedBy | reportingParty | Yes |
 | Form1040_2025 | isSubmittedBy | submitter | No |

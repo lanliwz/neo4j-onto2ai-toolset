@@ -149,6 +149,7 @@ class MonetaryAmount(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
+    has_amount: Decimal = Field(alias="hasAmount", description="Numeric amount value represented by this monetary amount.")
     is_denominated_in: Currency = Field(alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
 
 class Form1040_2025(BaseModel):

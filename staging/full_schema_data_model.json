@@ -364,7 +364,16 @@
     {
       "label": "monetary amount",
       "type": "owl__Class",
-      "properties": [],
+      "properties": [
+        {
+          "name": "hasAmount",
+          "type": "decimal",
+          "description": "Numeric amount value represented by this monetary amount.",
+          "mandatory": true,
+          "cardinality": "1",
+          "uri": "https://model.onto2ai.com/schema/hasAmount"
+        }
+      ],
       "description": "A quantity of money, denominated in a specific currency.",
       "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount"
     },

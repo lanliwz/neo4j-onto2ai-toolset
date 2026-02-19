@@ -1093,7 +1093,7 @@ async def generate_schema_code(
         return f"Error: {e}"
 
 @mcp.tool()
-async def generate_schema_constraints(
+async def generate_neo4j_schema_constraint(
     database: Optional[str] = None
 ) -> str:
     """
@@ -1134,13 +1134,13 @@ async def generate_schema_constraints(
                END as target_kind
         ORDER BY class_label
         """
-        results = db.execute_cypher(query, name="generate_schema_constraints")
+        results = db.execute_cypher(query, name="generate_neo4j_schema_constraint")
 
         enum_query = """
         MATCH (i:owl__NamedIndividual)-[:rdf__type]->(c:owl__Class)
         RETURN c.rdfs__label AS class_label, collect(DISTINCT i.rdfs__label) AS members
         """
-        enum_rows = db.execute_cypher(enum_query, name="generate_schema_constraints_enum_members")
+        enum_rows = db.execute_cypher(enum_query, name="generate_neo4j_schema_constraint_enum_members")
         enum_members_map = {
             row.get("class_label"): sorted([m for m in (row.get("members") or []) if m])
             for row in enum_rows
@@ -2076,7 +2076,7 @@ async def merge_semantic_individuals(
         db.close()
 
 @mcp.tool()
-async def get_ontology_schema_description(
+async def generate_neo4j_schema_description(
     database: Optional[str] = None,
     use_heuristics: bool = True
 ) -> str:
@@ -2094,7 +2094,7 @@ async def get_ontology_schema_description(
         data_model = await extract_data_model(class_names=None, database=database)
         return _format_schema_prompt_markdown(data_model)
     except Exception as e:
-        logger.error(f"Error getting ontology schema: {e}")
+        logger.error(f"Error getting neo4j schema description: {e}")
         return f"Error: {e}"
 
 def cli_main():

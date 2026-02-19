@@ -111,6 +111,8 @@ CREATE CONSTRAINT IndividualTaxReturn_isProvidedBy_Required IF NOT EXISTS FOR (n
 // Class: monetary amount
 // Definition: A quantity of money, denominated in a specific currency.
 // URI: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount
+// Mandatory property: hasAmount (cardinality: 1)
+CREATE CONSTRAINT MonetaryAmount_hasAmount_Required IF NOT EXISTS FOR (n:`MonetaryAmount`) REQUIRE n.`hasAmount` IS NOT NULL;
 // Mandatory enum relationship: isDenominatedIn -> currency (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency). members=['Australian Dollar', 'British Pound (Sterling)', 'Canadian Dollar', 'Chinese Yuan', 'Euro']
 
 // Class: organization

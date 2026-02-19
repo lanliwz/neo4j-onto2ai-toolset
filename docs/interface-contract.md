@@ -27,7 +27,7 @@ The following tools are part of the stabilized Onto2AI MCP surface:
 - `staging_materialized_schema`
 - `consolidate_inheritance`
 - `consolidate_staging_db`
-- `get_ontology_schema_description`
+- `generate_neo4j_schema_description`
 
 ## Deprecated Interfaces and Migration
 

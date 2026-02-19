@@ -194,6 +194,7 @@ def load_sample_data(
         is_employed_by=[employer],
     )
     money = schema_models.MonetaryAmount(
+        has_amount="1234.56",
         is_denominated_in=schema_models.Currency.US_DOLLAR,
     )
     exchange = schema_models.Exchange()

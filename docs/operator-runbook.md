@@ -33,15 +33,15 @@ Use MCP tools:
 - `staging_materialized_schema`
 - `consolidate_inheritance`
 - `consolidate_staging_db`
-- `get_ontology_schema_description`
-- `generate_schema_constraints`
+- `generate_neo4j_schema_description`
+- `generate_neo4j_schema_constraint`
 
 ### Artifact Regeneration Workflow
 After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship changes:
 1. Regenerate full model data: `extract_data_model` -> `staging/full_schema_data_model.json`
 2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/schema_models.py`
-3. Regenerate schema docs: `get_ontology_schema_description` -> `staging/schema_description.md`
-4. Regenerate constraints: `generate_schema_constraints` -> `staging/stagingdb_constraints_mcp.cypher`
+3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/schema_description.md`
+4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/stagingdb_constraints_mcp.cypher`
 
 ## Smoke Checks
 - MCP stdio startup succeeds.
