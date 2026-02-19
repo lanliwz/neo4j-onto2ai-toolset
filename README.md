@@ -14,7 +14,8 @@ This repository is scoped to Onto2AI workflows only:
 2. Load ontology data into Neo4j.
 3. Run MCP server/client for schema extraction and enhancement.
 4. Stage and consolidate schema for implementation.
-5. Review in Modeller UI.
+5. Run staging schema workflow test: `python staging/test_schema_workflow.py`.
+6. Finalize schema design and review in Modeller UI.
 
 ## Quickstart
 See: [docs/quickstart.md](./docs/quickstart.md)
