@@ -233,6 +233,15 @@ After changing enum classes, named individuals, subclass relationships, or manda
 3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/schema_description.md`
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
 4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/stagingdb_constraints_mcp.cypher`
+5. Reset test DB in Neo4j `system` database before validation:
+   - `DROP DATABASE test IF EXISTS;`
+   - `CREATE DATABASE test IF NOT EXISTS;`
+6. Run workflow validation test:
+   - `python staging/test_schema_workflow.py --test-db test`
+7. Ensure workflow semantics are covered by test data:
+   - person/taxpayer has residence/address
+   - W-2 is issued by organization/employer and issued to person
+   - Form 1040 is submitted by taxpayer to IRS
 
 ### Domain Model Consistency (Pydantic)
 To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:

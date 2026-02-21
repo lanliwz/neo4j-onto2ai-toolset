@@ -41,8 +41,15 @@ After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship chang
 2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/schema_models.py`
 3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/schema_description.md`
 4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/stagingdb_constraints_mcp.cypher`
-5. Run end-to-end staging schema test: `python staging/test_schema_workflow.py`
-6. Finalize schema design only after the schema workflow test passes.
+5. Reset the test database from Neo4j `system` database:
+   - `DROP DATABASE test IF EXISTS;`
+   - `CREATE DATABASE test IF NOT EXISTS;`
+6. Run end-to-end staging schema test: `python staging/test_schema_workflow.py --test-db test`
+7. Confirm the workflow scenario exists in the test graph:
+   - person/taxpayer has residence/address
+   - W-2 is issued by organization/employer and issued to person
+   - Form 1040 is submitted by taxpayer to the IRS
+8. Finalize schema design only after the schema workflow test passes.
 
 ## Smoke Checks
 - MCP stdio startup succeeds.

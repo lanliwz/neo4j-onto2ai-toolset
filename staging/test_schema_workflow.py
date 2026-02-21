@@ -617,6 +617,12 @@ def main() -> int:
         default=f"schema_workflow_{uuid.uuid4().hex[:8]}",
         help="Unique test run identifier",
     )
+    parser.add_argument(
+        "--keep-data",
+        action="store_true",
+        default=False,
+        help="Keep test data in the database after the test (useful for manual inspection). Default: delete after test.",
+    )
     args = parser.parse_args()
 
     cfg = get_neo4j_config()
@@ -657,6 +663,14 @@ def main() -> int:
         print(f"Test run: {args.test_run}")
         print(f"Constraints applied: {applied}")
         print(f"Sample labels validated ({len(validated_labels)}): {', '.join(validated_labels)}")
+        if args.keep_data:
+            print(f"Test data retained (sampleTag='schema_workflow', testRun='{args.test_run}')")
+            print("  To inspect:  MATCH (n {sampleTag: 'schema_workflow'}) RETURN labels(n), n")
+            print("  To clean up: MATCH (n {sampleTag: 'schema_workflow'}) DETACH DELETE n")
+        else:
+            with driver.session(database=active_db) as session:
+                session.run("MATCH (n {sampleTag: 'schema_workflow'}) DETACH DELETE n")
+            print("Test data cleaned up.")
         return 0
     finally:
         driver.close()
