@@ -11,6 +11,7 @@ Workflow:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -44,6 +45,44 @@ def get_neo4j_config() -> Neo4jConfig:
     if not password:
         raise RuntimeError("NEO4J_MODEL_DB_PASSWORD is required")
     return Neo4jConfig(uri=uri, username=username, password=password)
+
+
+def build_subclass_map(data_model_path: Path) -> Dict[str, str]:
+    """Read full_schema_data_model.json and return {child_pascal -> parent_pascal} map."""
+    def _pascal(label: str) -> str:
+        """Mirror _to_pascal_case_label: leading numeric tokens become a suffix."""
+        tokens = re.findall(r"[A-Za-z0-9]+", str(label or ""))
+        if not tokens:
+            return "Model"
+        if tokens[0].isdigit():
+            suffix = tokens[0]
+            head = "".join(t.capitalize() for t in tokens[1:]) or "Model"
+            return f"{head}_{suffix}"
+        return "".join(t.capitalize() for t in tokens) or "Model"
+
+    if not data_model_path.exists():
+        return {}
+    raw = json.loads(data_model_path.read_text(encoding="utf-8"))
+    subclass_map: Dict[str, str] = {}
+    for rel in raw.get("relationships", []):
+        if rel.get("type") == "rdfs__subClassOf":
+            child = _pascal(rel["start_node_label"])
+            parent = _pascal(rel["end_node_label"])
+            subclass_map.setdefault(child, parent)
+    return subclass_map
+
+
+def _label_chain(label: str, subclass_map: Dict[str, str]) -> str:
+    """Return a Cypher multi-label string for a class and all its ancestors.
+
+    e.g. 'TaxPayer' -> '`TaxPayer`:`Person`'
+    """
+    parts = [f"`{label}`"]
+    cur = label
+    while cur in subclass_map:
+        cur = subclass_map[cur]
+        parts.append(f"`{cur}`")
+    return ":".join(parts)
 
 
 def parse_constraints_file(path: Path) -> List[str]:
@@ -177,8 +216,12 @@ def load_sample_data(
     db_name: str,
     test_run: str,
     enum_members_by_class: Dict[str, Set[str]],
+    subclass_map: Dict[str, str],
 ) -> Set[str]:
-    """Load sample entities for each class using generated schema_models classes."""
+    """Load sample entities for each class using generated schema_models classes.
+
+    Subclass nodes receive multi-labels so a TaxPayer node is (:TaxPayer:Person).
+    """
 
     employer = schema_models.Employer(
         has_address=["1 Main St, New York, NY 10001"],
@@ -187,9 +230,13 @@ def load_sample_data(
         has_phone_number=["+1-212-555-0101"],
     )
     person = schema_models.Person(
+        has_age=["37"],
+        has_citizenship=["United States"],
         has_date_of_birth="1988-06-15",
-        has_place_of_birth="New York",
+        has_date_of_death=None,
         has_name=["Alex Doe"],
+        has_place_of_birth="New York",
+        has_residence=["101 Main St, New York, NY 10001"],
         has_tax_id=["999-88-7777"],
         is_employed_by=[employer],
     )
@@ -203,21 +250,36 @@ def load_sample_data(
         has_tax_id="98-7654321",
     )
     taxpayer = schema_models.TaxPayer(
+        has_age=["35"],
+        has_citizenship=["United States"],
         has_date_of_birth="1990-01-01",
-        has_place_of_birth="Boston",
+        has_date_of_death=None,
         has_name=["Jamie Taxpayer"],
+        has_place_of_birth="Boston",
+        has_residence=["101 Main St, New York, NY 10001"],
         has_tax_id=["123-45-6789"],
         is_employed_by=[employer],
     )
     w2_form = schema_models.W2Form(
+        has_allocated_tips="0.00",
+        has_box12_codes=["D"],
+        has_dependent_care_benefits="0.00",
         has_federal_income_tax_withheld="2000.00",
         has_medicare_tax_withheld="725.00",
         has_medicare_wages_and_tips="50000.00",
+        has_nonqualified_plans="0.00",
+        has_other_info=["State wages included"],
+        has_report_date_time=[datetime(2026, 1, 31, 12, 0, tzinfo=timezone.utc)],
+        has_retirement_plan="true",
         has_social_security_tax_withheld="3100.00",
+        has_social_security_tips="0.00",
         has_social_security_wages="50000.00",
         has_tax_year="2025",
+        has_third_party_sick_pay="0.00",
         has_wages_tips_other_comp="50000.00",
         is_provided_by=["Acme Corp Payroll"],
+        is_statutory_employee="false",
+        is_submitted_by=["Acme Corp Payroll"],
         has_report_status=schema_models.Reportstatus.SUBMITTED,
         issued_by=employer,
         issued_to=person,
@@ -227,7 +289,9 @@ def load_sample_data(
         is_traded_on=[exchange],
     )
     individual_return = schema_models.IndividualTaxReturn(
+        has_report_date_time=[datetime(2026, 2, 1, 10, 15, tzinfo=timezone.utc)],
         is_provided_by=["Tax Software Inc"],
+        is_submitted_by=["Jamie Taxpayer"],
         is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
         has_taxable_income=money,
         has_report_status=schema_models.Reportstatus.SUBMITTED,
@@ -247,7 +311,9 @@ def load_sample_data(
         has_line33_total_payments=money,
     )
     form_1040 = schema_models.Form1040_2025(
+        has_report_date_time=[datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc)],
         is_provided_by=["Tax Software Inc"],
+        is_submitted_by=["Jamie Taxpayer"],
         is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
         has_taxable_income=money,
         has_report_status=schema_models.Reportstatus.SUBMITTED,
@@ -311,14 +377,15 @@ def load_sample_data(
                 enum_node_ids[(enum_class, member_label)] = node_id
                 created_labels.add(enum_class)
 
-        # Create one sample node for each model class.
+        # Create one sample node for each model class, applying multi-labels for subclasses.
         for label, instance in model_instances.items():
             node_id = str(uuid.uuid4())
             dumped = instance.model_dump(by_alias=True, exclude_none=True, mode="json")
             props = _to_neo4j_props(dumped)
             props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
+            label_expr = _label_chain(label, subclass_map)  # e.g. `TaxPayer`:`Person`
             session.run(
-                f"CREATE (n:`{label}` {{id: $id}}) SET n += $props",
+                f"CREATE (n:{label_expr} {{id: $id}}) SET n += $props",
                 id=node_id,
                 props=props,
             )
@@ -340,14 +407,17 @@ def load_sample_data(
             """
             MATCH (w:W2Form {id: $w2_id, testRun: $run})
             MATCH (e:Employer {id: $emp_id, testRun: $run})
+            MATCH (o:Organization {id: $org_id, testRun: $run})
             MATCH (p:Person {id: $person_id, testRun: $run})
             MATCH (s:Reportstatus {rdfs__label: $status, testRun: $run})
             CREATE (w)-[:issuedBy]->(e)
+            CREATE (w)-[:issuedBy]->(o)
             CREATE (w)-[:issuedTo]->(p)
             CREATE (w)-[:hasReportStatus]->(s)
             """,
             w2_id=model_node_ids["W2Form"],
             emp_id=model_node_ids["Employer"],
+            org_id=model_node_ids["Organization"],
             person_id=model_node_ids["Person"],
             status=schema_models.Reportstatus.SUBMITTED.value,
             run=test_run,
@@ -357,12 +427,16 @@ def load_sample_data(
             MATCH (p:Person {id: $person_id, testRun: $run})
             MATCH (t:TaxPayer {id: $taxpayer_id, testRun: $run})
             MATCH (e:Employer {id: $emp_id, testRun: $run})
+            MATCH (a:PhysicalAddress {id: $address_id, testRun: $run})
             CREATE (p)-[:isEmployedBy]->(e)
             CREATE (t)-[:isEmployedBy]->(e)
+            CREATE (p)-[:hasResidence]->(a)
+            CREATE (t)-[:hasResidence]->(a)
             """,
             person_id=model_node_ids["Person"],
             taxpayer_id=model_node_ids["TaxPayer"],
             emp_id=model_node_ids["Employer"],
+            address_id=model_node_ids["PhysicalAddress"],
             run=test_run,
         )
         session.run(
@@ -380,10 +454,13 @@ def load_sample_data(
             MATCH (r1:IndividualTaxReturn {id: $itr_id, testRun: $run})
             MATCH (r2:Form1040_2025 {id: $f1040_id, testRun: $run})
             MATCH (m:MonetaryAmount {id: $money_id, testRun: $run})
+            MATCH (t:TaxPayer {id: $taxpayer_id, testRun: $run})
             MATCH (ta:TaxAuthority {rdfs__label: $irs_label, testRun: $run})
             MATCH (status:Reportstatus {rdfs__label: $status_label, testRun: $run})
             CREATE (r1)-[:isSubmittedTo]->(ta)
             CREATE (r2)-[:isSubmittedTo]->(ta)
+            CREATE (r1)-[:isSubmittedBy]->(t)
+            CREATE (r2)-[:isSubmittedBy]->(t)
             CREATE (r1)-[:hasReportStatus]->(status)
             CREATE (r2)-[:hasReportStatus]->(status)
             CREATE (r1)-[:hasTaxableIncome]->(m)
@@ -392,6 +469,7 @@ def load_sample_data(
             itr_id=model_node_ids["IndividualTaxReturn"],
             f1040_id=model_node_ids["Form1040_2025"],
             money_id=model_node_ids["MonetaryAmount"],
+            taxpayer_id=model_node_ids["TaxPayer"],
             irs_label=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE.value,
             status_label=schema_models.Reportstatus.SUBMITTED.value,
             run=test_run,
@@ -476,6 +554,44 @@ def validate_sample_data(
                     raise AssertionError(
                         f"Enum value '{label}' is not allowed for {enum_cls}; allowed={sorted(allowed)}"
                     )
+
+    # Validate the workflow scenario:
+    # taxpayer/person receives W-2 from organization and submits 1040.
+    with driver.session(database=db_name) as session:
+        scenario_checks = [
+            (
+                """
+                MATCH (w:W2Form {testRun: $run})-[:issuedTo]->(p:Person {testRun: $run})
+                RETURN count(*) AS c
+                """,
+                "Missing W2Form -> issuedTo -> Person relationship",
+            ),
+            (
+                """
+                MATCH (w:W2Form {testRun: $run})-[:issuedBy]->(o:Organization {testRun: $run})
+                RETURN count(*) AS c
+                """,
+                "Missing W2Form -> issuedBy -> Organization relationship",
+            ),
+            (
+                """
+                MATCH (f:Form1040_2025 {testRun: $run})-[:isSubmittedBy]->(t:TaxPayer {testRun: $run})
+                RETURN count(*) AS c
+                """,
+                "Missing Form1040_2025 -> isSubmittedBy -> TaxPayer relationship",
+            ),
+            (
+                """
+                MATCH (p:Person {testRun: $run})-[:hasResidence]->(:PhysicalAddress {testRun: $run})
+                RETURN count(*) AS c
+                """,
+                "Missing Person -> hasResidence -> PhysicalAddress relationship",
+            ),
+        ]
+        for query, message in scenario_checks:
+            count = session.run(query, run=test_run).single()["c"]
+            if count < 1:
+                raise AssertionError(message)
     return target_classes
 
 
@@ -513,13 +629,18 @@ def main() -> int:
 
     mandatory_props_by_class, enum_members_by_class, topology_map = parse_schema_description(schema_desc_path)
 
+    data_model_path = Path("staging/full_schema_data_model.json")
+    subclass_map = build_subclass_map(data_model_path)
+    if subclass_map:
+        print(f"Subclass map loaded: {subclass_map}")
+
     driver = GraphDatabase.driver(cfg.uri, auth=(cfg.username, cfg.password))
     try:
         ensure_test_database(driver, args.test_db)
         active_db = resolve_database_with_fallback(driver, args.test_db)
         applied = apply_constraints(driver, active_db, constraints_path)
         created_labels = load_sample_data(
-            driver, active_db, args.test_run, enum_members_by_class
+            driver, active_db, args.test_run, enum_members_by_class, subclass_map
         )
         validated_labels = validate_sample_data(
             driver,

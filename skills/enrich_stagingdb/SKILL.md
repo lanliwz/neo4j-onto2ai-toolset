@@ -205,11 +205,11 @@ Maintain a textual representation of the entire graph schema for easy reference 
 
 **Tool:** `generate_neo4j_schema_description(database='stagingdb')`
 **Purpose**: Generates a structured Markdown/text description:
-1. **Node Labels**: URI and semantic definition.
-2. **Relationship Types**: URI, definition, source/target, and cardinality.
-3. **Node Properties**: **Data Type** (XSD or semantic class) and **Mandatory** status (existence requirement).
-
-**Standard**: Ensure the Markdown output includes dedicated columns for `Data Type` and `Mandatory` in the properties section.
+1. **Node Labels**: URI and semantic definition. Subclass nodes are shown with **multi-label notation** (e.g., `TaxPayer:Person`, `Form1040_2025:IndividualTaxReturn`).
+2. **Relationship Types**: URI, definition, source/target, and cardinality. `rdfs__subClassOf` is **excluded** — inheritance is encoded in multi-label notation instead.
+3. **Node Properties**: Deduplicated by `(label, property, type, mandatory)`. Subclass label column uses multi-label notation. Includes **Data Type** and **Mandatory** status.
+4. **Graph Topology**: Node patterns use multi-label notation. `rdfs__subClassOf` edges are omitted.
+5. **Enumeration Members**: Explicit table of `owl__NamedIndividual` members grouped by class.
 
 **Enum Visibility Standard**:
 - Ensure `owl__NamedIndividual` members and `rdf__type` links are represented in schema artifacts.
@@ -225,11 +225,14 @@ To ensure data integrity, maintain a Cypher constraints file (for example, `stag
 4. **Enum-Aware Notes**: Keep mandatory enum/class relationships documented as comments in the generated constraints output (while reserving physical `IS NOT NULL` constraints for datatype-backed node properties).
 
 ### Regeneration Workflow (After Enum or Relationship Updates)
-After changing enum classes, named individuals, or mandatory relationships, regenerate in this order:
-1. `extract_data_model(database='stagingdb')` -> `staging/full_schema_data_model.json`
-2. `generate_schema_code(target_type='pydantic', database='stagingdb')` -> `staging/schema_models.py`
-3. `generate_neo4j_schema_description(database='stagingdb')` -> `staging/schema_description.md`
-4. `generate_neo4j_schema_constraint(database='stagingdb')` -> `staging/stagingdb_constraints_mcp.cypher`
+After changing enum classes, named individuals, subclass relationships, or mandatory relationships, regenerate in this order:
+1. `extract_data_model(database='stagingdb')` → `staging/full_schema_data_model.json`
+   - Note: `rdfs__subClassOf` relationships are automatically included in the extracted model.
+2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → `staging/schema_models.py`
+   - Child classes inherit from their parent Pydantic class; inherited fields are not redeclared.
+3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/schema_description.md`
+   - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
+4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/stagingdb_constraints_mcp.cypher`
 
 ### Domain Model Consistency (Pydantic)
 To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:

@@ -145,7 +145,12 @@ def _render_field_line(field_name: str, alias: str, py_type: str, cardinality: s
     return f'    {field_name}: Optional[{py_type}] = Field(default=None, alias="{alias}", description={desc})'
 
 def _generate_pydantic_strict(data_model: DataModel) -> str:
-    """Deterministic strict-parity generator from DataModel to Pydantic v2 code."""
+    """Deterministic strict-parity generator from DataModel to Pydantic v2 code.
+
+    Supports class inheritance: rdfs__subClassOf relationships are used to
+    emit proper Python class hierarchy (child(Parent)) and inherited fields
+    are omitted from child classes to avoid redefinition.
+    """
     nodes = data_model.nodes or []
     relationships = data_model.relationships or []
 
@@ -158,6 +163,35 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
         re.sub(r"[^a-z0-9]+", "", n.label.lower()): class_name_by_label[n.label]
         for n in class_nodes
     }
+
+    # --- Build subclass map from rdfs__subClassOf relationships ---
+    # child_label -> parent_label  (single-inheritance; first parent wins)
+    subclass_map: Dict[str, str] = {}
+    for r in relationships:
+        if r.type != "rdfs__subClassOf":
+            continue
+        child = r.start_node_label
+        parent = r.end_node_label
+        if child in class_name_by_label and parent in class_name_by_label:
+            subclass_map.setdefault(child, parent)  # keep first parent only
+
+    # --- Topological sort: parents before children ---
+    def _topo_sort(class_labels: List[str]) -> List[str]:
+        visited: set = set()
+        order: List[str] = []
+
+        def visit(label: str) -> None:
+            if label in visited:
+                return
+            visited.add(label)
+            parent = subclass_map.get(label)
+            if parent and parent in class_name_by_label:
+                visit(parent)
+            order.append(label)
+
+        for lbl in class_labels:
+            visit(lbl)
+        return order
 
     # Build enum discovery from rdf__type links: NamedIndividual -> Class.
     enum_members_by_class: Dict[str, List[str]] = {}
@@ -175,15 +209,16 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
     enum_class_labels = set(enum_members_by_class.keys())
 
     # Build per-class predicate entries from node properties and relationships.
-    by_class: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
+    # own_fields[label] = {alias -> entries}  (only the class's OWN fields)
+    own_fields: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
     for n in class_nodes:
         if n.label in enum_class_labels:
             continue
-        by_class[n.label] = {}
+        own_fields[n.label] = {}
 
         for p in (n.properties or []):
             alias = p.name
-            by_class[n.label].setdefault(alias, []).append(
+            own_fields[n.label].setdefault(alias, []).append(
                 {
                     "type": _map_type(p.type, class_by_norm),
                     "cardinality": p.cardinality or ("1" if p.mandatory else "0..1"),
@@ -192,10 +227,10 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
             )
 
     for r in relationships:
-        if r.type == "rdf__type":
+        if r.type in ("rdf__type", "rdfs__subClassOf"):
             continue
         src = r.start_node_label
-        if src not in by_class:
+        if src not in own_fields:
             continue
         alias = r.type
         if r.end_node_label in enum_class_labels:
@@ -204,13 +239,20 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
             tgt_class = class_name_by_label[individual_to_enum_class[r.end_node_label]]
         else:
             tgt_class = class_name_by_label.get(r.end_node_label, "str")
-        by_class[src].setdefault(alias, []).append(
+        own_fields[src].setdefault(alias, []).append(
             {
                 "type": tgt_class,
                 "cardinality": getattr(r, "cardinality", "0..1"),
                 "description": r.description,
             }
         )
+
+    # Collect inherited field aliases for each class (walk ancestry chain).
+    def _inherited_aliases(label: str) -> set:
+        parent = subclass_map.get(label)
+        if not parent or parent not in own_fields:
+            return set()
+        return set(own_fields[parent].keys()) | _inherited_aliases(parent)
 
     lines: List[str] = [
         "from __future__ import annotations",
@@ -247,23 +289,41 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
                 lines.append(f'    {member_name} = {json.dumps(member)}')
         lines.append("")
 
-    # Render regular class models (skip enum classes and named individuals).
-    for n in class_nodes:
-        if n.label in enum_class_labels:
+    # Topologically sorted non-enum class labels for rendering.
+    non_enum_labels = [n.label for n in class_nodes if n.label not in enum_class_labels]
+    sorted_labels = _topo_sort(non_enum_labels)
+
+    for label in sorted_labels:
+        n = next((x for x in class_nodes if x.label == label), None)
+        if n is None:
             continue
+
         cls = class_name_by_label[n.label]
-        lines.append(f"class {cls}(BaseModel):")
+
+        # Determine base class: parent Pydantic model or BaseModel.
+        parent_label = subclass_map.get(n.label)
+        if parent_label and parent_label in class_name_by_label:
+            base_cls = class_name_by_label[parent_label]
+        else:
+            base_cls = "BaseModel"
+
+        lines.append(f"class {cls}({base_cls}):")
         doc = n.description or ""
         lines.append(f'    """{doc}"""')
         lines.append("")
         lines.append('    model_config = ConfigDict(populate_by_name=True, extra="forbid")')
         lines.append("")
 
-        alias_map = by_class.get(n.label, {})
+        # Only render fields that are NOT inherited from an ancestor.
+        inherited = _inherited_aliases(n.label)
+        alias_map = own_fields.get(n.label, {})
+        rendered = False
         for alias, entries in alias_map.items():
+            if alias in inherited:
+                continue  # skip: provided by parent class
+            rendered = True
             field_name = _to_snake_case(alias)
             card = _merge_cardinality([e.get("cardinality") for e in entries], has_duplicates=len(entries) > 1)
-            # Choose most specific non-str type when possible.
             type_candidates = [e.get("type") for e in entries if e.get("type")]
             py_type = "str"
             for t in type_candidates:
@@ -273,24 +333,47 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
             desc = next((e.get("description") for e in entries if e.get("description")), "")
             lines.append(_render_field_line(field_name, alias, py_type, card, desc))
 
-        if not alias_map:
+        if not rendered:
             lines.append("    pass")
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
 
+
 def _format_schema_prompt_markdown(data_model: DataModel) -> str:
-    """Render schema in markdown prompt format with 4 sections."""
+    """Render schema in markdown prompt format with 5 sections.
+
+    Subclass relationships (rdfs__subClassOf) are represented as multi-label
+    node notation, e.g. (:TaxPayer:Person), instead of a separate topology row.
+    """
     nodes = data_model.nodes or []
     relationships = data_model.relationships or []
 
     class_name_by_label = {n.label: _to_pascal_case_label(n.label) for n in nodes}
     node_by_label = {n.label: n for n in nodes}
 
-    # Section 1: Node Labels
+    # --- Build subclass map: child_label -> parent_label ---
+    subclass_map: Dict[str, str] = {}
+    for r in relationships:
+        if r.type == "rdfs__subClassOf":
+            child = r.start_node_label
+            parent = r.end_node_label
+            if child in class_name_by_label and parent in class_name_by_label:
+                subclass_map.setdefault(child, parent)
+
+    def _multi_label(label: str) -> str:
+        """Return ChildClass:ParentClass:... chain for a class label."""
+        parts = [class_name_by_label.get(label, _to_pascal_case_label(label))]
+        cur = label
+        while cur in subclass_map:
+            cur = subclass_map[cur]
+            parts.append(class_name_by_label.get(cur, _to_pascal_case_label(cur)))
+        return ":".join(parts)
+
+    # Section 1: Node Labels  (subclass nodes show multi-label)
     node_rows = [
         (
-            class_name_by_label.get(n.label, n.label),
+            _multi_label(n.label) if (n.type or "owl__Class") == "owl__Class" else class_name_by_label.get(n.label, n.label),
             n.type or "owl__Class",
             n.uri or "",
             n.description or "",
@@ -298,9 +381,11 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
         for n in nodes
     ]
 
-    # Section 2: Relationship Types (deduplicated by type)
+    # Section 2: Relationship Types (deduplicated; rdfs__subClassOf excluded)
     rel_agg: Dict[str, Dict[str, Any]] = {}
     for r in relationships:
+        if r.type == "rdfs__subClassOf":
+            continue  # encoded via multi-label notation instead
         rel_type = r.type
         if rel_type not in rel_agg:
             rel_agg[rel_type] = {
@@ -313,7 +398,8 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
                 rel_agg[rel_type]["uri"] = r.uri
             if not rel_agg[rel_type]["definition"] and r.description:
                 rel_agg[rel_type]["definition"] = r.description
-            rel_agg[rel_type]["cards"].append(str(getattr(r, "cardinality", "") or "").strip())
+            rel_agg[rel_type]["cards"].append(str(getattr(r, "cardinality", "") or "").strip()
+)
 
     rel_rows = []
     for rel_type, agg in sorted(rel_agg.items()):
@@ -331,20 +417,26 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
         enum_rows.append((enum_class, r.start_node_label, ind_uri))
     enum_rows.sort(key=lambda x: (x[0], x[1]))
 
-    # Section 3: Node Properties
+    # Section 3: Node Properties (deduplicated by label+property+type+mandatory)
     prop_rows = []
+    seen_props: set = set()
     for n in nodes:
-        cls = class_name_by_label.get(n.label, n.label)
+        cls = _multi_label(n.label) if (n.type or "owl__Class") == "owl__Class" else class_name_by_label.get(n.label, n.label)
         for p in (n.properties or []):
             card = (p.cardinality or "").strip()
             mandatory = "Yes" if card.startswith("1") else "No"
-            prop_rows.append((cls, p.name, p.type, mandatory))
+            key = (cls, p.name, p.type, mandatory)
+            if key not in seen_props:
+                seen_props.add(key)
+                prop_rows.append((cls, p.name, p.type, mandatory))
 
-    # Section 4: Graph Topology
+    # Section 4: Graph Topology  (multi-label notation; rdfs__subClassOf excluded)
     topology_rows = []
     for r in relationships:
-        start = class_name_by_label.get(r.start_node_label, _to_pascal_case_label(r.start_node_label))
-        end = class_name_by_label.get(r.end_node_label, _to_pascal_case_label(r.end_node_label))
+        if r.type == "rdfs__subClassOf":
+            continue  # inheritance shown via multi-label, not as a topology edge
+        start = _multi_label(r.start_node_label) if r.start_node_label in class_name_by_label else class_name_by_label.get(r.start_node_label, _to_pascal_case_label(r.start_node_label))
+        end = _multi_label(r.end_node_label) if r.end_node_label in class_name_by_label else class_name_by_label.get(r.end_node_label, _to_pascal_case_label(r.end_node_label))
         topology_rows.append(f"(:{start})-[:{r.type}]->(:{end})")
 
     lines: List[str] = []
@@ -386,6 +478,7 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
     lines.append("| --- | --- | --- |")
     for enum_class, member_label, member_uri in enum_rows:
         lines.append(f"| {enum_class} | {member_label} | {member_uri} |")
+
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -857,6 +950,43 @@ async def extract_data_model(
                     )
                 )
         
+        # --- Subclass relationships among in-scope classes ---
+        subclass_rows = db.execute_cypher(
+            """
+            MATCH (child:owl__Class)-[r:rdfs__subClassOf]->(parent:owl__Class)
+            WHERE (child.rdfs__label IN $labels OR child.uri IN $labels)
+              AND parent.rdfs__label IS NOT NULL
+            RETURN DISTINCT
+              child.rdfs__label  AS ChildLabel,
+              child.uri          AS ChildURI,
+              parent.rdfs__label AS ParentLabel,
+              parent.uri         AS ParentURI
+            ORDER BY ChildLabel, ParentLabel
+            """,
+            params={"labels": labels},
+            name="internal_extract_data_model_subclass_rels",
+        )
+
+        for row in subclass_rows:
+            child  = row.get("ChildLabel")
+            parent = row.get("ParentLabel")
+            if not child or not parent:
+                continue
+            rel_key = ("rdfs__subClassOf", child, parent)
+            if rel_key not in relationship_keys:
+                relationship_keys.add(rel_key)
+                relationships.append(
+                    Relationship(
+                        type="rdfs__subClassOf",
+                        start_node_label=child,
+                        end_node_label=parent,
+                        cardinality="1",
+                        requirement="Mandatory",
+                        description="subclass-of relationship",
+                        uri="http://www.w3.org/2000/01/rdf-schema#subClassOf",
+                    )
+                )
+
         return DataModel(
             nodes=list(nodes_dict.values()) + list(individual_nodes.values()),
             relationships=relationships,

@@ -18,8 +18,8 @@
 | IndividualTaxReturn | owl__Class | https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn | A tax return filed by an individual person. |
 | MonetaryAmount | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount | A quantity of money, denominated in a specific currency. |
 | Currency | owl__Class | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency | medium of exchange |
-| Form1040_2025 | owl__Class | https://example.org/tax/filings/2025-Form1040 | The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability. |
-| TaxPayer | owl__Class | https://example.org/ontology/TaxPayer | A person who is obligated to pay taxes and is identified by a tax identifier. |
+| Form1040_2025:IndividualTaxReturn | owl__Class | https://example.org/tax/filings/2025-Form1040 | The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability. |
+| TaxPayer:Person | owl__Class | https://example.org/ontology/TaxPayer | A person who is obligated to pay taxes and is identified by a tax identifier. |
 | Employer | owl__Class | https://example.org/ontology/Employer | A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes. |
 | AustralianDollar | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/AustralianDollar |  |
 | BritishPoundSterling | owl__NamedIndividual | https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/PoundSterling |  |
@@ -106,19 +106,18 @@
 | IndividualTaxReturn | isProvidedBy | reportingParty | Yes |
 | IndividualTaxReturn | isSubmittedBy | submitter | No |
 | MonetaryAmount | hasAmount | decimal | Yes |
-| Form1040_2025 | hasReportDateTime | dateTime | No |
-| Form1040_2025 | isProvidedBy | reportingParty | Yes |
-| Form1040_2025 | isSubmittedBy | submitter | No |
-| TaxPayer | hasAge | age | No |
-| TaxPayer | hasCitizenship | citizenship | No |
-| TaxPayer | hasDateOfBirth | dateOfBirth | Yes |
-| TaxPayer | hasDateOfDeath | dateOfDeath | No |
-| TaxPayer | hasName | personName | No |
-| TaxPayer | hasPlaceOfBirth | birthPlace | Yes |
-| TaxPayer | hasResidence | fullAddress | No |
-| TaxPayer | hasTaxId | ssn | No |
-| TaxPayer | hasTaxId | itin | No |
-| TaxPayer | hasTaxId | itin | No |
+| Form1040_2025:IndividualTaxReturn | hasReportDateTime | dateTime | No |
+| Form1040_2025:IndividualTaxReturn | isProvidedBy | reportingParty | Yes |
+| Form1040_2025:IndividualTaxReturn | isSubmittedBy | submitter | No |
+| TaxPayer:Person | hasAge | age | No |
+| TaxPayer:Person | hasCitizenship | citizenship | No |
+| TaxPayer:Person | hasDateOfBirth | dateOfBirth | Yes |
+| TaxPayer:Person | hasDateOfDeath | dateOfDeath | No |
+| TaxPayer:Person | hasName | personName | No |
+| TaxPayer:Person | hasPlaceOfBirth | birthPlace | Yes |
+| TaxPayer:Person | hasResidence | fullAddress | No |
+| TaxPayer:Person | hasTaxId | ssn | No |
+| TaxPayer:Person | hasTaxId | itin | No |
 | Employer | hasAddress | fullAddress | Yes |
 | Employer | hasEIN | ein | Yes |
 | Employer | hasEmployerName | employerName | Yes |
@@ -150,24 +149,24 @@
 - `(:IndividualTaxReturn)-[:hasLine24TotalTax]->(:MonetaryAmount)`
 - `(:IndividualTaxReturn)-[:hasLine33TotalPayments]->(:MonetaryAmount)`
 - `(:MonetaryAmount)-[:isDenominatedIn]->(:Currency)`
-- `(:Form1040_2025)-[:isSubmittedTo]->(:InternalRevenueService)`
-- `(:Form1040_2025)-[:hasTaxableIncome]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasReportStatus]->(:Reportstatus)`
-- `(:Form1040_2025)-[:hasAGI]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasTotalTax]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasTotalPayments]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasRefundAmount]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasAmountOwed]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine1aWages]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine2bTaxableInterest]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine3bOrdinaryDividends]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine6bTaxableSocialSecurity]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine12StandardDeduction]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine16TaxValue]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine19ChildTaxCredit]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine24TotalTax]->(:MonetaryAmount)`
-- `(:Form1040_2025)-[:hasLine33TotalPayments]->(:MonetaryAmount)`
-- `(:TaxPayer)-[:isEmployedBy]->(:Employer)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:isSubmittedTo]->(:InternalRevenueService)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasTaxableIncome]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasReportStatus]->(:Reportstatus)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasAGI]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasTotalTax]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasTotalPayments]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasRefundAmount]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasAmountOwed]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine1aWages]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine2bTaxableInterest]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine3bOrdinaryDividends]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine6bTaxableSocialSecurity]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine12StandardDeduction]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine16TaxValue]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine19ChildTaxCredit]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine24TotalTax]->(:MonetaryAmount)`
+- `(:Form1040_2025:IndividualTaxReturn)-[:hasLine33TotalPayments]->(:MonetaryAmount)`
+- `(:TaxPayer:Person)-[:isEmployedBy]->(:Employer)`
 - `(:AustralianDollar)-[:rdf__type]->(:Currency)`
 - `(:BritishPoundSterling)-[:rdf__type]->(:Currency)`
 - `(:CanadianDollar)-[:rdf__type]->(:Currency)`

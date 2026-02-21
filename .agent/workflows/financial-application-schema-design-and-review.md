@@ -66,21 +66,25 @@ description: financial application schema design and review
     - **Comprehensive Coverage Principle**: 
       - Always include **all involved classes** (those linked via relationships) in the generation request to ensure no "shell" classes are produced.
       - Use Cypher queries to identify neighbor classes before calling the generation tool.
-    - **Pydantic Bridge Standard (CRITICAL)**:
-      - All core classes MUST inherit from a `SemanticModel` base class (including an optional `uri` field).
+    - **Pydantic Inheritance Standard (CRITICAL)**:
+      - `rdfs__subClassOf` relationships in the DataModel are automatically translated to Python class inheritance (e.g., `class TaxPayer(Person):`). Child classes only declare their own new fields — inherited fields are not redeclared.
+      - Classes are topologically sorted so parents always appear before children in the generated file.
       - Use `Field(alias="...")` for all attributes and relationships to map Python field names to their ontological counterparts (Neo4j relationship types/properties). This enables automated compatibility with the `PydanticNeo4jBridge`.
       - Explicitly request `skos:definition` for every class to populate **Docstrings** and **Field Descriptions**.
     - **Output Types**:
-      - **Pydantic/SQLAlchemy**: For application backends.
+      - **Pydantic**: For application backends — supports inheritance hierarchy automatically.
       - **SQL DDL**: For relational databases.
-      - **Graph Schema Description**: Generate a detailed Markdown summary (`staging_schema.md`) using `get_ontology_schema_description`.
+      - **Graph Schema Description**: Generate a detailed Markdown summary (`staging_schema.md`) using `generate_neo4j_schema_description`.
         - **Standard**: Must include `Data Type` and `Mandatory` status for all node properties.
+        - **Subclass Notation**: Subclass nodes appear as `Child:Parent` multi-label (e.g., `TaxPayer:Person`) across all sections.
 
 12. **Data Model Archival & Documentation**
     Use the `extract_data_model` tool to generate a comprehensive JSON representation of the final schema.
-    - **Physical Schema**: Generate `staging_schema_contraint.cypher` to enforce data integrity (existence constraints for mandatory properties) while keeping semantic metadata (labels, definitions, URIs) as comments.
-    - **Documentation (Standard)**: Use `get_ontology_schema_description` to provide a human-readable Markdown summary (`staging_schema.md`).
+    - **Note**: `rdfs__subClassOf` edges are automatically included in `full_schema_data_model.json` — they drive Pydantic inheritance and multi-label notation downstream.
+    - **Physical Schema**: Generate `staging_schema_constraint.cypher` to enforce data integrity (existence constraints for mandatory properties) while keeping semantic metadata (labels, definitions, URIs) as comments.
+    - **Documentation (Standard)**: Use `generate_neo4j_schema_description` to provide a human-readable Markdown summary (`schema_description.md`).
         - **Alignment Heuristic (CRITICAL)**: Filter the "Node Labels (Classes)" table to only include **Effective Node Labels**. Use instance counts (`count > 0`), topological activity (outgoing relationships), and Pydantic Enum filtering to ensure the documented classes match the production Pydantic implementation.
+        - **Subclass Notation**: Subclass nodes shown as `Child:Parent` multi-label in all five sections of the description.
         - **Metadata**: Must include `Data Type` and `Mandatory` status for all node properties.
 
 13. **Integration & Round-Trip Validation**

@@ -1237,6 +1237,26 @@
       "requirement": "Mandatory",
       "description": "instance-of relationship",
       "uri": null
+    },
+    {
+      "type": "rdfs__subClassOf",
+      "start_node_label": "2025 Form 1040",
+      "end_node_label": "individual tax return",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "subclass-of relationship",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+    },
+    {
+      "type": "rdfs__subClassOf",
+      "start_node_label": "tax payer",
+      "end_node_label": "person",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "description": "subclass-of relationship",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
     }
   ],
   "metadata": {

@@ -1,30 +1,35 @@
 // ===========================================================
 // NEO4J SCHEMA CONSTRAINTS (Source: stagingdb)
 // Generated to enforce structural integrity while keeping metadata as comments.
+// Subclass relationships: Form1040_2025 rdfs:subClassOf IndividualTaxReturn
+//                         TaxPayer      rdfs:subClassOf Person
+// Note: In Neo4j, child-class nodes carry ONLY the child label (not the parent label),
+// so inherited mandatory property constraints must be explicitly repeated per label.
+// Inherited constraints are marked with [Inherited from <Parent>].
 // ===========================================================
 
-// Class: 2025 Form 1040
+// Class: 2025 Form 1040  [rdfs:subClassOf individual tax return]
 // Definition: The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability.
 // URI: https://example.org/tax/filings/2025-Form1040
-// Mandatory property: isProvidedBy (cardinality: 1..*)
+// [Inherited from IndividualTaxReturn] Mandatory property: isProvidedBy (cardinality: 1..*)
 CREATE CONSTRAINT Form1040_2025_isProvidedBy_Required IF NOT EXISTS FOR (n:`Form1040_2025`) REQUIRE n.`isProvidedBy` IS NOT NULL;
-// Mandatory named_individual relationship: isSubmittedTo -> Internal Revenue Service (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService)
-// Mandatory class relationship: hasTaxableIncome -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory enum relationship: hasReportStatus -> reportStatus (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept). members=['Accepted', 'Draft', 'Rejected', 'Submitted']
-// Mandatory class relationship: hasAGI -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasTotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasTotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasRefundAmount -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasAmountOwed -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine1aWages -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine2bTaxableInterest -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine3bOrdinaryDividends -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine6bTaxableSocialSecurity -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine12StandardDeduction -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine16TaxValue -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine19ChildTaxCredit -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine24TotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
-// Mandatory class relationship: hasLine33TotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// [Inherited from IndividualTaxReturn] Mandatory named_individual relationship: isSubmittedTo -> Internal Revenue Service (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasTaxableIncome -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory enum relationship: hasReportStatus -> reportStatus (cardinality: 1). members=['Accepted', 'Draft', 'Rejected', 'Submitted']
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasAGI -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasTotalTax -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasTotalPayments -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasRefundAmount -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasAmountOwed -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine1aWages -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine2bTaxableInterest -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine3bOrdinaryDividends -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine6bTaxableSocialSecurity -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine12StandardDeduction -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine16TaxValue -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine19ChildTaxCredit -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine24TotalTax -> monetary amount (cardinality: 1)
+// [Inherited from IndividualTaxReturn] Mandatory class relationship: hasLine33TotalPayments -> monetary amount (cardinality: 1)
 
 // Class: Form 1120 U.S. Corporation Income Tax Return
 // Definition: An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability.
@@ -103,6 +108,7 @@ CREATE CONSTRAINT IndividualTaxReturn_isProvidedBy_Required IF NOT EXISTS FOR (n
 // Mandatory class relationship: hasLine19ChildTaxCredit -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
 // Mandatory class relationship: hasLine24TotalTax -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
 // Mandatory class relationship: hasLine33TotalPayments -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
+// Mandatory class relationship: hasAgi -> monetary amount (cardinality: 1, uri: https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount)
 
 // Class: jurisdiction
 // Definition: power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area
@@ -140,10 +146,10 @@ CREATE CONSTRAINT Person_hasPlaceOfBirth_Required IF NOT EXISTS FOR (n:`Person`)
 // URI: https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority
 // Mandatory enum relationship: hasJurisdiction -> jurisdiction (cardinality: 1..*, uri: https://www.omg.org/spec/Commons/RegulatoryAgencies/Jurisdiction). members=['United States jurisdiction']
 
-// Class: tax payer
+// Class: tax payer  [rdfs:subClassOf person]
 // Definition: A person who is obligated to pay taxes and is identified by a tax identifier.
 // URI: https://example.org/ontology/TaxPayer
-// Mandatory property: hasDateOfBirth (cardinality: 1)
+// [Inherited from Person] Mandatory property: hasDateOfBirth (cardinality: 1)
 CREATE CONSTRAINT TaxPayer_hasDateOfBirth_Required IF NOT EXISTS FOR (n:`TaxPayer`) REQUIRE n.`hasDateOfBirth` IS NOT NULL;
-// Mandatory property: hasPlaceOfBirth (cardinality: 1)
+// [Inherited from Person] Mandatory property: hasPlaceOfBirth (cardinality: 1)
 CREATE CONSTRAINT TaxPayer_hasPlaceOfBirth_Required IF NOT EXISTS FOR (n:`TaxPayer`) REQUIRE n.`hasPlaceOfBirth` IS NOT NULL;
