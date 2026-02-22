@@ -216,7 +216,7 @@ Maintain a textual representation of the entire graph schema for easy reference 
 - Ensure the schema description includes an explicit enumeration members section for review.
 
 ### Data Schema Constraints (Archival)
-To ensure data integrity, maintain a Cypher constraints file (for example, `staging/staging_schema_constraint.cypher`) that defines the physical constraints of the Neo4j database.
+To ensure data integrity, maintain a Cypher constraints file (for example, `staging/neo4j_constraint.cypher`) that defines the physical constraints of the Neo4j database.
 
 **Core Principles:**
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
@@ -226,18 +226,18 @@ To ensure data integrity, maintain a Cypher constraints file (for example, `stag
 
 ### Regeneration Workflow (After Enum or Relationship Updates)
 After changing enum classes, named individuals, subclass relationships, or mandatory relationships, regenerate in this order:
-1. `extract_data_model(database='stagingdb')` → `staging/full_schema_data_model.json`
+1. `extract_data_model(database='stagingdb')` → `staging/full_schema_model.json`
    - Note: `rdfs__subClassOf` relationships are automatically included in the extracted model.
-2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → `staging/schema_models.py`
+2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → `staging/pydantic_schema_model.py`
    - Child classes inherit from their parent Pydantic class; inherited fields are not redeclared.
-3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/schema_description.md`
+3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/neo4j_query_context.md`
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
-4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/stagingdb_constraints_mcp.cypher`
+4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/neo4j_constraint.cypher`
 5. Reset test DB in Neo4j `system` database before validation:
    - `DROP DATABASE test IF EXISTS;`
    - `CREATE DATABASE test IF NOT EXISTS;`
 6. Run workflow validation test:
-   - `python staging/test_schema_workflow.py --test-db test`
+   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
 7. Ensure workflow semantics are covered by test data:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person

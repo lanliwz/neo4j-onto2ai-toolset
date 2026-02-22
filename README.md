@@ -31,7 +31,7 @@ Before publishing, users can generate sample data, run end-to-end application da
 4. Stage and consolidate schema for implementation.
 5. Reset test database and run staging schema workflow test:
    - `DROP DATABASE test IF EXISTS; CREATE DATABASE test IF NOT EXISTS;` (in Neo4j `system` database)
-   - `python staging/test_schema_workflow.py --test-db test`
+   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
 6. Finalize schema design and review in Modeller UI.
 
 ## Quickstart

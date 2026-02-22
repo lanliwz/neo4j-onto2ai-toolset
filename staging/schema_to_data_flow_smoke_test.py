@@ -3,9 +3,9 @@
 
 Workflow:
 1. Optionally create/use a test Neo4j database.
-2. Apply generated constraints from staging/stagingdb_constraints_mcp.cypher.
-3. Load sample data using Pydantic models from staging/schema_models.py.
-4. Validate inserted data against staging/schema_description.md.
+2. Apply generated constraints from staging/neo4j_constraint.cypher.
+3. Load sample data using Pydantic models from staging/pydantic_schema_model.py.
+4. Validate inserted data against staging/neo4j_query_context.md.
 """
 
 from __future__ import annotations
@@ -26,9 +26,9 @@ from neo4j.exceptions import ClientError
 
 # Local generated models (support both direct script execution and package import)
 try:
-    import staging.schema_models as schema_models
+    import staging.pydantic_schema_model as pydantic_schema_model
 except ModuleNotFoundError:
-    import schema_models as schema_models
+    import pydantic_schema_model as pydantic_schema_model
 
 
 @dataclass
@@ -48,7 +48,7 @@ def get_neo4j_config() -> Neo4jConfig:
 
 
 def build_subclass_map(data_model_path: Path) -> Dict[str, str]:
-    """Read full_schema_data_model.json and return {child_pascal -> parent_pascal} map."""
+    """Read full_schema_model.json and return {child_pascal -> parent_pascal} map."""
     def _pascal(label: str) -> str:
         """Mirror _to_pascal_case_label: leading numeric tokens become a suffix."""
         tokens = re.findall(r"[A-Za-z0-9]+", str(label or ""))
@@ -107,7 +107,7 @@ def parse_constraints_file(path: Path) -> List[str]:
 
 
 def parse_schema_description(path: Path) -> Tuple[Dict[str, Set[str]], Dict[str, Set[str]], Dict[str, Dict[str, Set[str]]]]:
-    """Parse schema_description.md.
+    """Parse neo4j_query_context.md.
 
     Returns:
     - mandatory_props_by_class: {ClassLabel -> {prop aliases}}
@@ -218,18 +218,18 @@ def load_sample_data(
     enum_members_by_class: Dict[str, Set[str]],
     subclass_map: Dict[str, str],
 ) -> Set[str]:
-    """Load sample entities for each class using generated schema_models classes.
+    """Load sample entities for each class using generated pydantic_schema_model classes.
 
     Subclass nodes receive multi-labels so a TaxPayer node is (:TaxPayer:Person).
     """
 
-    employer = schema_models.Employer(
+    employer = pydantic_schema_model.Employer(
         has_address=["1 Main St, New York, NY 10001"],
         has_ein="12-3456789",
         has_employer_name="Acme Corp",
         has_phone_number=["+1-212-555-0101"],
     )
-    person = schema_models.Person(
+    person = pydantic_schema_model.Person(
         has_age=["37"],
         has_citizenship=["United States"],
         has_date_of_birth="1988-06-15",
@@ -240,16 +240,16 @@ def load_sample_data(
         has_tax_id=["999-88-7777"],
         is_employed_by=[employer],
     )
-    money = schema_models.MonetaryAmount(
+    money = pydantic_schema_model.MonetaryAmount(
         has_amount="1234.56",
-        is_denominated_in=schema_models.Currency.US_DOLLAR,
+        is_denominated_in=pydantic_schema_model.Currency.US_DOLLAR,
     )
-    exchange = schema_models.Exchange()
-    organization = schema_models.Organization(
+    exchange = pydantic_schema_model.Exchange()
+    organization = pydantic_schema_model.Organization(
         has_ein="98-7654321",
         has_tax_id="98-7654321",
     )
-    taxpayer = schema_models.TaxPayer(
+    taxpayer = pydantic_schema_model.TaxPayer(
         has_age=["35"],
         has_citizenship=["United States"],
         has_date_of_birth="1990-01-01",
@@ -260,7 +260,7 @@ def load_sample_data(
         has_tax_id=["123-45-6789"],
         is_employed_by=[employer],
     )
-    w2_form = schema_models.W2Form(
+    w2_form = pydantic_schema_model.W2Form(
         has_allocated_tips="0.00",
         has_box12_codes=["D"],
         has_dependent_care_benefits="0.00",
@@ -280,21 +280,21 @@ def load_sample_data(
         is_provided_by=["Acme Corp Payroll"],
         is_statutory_employee="false",
         is_submitted_by=["Acme Corp Payroll"],
-        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
         issued_by=employer,
         issued_to=person,
     )
-    crypto_asset = schema_models.CryptoAsset(
+    crypto_asset = pydantic_schema_model.CryptoAsset(
         has_token_symbol="BTC",
         is_traded_on=[exchange],
     )
-    individual_return = schema_models.IndividualTaxReturn(
+    individual_return = pydantic_schema_model.IndividualTaxReturn(
         has_report_date_time=[datetime(2026, 2, 1, 10, 15, tzinfo=timezone.utc)],
         is_provided_by=["Tax Software Inc"],
         is_submitted_by=["Jamie Taxpayer"],
-        is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
+        is_submitted_to=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE,
         has_taxable_income=money,
-        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
         has_agi=money,
         has_total_tax=money,
         has_total_payments=money,
@@ -310,13 +310,13 @@ def load_sample_data(
         has_line24_total_tax=money,
         has_line33_total_payments=money,
     )
-    form_1040 = schema_models.Form1040_2025(
+    form_1040 = pydantic_schema_model.Form1040_2025(
         has_report_date_time=[datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc)],
         is_provided_by=["Tax Software Inc"],
         is_submitted_by=["Jamie Taxpayer"],
-        is_submitted_to=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE,
+        is_submitted_to=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE,
         has_taxable_income=money,
-        has_report_status=schema_models.Reportstatus.SUBMITTED,
+        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
         has_agi=money,
         has_total_tax=money,
         has_total_payments=money,
@@ -338,8 +338,8 @@ def load_sample_data(
         "W2Form": w2_form,
         "CryptoAsset": crypto_asset,
         "Person": person,
-        "PhysicalAddress": schema_models.PhysicalAddress(),
-        "Form1120USCorporationIncomeTaxReturn": schema_models.Form1120USCorporationIncomeTaxReturn(),
+        "PhysicalAddress": pydantic_schema_model.PhysicalAddress(),
+        "Form1120USCorporationIncomeTaxReturn": pydantic_schema_model.Form1120USCorporationIncomeTaxReturn(),
         "IndividualTaxReturn": individual_return,
         "MonetaryAmount": money,
         "Form1040_2025": form_1040,
@@ -400,7 +400,7 @@ def load_sample_data(
             CREATE (m)-[:isDenominatedIn]->(c)
             """,
             money_id=model_node_ids["MonetaryAmount"],
-            currency_id=enum_node_ids[("Currency", schema_models.Currency.US_DOLLAR.value)],
+            currency_id=enum_node_ids[("Currency", pydantic_schema_model.Currency.US_DOLLAR.value)],
             run=test_run,
         )
         session.run(
@@ -419,7 +419,7 @@ def load_sample_data(
             emp_id=model_node_ids["Employer"],
             org_id=model_node_ids["Organization"],
             person_id=model_node_ids["Person"],
-            status=schema_models.Reportstatus.SUBMITTED.value,
+            status=pydantic_schema_model.Reportstatus.SUBMITTED.value,
             run=test_run,
         )
         session.run(
@@ -470,8 +470,8 @@ def load_sample_data(
             f1040_id=model_node_ids["Form1040_2025"],
             money_id=model_node_ids["MonetaryAmount"],
             taxpayer_id=model_node_ids["TaxPayer"],
-            irs_label=schema_models.TaxAuthority.INTERNAL_REVENUE_SERVICE.value,
-            status_label=schema_models.Reportstatus.SUBMITTED.value,
+            irs_label=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE.value,
+            status_label=pydantic_schema_model.Reportstatus.SUBMITTED.value,
             run=test_run,
         )
 
@@ -604,12 +604,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--constraints",
-        default="staging/stagingdb_constraints_mcp.cypher",
+        default="staging/neo4j_constraint.cypher",
         help="Path to generated constraints Cypher file",
     )
     parser.add_argument(
         "--schema-description",
-        default="staging/schema_description.md",
+        default="staging/neo4j_query_context.md",
         help="Path to generated schema description markdown",
     )
     parser.add_argument(
@@ -635,7 +635,7 @@ def main() -> int:
 
     mandatory_props_by_class, enum_members_by_class, topology_map = parse_schema_description(schema_desc_path)
 
-    data_model_path = Path("staging/full_schema_data_model.json")
+    data_model_path = Path("staging/full_schema_model.json")
     subclass_map = build_subclass_map(data_model_path)
     if subclass_map:
         print(f"Subclass map loaded: {subclass_map}")

@@ -37,19 +37,32 @@ Use MCP tools:
 
 ### Artifact Regeneration Workflow
 After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship changes:
-1. Regenerate full model data: `extract_data_model` -> `staging/full_schema_data_model.json`
-2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/schema_models.py`
-3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/schema_description.md`
-4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/stagingdb_constraints_mcp.cypher`
+1. Regenerate full model data: `extract_data_model` -> `staging/full_schema_model.json`
+2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/pydantic_schema_model.py`
+3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/neo4j_query_context.md`
+4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/neo4j_constraint.cypher`
 5. Reset the test database from Neo4j `system` database:
    - `DROP DATABASE test IF EXISTS;`
    - `CREATE DATABASE test IF NOT EXISTS;`
-6. Run end-to-end staging schema test: `python staging/test_schema_workflow.py --test-db test`
+6. Run end-to-end staging schema test: `python staging/schema_to_data_flow_smoke_test.py --test-db test`
 7. Confirm the workflow scenario exists in the test graph:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to the IRS
 8. Finalize schema design only after the schema workflow test passes.
+
+### Finalization Workflow
+Use this gate before publishing a schema for downstream API/UI/data usage:
+1. Review model quality in Onto2AI Modeller (ontology, UML, and class-model views).
+2. Ensure artifacts are regenerated and in sync:
+   - `staging/full_schema_model.json`
+   - `staging/pydantic_schema_model.py`
+   - `staging/neo4j_query_context.md`
+   - `staging/neo4j_constraint.cypher`
+3. Run the end-to-end smoke test:
+   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
+4. Verify representative query scenarios pass against staging.
+5. Proceed to distribution only when the smoke test and query checks pass.
 
 ## Smoke Checks
 - MCP stdio startup succeeds.
