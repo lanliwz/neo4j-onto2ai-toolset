@@ -17,6 +17,13 @@ This repository is scoped to Onto2AI workflows only:
 - staging database enrichment/consolidation
 - Onto2AI Modeller web UI for review and operations
 
+## Onto2AI Modeller
+Onto2AI Modeller is an AI-assisted model-enrichment UI and a core part of the Onto2AI Toolset. It helps users build industry-quality applications without requiring a full traditional team of product managers, architects, and engineers.
+
+In the staging area, users can review and evolve models in ontology, UML, or object-oriented (class model) formats. You can inspect and refine classes, relationships, properties, and hierarchies, and use AI assistance to add or modify model elements.
+
+Before publishing, users can generate sample data, run end-to-end application data flow tests, and validate model quality so the resulting model is ready for downstream distribution and implementation.
+
 ## Primary Workflow
 1. Configure environment variables (Neo4j + model/API keys).
 2. Load ontology data into Neo4j.
