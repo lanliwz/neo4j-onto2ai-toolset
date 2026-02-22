@@ -47,7 +47,7 @@ _SELECTION_PRESETS = {
 }
 
 _DEFAULT_HISTORY_PATH = (
-    Path(__file__).resolve().parents[1] / "staging" / "ontology_load_history.json"
+    Path(__file__).resolve().parents[1] / "log" / "ontology_load_history.json"
 )
 
 config = Neo4jStoreConfig(

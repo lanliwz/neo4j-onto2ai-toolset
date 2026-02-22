@@ -49,7 +49,7 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader reload \
 Default history file:
 
 ```text
-staging/ontology_load_history.json
+log/ontology_load_history.json
 ```
 
 Override history path with:
