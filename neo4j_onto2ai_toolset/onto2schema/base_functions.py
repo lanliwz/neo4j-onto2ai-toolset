@@ -1,20 +1,28 @@
-import requests
-import os
-from urllib.parse import urlparse
-from dotenv import load_dotenv
-import os
 import logging
+import os
+from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-ONTO_ROOT = os.getenv('ONTOLOGY_ROOT_PATH')
-def get_rdf_data(url, ext='.rdf'):
-    file_path = url_to_filepath(url,ext)
+_DEFAULT_ONTO_ROOT = Path(__file__).resolve().parents[1] / "resource" / "ontology"
+ONTO_ROOT = os.getenv("ONTOLOGY_ROOT_PATH") or str(_DEFAULT_ONTO_ROOT)
+
+
+def get_rdf_data(url, ext=".rdf", local_only=False):
+    file_path = url_to_filepath(url, ext)
     if not os.path.exists(file_path):
+        if local_only:
+            raise FileNotFoundError(
+                f"Local ontology file not found for {url}: {file_path}"
+            )
         download_as_rdf(url)
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
         return content
     except FileNotFoundError:
@@ -24,11 +32,11 @@ def get_rdf_data(url, ext='.rdf'):
         logger.exception(f"An error occurred while reading the file '{file_path}'.")
         return ""
 
-def url_to_filepath(url, ext = '.rdf'):
+def url_to_filepath(url, ext=".rdf"):
     parsed_url = urlparse(url)
 
     # Replace '.' in the domain with '_'
-    domain = ONTO_ROOT + parsed_url.netloc.replace('.', '_')
+    domain = os.path.join(ONTO_ROOT, parsed_url.netloc.replace(".", "_"))
 
     # Use the path and filename from the URL as the file path
     path = parsed_url.path.strip('/')
@@ -54,7 +62,7 @@ def download_as_rdf(url):
 
     # Fetch and save the content
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=30)
         response.raise_for_status()  # Ensure we got a successful response
         with open(save_path, 'wb') as file:
             file.write(response.content)
