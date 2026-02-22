@@ -10,11 +10,19 @@ This milestone narrows the repository to Onto2AI-only scope and standardizes run
   - `onto2ai-mcp`
 - Converted root `main.py` to a deprecated compatibility shim.
 - Archived out-of-scope modules under `archive/out_of_scope/2026-02-18/`.
+- Archived legacy chatbot modules under `archive/out_of_scope/2026-02-22/schema_chatbot/`.
+- Archived legacy `.agent` workflows under `archive/out_of_scope/2026-02-22/agent-workflows/`.
 - Unified configuration contract and documented it in `docs/configuration.md`.
 - Stabilized interface contract in `docs/interface-contract.md`.
 - Rewrote onboarding docs and added:
   - `docs/quickstart.md`
   - `docs/operator-runbook.md`
+- Renamed staging artifacts to clearer canonical names:
+  - `staging/full_schema_model.json`
+  - `staging/pydantic_schema_model.py`
+  - `staging/neo4j_query_context.md`
+  - `staging/neo4j_constraint.cypher`
+  - `staging/schema_to_data_flow_smoke_test.py`
 
 ## Breaking/Behavioral Changes
 - Canonical execution is now package/module entrypoint based.

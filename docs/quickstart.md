@@ -38,6 +38,18 @@ Full variable contract: [configuration.md](./configuration.md)
 python -m neo4j_onto2ai_toolset.onto2ai_loader
 ```
 
+Useful loader operations:
+```bash
+# list recent load runs
+python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10
+
+# reload from a prior run's loaded ontology IRI set
+python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded
+
+# offline/local-only reload (no internet fetch)
+python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded --local-files-only
+```
+
 ## 5. Start MCP Server
 ```bash
 onto2ai-mcp

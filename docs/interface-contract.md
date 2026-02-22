@@ -37,6 +37,14 @@ The following tools are part of the stabilized Onto2AI MCP surface:
 - Removed as canonical: `neo4j-chatbot` console script
   - Migration: `onto2ai-client`
 
+- Archived legacy chatbot modules
+  - `neo4j_onto2ai_toolset/schema_chatbot/` and `neo4j_onto2ai_toolset/display_dataflow.py`
+  - Archived under `archive/out_of_scope/2026-02-22/schema_chatbot/`
+
+- Archived legacy local agent workflows
+  - `.agent/workflows/*`
+  - Archived under `archive/out_of_scope/2026-02-22/agent-workflows/`
+
 - Deprecated path-based script calls for MCP/loader
   - Migration: use `onto2ai-mcp` or `python -m ...` module execution
 

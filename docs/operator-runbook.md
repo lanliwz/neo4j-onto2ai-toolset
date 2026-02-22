@@ -16,6 +16,11 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader
 ```
 Use when baseline ontology content must be refreshed.
 
+Related commands:
+- List history: `python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10`
+- Reload prior run: `python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded`
+- Reload local-only (no network fetch): `python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded --local-files-only`
+
 ### Schema Interrogation
 Use MCP tools:
 - `get_materialized_schema`

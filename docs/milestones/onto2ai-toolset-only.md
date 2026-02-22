@@ -131,5 +131,8 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
   - executed live `onto2ai-client` startup; MCP tool discovery succeeded
   - live AI round-trip blocked by external DNS/network resolution to Gemini/LangSmith endpoints
   - drafted release notes in `docs/release-notes-m1-draft.md`
+  - archived legacy chatbot modules to `archive/out_of_scope/2026-02-22/schema_chatbot/`
+  - archived legacy `.agent` workflows to `archive/out_of_scope/2026-02-22/agent-workflows/`
+  - standardized staging artifact names (`full_schema_model`, `pydantic_schema_model`, `neo4j_query_context`, `neo4j_constraint`, `schema_to_data_flow_smoke_test`)
   - pending live runtime smoke checks requiring active DB/credentials
 - Next action: run live smoke checks and finalize release tag.
