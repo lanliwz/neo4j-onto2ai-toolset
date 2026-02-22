@@ -2,6 +2,14 @@
 
 Onto2AI Toolset is a focused toolkit for loading ontologies into Neo4j, interrogating/enhancing schema via MCP tools, and operating a staging workflow for production-oriented model shaping.
 
+## Value Proposition
+Onto2AI Toolset enables a model-once-serve-all approach for ontology-driven systems:
+- Load well-known ontologies into a Neo4j ontology database.
+- Materialize ontology semantics into graph structures that are operationally usable.
+- Generate customized, industry-specialized schemas from those ontology foundations.
+- Use generated schemas to create, load, and query Neo4j databases with LLM-assisted workflows.
+- Keep API, UI, and data storage aligned to a single semantic model.
+
 ## Scope
 This repository is scoped to Onto2AI workflows only:
 - ontology load and materialization
