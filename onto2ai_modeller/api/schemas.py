@@ -910,21 +910,17 @@ async def chat(request: ChatRequest):
 @router.post("/cypher", response_model=CypherResponse)
 async def execute_cypher(request: CypherRequest):
     """
-    Execute a read-only Cypher query against stagingdb.
+    Execute a Cypher query against stagingdb.
     Automatically detects if result is graph-like and provides visualization data.
     """
     db = get_db()
     try:
-        # Basic safety check - only allow read operations
-        query_upper = request.query.strip().upper()
-        if any(keyword in query_upper for keyword in ["CREATE", "MERGE", "DELETE", "SET", "REMOVE", "DROP"]):
-            raise HTTPException(
-                status_code=400, 
-                detail="Only read queries are allowed. Use MATCH to query data."
-            )
-        
+        query = request.query.strip().rstrip(";").strip()
+        if not query:
+            raise HTTPException(status_code=400, detail="Cypher query cannot be empty.")
+
         results = db.execute_cypher(
-            request.query, 
+            query,
             params=request.params or {},
             name="user_cypher_query"
         )
@@ -998,7 +994,7 @@ async def execute_cypher(request: CypherRequest):
         result_type = "table"
 
         if has_graph_items:
-            graph_data = results_to_graph_data(results, query=request.query)
+            graph_data = results_to_graph_data(results, query=query)
             result_type = "graph"
         elif source_col and target_col:
             # Table-based graph fallback
@@ -1011,7 +1007,7 @@ async def execute_cypher(request: CypherRequest):
                 if s not in nodes: nodes[s] = {"key": s, "label": s, "category": "class"}
                 if t not in nodes: nodes[t] = {"key": t, "label": t, "category": "class"}
                 links.append({"from": s, "to": t, "relationship": r})
-            graph_data = GraphData(nodes=list(nodes.values()), links=links, query=request.query)
+            graph_data = GraphData(nodes=list(nodes.values()), links=links, query=query)
             result_type = "graph"
 
         return CypherResponse(

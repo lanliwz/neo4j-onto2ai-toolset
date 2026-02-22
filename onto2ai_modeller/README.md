@@ -71,7 +71,7 @@ Access the application at: **[http://localhost:8180](http://localhost:8180)**
 | `/api/classes` | `GET` | Retrieve the list of all ontology classes. |
 | `/api/class/{name}` | `GET` | Fetch detailed schema for a specific class. |
 | `/api/chat` | `POST` | AI-assisted schema guidance and graph detection. |
-| `/api/cypher` | `POST` | Execute and visualize read-only Cypher queries. |
+| `/api/cypher` | `POST` | Execute and visualize Cypher queries. |
 | `/api/graph-data/{name}` | `GET` | Retrieve GoJS-formatted graph data for a class. |
 
 ## 📖 Usage Highlights
