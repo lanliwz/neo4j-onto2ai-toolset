@@ -13,7 +13,7 @@ from typing_extensions import TypedDict
 # Internal project imports
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
 from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
-from neo4j_onto2ai_toolset.langgraph_prompts.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
+from neo4j_onto2ai_toolset.onto2ai_prompt.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
 ontoToollogger = logging.getLogger("onto2ai-toolset")

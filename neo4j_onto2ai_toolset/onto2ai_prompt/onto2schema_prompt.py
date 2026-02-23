@@ -1,5 +1,5 @@
 from langchain_core.prompts import PromptTemplate
-from neo4j_onto2ai_toolset.langgraph_prompts.onto2schema_template import *
+from neo4j_onto2ai_toolset.onto2ai_prompt.onto2schema_template import *
 
 def question2llm(question: str, schema: str, example_question="", example_answer=""):
     schema_final_prompt = (PromptTemplate.from_template(schema_template)
@@ -27,7 +27,6 @@ def gen_prompt4schema(start_node: str, db: "Neo4jDatabase"):
         final_template = PromptTemplate.from_template(enh_realworld_relationship_template)
 
     return final_template.invoke(schema)
-
 
 
 
