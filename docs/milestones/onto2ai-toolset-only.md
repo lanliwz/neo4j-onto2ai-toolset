@@ -3,7 +3,7 @@
 - Milestone ID: `M1-onto2ai-toolset-only`
 - Date started: `2026-02-18`
 - Owner: `weizhang`
-- Status: `In Progress`
+- Status: `Released`
 
 ## Objective
 Consolidate this repository into a single-purpose `onto2ai-toolset` project, with aligned naming, structure, runtime configuration, interfaces, and documentation.
@@ -46,8 +46,8 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 - [x] Add a fast-path quickstart and operator runbook.
 
 ### Phase 7: Validation and Release
-- [ ] Execute smoke suite (loader, MCP stdio/http, staging, schema generation).
-- [ ] Publish release notes + version tag for milestone completion.
+- [x] Execute smoke suite (loader, MCP stdio/http, staging, schema generation).
+- [x] Publish release notes + version tag for milestone completion.
 
 ## Phase 1 Working Draft (Proposed Scope)
 
@@ -134,5 +134,8 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
   - archived legacy chatbot modules to `archive/out_of_scope/2026-02-22/schema_chatbot/`
   - archived legacy `.agent` workflows to `archive/out_of_scope/2026-02-22/agent-workflows/`
   - standardized staging artifact names (`full_schema_model`, `pydantic_schema_model`, `neo4j_query_context`, `neo4j_constraint`, `schema_to_data_flow_smoke_test`)
-  - pending live runtime smoke checks requiring active DB/credentials
-- Next action: run live smoke checks and finalize release tag.
+  - completed live staging schema smoke test (`staging/schema_to_data_flow_smoke_test.py --test-db test`)
+  - completed local-only ontology reload from history (`onto2ai_loader reload --source loaded --local-files-only`)
+  - completed packaging smoke test (`python -m build`, wheel install/import validation)
+  - finalized milestone release notes (`docs/release-notes-v0.4.0.md`)
+- Milestone release: `v0.4.0` (2026-02-23)

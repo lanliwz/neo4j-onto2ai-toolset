@@ -79,6 +79,7 @@ python main.py --model gemini --port 8180
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-toolset-only.md](./docs/milestones/onto2ai-toolset-only.md)
+- Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
 
 ## Notes
 - Root `main.py` is a compatibility shim and is deprecated.
