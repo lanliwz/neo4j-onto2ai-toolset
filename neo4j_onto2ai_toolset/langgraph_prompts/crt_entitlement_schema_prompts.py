@@ -1,5 +1,5 @@
 from langchain_core.messages import AnyMessage
-from neo4j_onto2ai_toolset.langgraph_nodes.model_nodes import AgentState
+from neo4j_onto2ai_toolset.langgraph_prompts.types import AgentState
 from neo4j_onto2ai_toolset.onto2ai_tool_config import ONTOLOGY_DOMAIN,logger
 
 ONTO2AI_CONTEXT="Context: Ontology-driven Cypher query generation for Neo4j.\n"
