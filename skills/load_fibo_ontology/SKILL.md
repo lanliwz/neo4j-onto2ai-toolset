@@ -28,8 +28,8 @@ python neo4j_onto2ai_toolset/onto2ai_loader.py
 After loading, the script automatically:
 - Materializes OWL restrictions into Neo4j relationships and properties.
 - Cleans up duplicate relationships.
-- Resolves namespaces using the controlled list in `neo4j_onto2ai_toolset/onto2schema/prefixes.py`.
+- Resolves namespaces using the controlled list in `neo4j_onto2ai_toolset/onto2ai_core/prefixes.py`.
 
 ## Troubleshooting
-- **ShortenStrictException**: If this occurs, a new namespace was found. Add it to `neo4j_onto2ai_toolset/onto2schema/prefixes.py`.
+- **ShortenStrictException**: If this occurs, a new namespace was found. Add it to `neo4j_onto2ai_toolset/onto2ai_core/prefixes.py`.
 - **Database Reset**: The loader script calls `reset_neo4j_db()` by default. Warn the user if they have existing data they wish to keep.

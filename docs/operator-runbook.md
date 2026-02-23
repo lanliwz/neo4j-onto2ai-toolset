@@ -90,7 +90,7 @@ Action: set `LLM_MODEL_NAME` to supported value and ensure matching API key.
 
 ### Namespace shortening errors during load
 Symptom: `ShortenStrictException`.
-Action: extend prefix map in `neo4j_onto2ai_toolset/onto2schema/prefixes.py`.
+Action: extend prefix map in `neo4j_onto2ai_toolset/onto2ai_core/prefixes.py`.
 
 ## Migration Notes
 - Prefer package/module entrypoints only.

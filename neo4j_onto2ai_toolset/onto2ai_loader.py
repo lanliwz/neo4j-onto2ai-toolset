@@ -15,10 +15,10 @@ from rdflib.plugins.sparql import prepareQuery
 from rdflib_neo4j import HANDLE_VOCAB_URI_STRATEGY, Neo4jStore, Neo4jStoreConfig
 
 from neo4j_onto2ai_toolset.onto2ai_tool_config import auth_data, neo4j_model, semanticdb
-from neo4j_onto2ai_toolset.onto2schema.base_functions import get_rdf_data, url_to_filepath
-from neo4j_onto2ai_toolset.onto2schema.onto_db_initializer import reset_neo4j_db
-from neo4j_onto2ai_toolset.onto2schema.prefixes import PREFIXES_CANON as prefixes
-from neo4j_onto2ai_toolset.onto2schema.property_materializer import (
+from neo4j_onto2ai_toolset.onto2ai_core.base_functions import get_rdf_data, url_to_filepath
+from neo4j_onto2ai_toolset.onto2ai_core.onto_db_initializer import reset_neo4j_db
+from neo4j_onto2ai_toolset.onto2ai_core.prefixes import PREFIXES_CANON as prefixes
+from neo4j_onto2ai_toolset.onto2ai_core.property_materializer import (
     cleanup_duplicate_relationships,
     materialize_properties,
 )

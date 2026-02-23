@@ -6,7 +6,7 @@ The `onto2ai_loader.py` module loads FIBO and related ontologies into Neo4j usin
 
 - **Recursive Part Discovery**: Supports loading complex specifications and domains by recursively discovering constituent parts using `dcterms:hasPart` relationships. This is essential for FIBO, which uses a hierarchical structure of domains and modules.
 - **Domain-Based Loading**: Predefined presets for major FIBO domains (FND, BE, BP, FBC) and FIBO spec roots.
-- **Namespace Shortening**: Uses the `HANDLE_VOCAB_URI_STRATEGY.SHORTEN` strategy to produce clean, readable URIs in Neo4j. All namespaces are explicitly managed in `onto2schema/prefixes.py`.
+- **Namespace Shortening**: Uses the `HANDLE_VOCAB_URI_STRATEGY.SHORTEN` strategy to produce clean, readable URIs in Neo4j. All namespaces are explicitly managed in `onto2ai_core/prefixes.py`.
 - **Robust Import Handling**: Automatically handles `owl:imports` and provides fallbacks for various RDF formats (RDF/XML, Turtle, NT).
 - **Post-Load Materialization**: Includes functions to materialize object and datatype properties from OWL restrictions into Neo4j relationships and properties.
 - **Load History Tracking**: Persists each run with:
@@ -66,7 +66,7 @@ export ONTO2AI_LOADER_HISTORY_PATH=<path>
 
 ## Prefix Management
 
-If you encounter a `ShortenStrictException`, it means a new namespace has been discovered that is not in the controlled list. Add the reported namespace to `neo4j_onto2ai_toolset/onto2schema/prefixes.py` to resolve the error.
+If you encounter a `ShortenStrictException`, it means a new namespace has been discovered that is not in the controlled list. Add the reported namespace to `neo4j_onto2ai_toolset/onto2ai_core/prefixes.py` to resolve the error.
 
 ## Core Functions
 

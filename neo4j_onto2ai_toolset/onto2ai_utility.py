@@ -11,8 +11,8 @@ from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 # Internal project imports
-from neo4j_onto2ai_toolset.onto2schema.cypher_statement.cypher_for_modeling import *
-from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
+from neo4j_onto2ai_toolset.onto2ai_core.cypher_statement.cypher_for_modeling import *
+from neo4j_onto2ai_toolset.onto2ai_core.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.onto2ai_prompt.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
@@ -432,7 +432,7 @@ async def execute_query_node(state: OverallState) -> Dict[str, Any]:
 async def del_dup_node(state: OverallState) -> Dict[str, Any]:
     """Cleans up duplicate classes and relationships."""
     from neo4j_onto2ai_toolset.onto2ai_tool_config import get_graphdb
-    from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import del_dup_rels, del_dup_class
+    from neo4j_onto2ai_toolset.onto2ai_core.cypher_statement.gen_schema import del_dup_rels, del_dup_class
     
     for stmt in [del_dup_rels, del_dup_class]:
         try:

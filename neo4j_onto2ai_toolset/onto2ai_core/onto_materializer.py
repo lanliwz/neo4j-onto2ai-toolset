@@ -1,5 +1,5 @@
 from neo4j_onto2ai_toolset.onto2ai_tool_config import get_neo4j_model_config
-from neo4j_onto2ai_toolset.onto2schema.cypher_statement.gen_schema import *
+from neo4j_onto2ai_toolset.onto2ai_core.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.onto2ai_utility import Neo4jDatabase
 
 

@@ -18,7 +18,7 @@ from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     NEO4J_STAGING_DB_NAME,
 )
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
-from neo4j_onto2ai_toolset.onto2schema.schema_types import DataModel, Node, Relationship, Property
+from neo4j_onto2ai_toolset.onto2ai_core.schema_types import DataModel, Node, Relationship, Property
 from neo4j_onto2ai_toolset.onto2ai_utility import get_full_schema, get_schema
 
 mcp = FastMCP("Onto2AI")
