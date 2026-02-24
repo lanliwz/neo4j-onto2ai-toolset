@@ -85,51 +85,8 @@ onto2ai-modeller --model gemini --host localhost --port 8180
 python -m onto2ai_modeller.main --model gemini --host localhost --port 8180
 ```
 
-### Demo Audio Generation
-```bash
-# 1) Ensure API key is available
-export OPENAI_API_KEY="your_openai_key"
-
-# 2) Generate one narration clip from a script file
-python /Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py speak \
-  --input-file demo/video/demo01_launch_modeller/demo01_voiceover_narration_v2.txt \
-  --voice cedar \
-  --response-format mp3 \
-  --instructions "Voice Affect: Warm and composed. Tone: Professional and clear. Pacing: Steady." \
-  --out demo/audio/demo01_launch_modeller_v2.mp3 \
-  --force
-
-# 3) Batch-generate all demo narrations
-python /Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py speak-batch \
-  --input demo/demo_tts_jobs.jsonl \
-  --out-dir demo/audio \
-  --voice cedar \
-  --response-format mp3 \
-  --instructions "Voice Affect: Warm and composed. Tone: Professional and friendly. Pacing: Steady and clear." \
-  --rpm 50 \
-  --force
-```
-
-### Demo Video + Voice Sync
-```bash
-# Sync narration with screen recording (keeps full screen video length)
-ffmpeg -y \
-  -i demo/video/demo01_launch_modeller/demo01.mov \
-  -i demo/audio/demo01_launch_modeller_v2.mp3 \
-  -filter_complex "[1:a]apad[aout]" \
-  -map 0:v -map "[aout]" \
-  -c:v copy -c:a aac -b:a 192k -shortest \
-  demo/video/review/demo01_synced_with_voice_v2.mp4
-
-# Optional: delay narration by 3 seconds
-ffmpeg -y \
-  -i demo/video/demo01_launch_modeller/demo01.mov \
-  -i demo/audio/demo01_launch_modeller_v2.mp3 \
-  -filter_complex "[1:a]adelay=3000|3000,apad[aout]" \
-  -map 0:v -map "[aout]" \
-  -c:v copy -c:a aac -b:a 192k -shortest \
-  demo/video/review/demo01_synced_with_voice_v2_offset3s.mp4
-```
+### Demo Workflow
+See: [demo/README.md](./demo/README.md)
 
 ## Reference Docs
 - Loader: [README4LOADER.md](./README4LOADER.md)
@@ -139,7 +96,7 @@ ffmpeg -y \
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-toolset-only.md](./docs/milestones/onto2ai-toolset-only.md)
 - Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
-- Demo Scripts and Audio: [demo/demo-audio-scripts.md](./demo/demo-audio-scripts.md)
+- Demo Guide: [demo/README.md](./demo/README.md)
 
 ## Notes
 - Root `main.py` is a compatibility shim and is deprecated.
