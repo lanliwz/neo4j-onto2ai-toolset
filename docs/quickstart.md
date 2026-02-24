@@ -67,8 +67,9 @@ onto2ai-client
 
 ## 7. Start Modeller (Optional)
 ```bash
-cd onto2ai_modeller
-python main.py --model gemini --port 8180
+onto2ai-modeller --model gemini --host 0.0.0.0 --port 8180
+# or
+python -m onto2ai_modeller.main --model gemini --host 0.0.0.0 --port 8180
 ```
 Open: `http://localhost:8180`
 

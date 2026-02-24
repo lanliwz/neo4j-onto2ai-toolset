@@ -55,11 +55,13 @@ Launch the backend server:
 
 ```bash
 # Start with Gemini
-cd onto2ai_modeller
-python main.py --model gemini
+onto2ai-modeller --model gemini
 
 # Or start with GPT
-python main.py --model gpt --port 8081
+onto2ai-modeller --model gpt --port 8081
+
+# Module form
+python -m onto2ai_modeller.main --model gemini --port 8180
 ```
 
 Access the application at: **[http://localhost:8180](http://localhost:8180)**

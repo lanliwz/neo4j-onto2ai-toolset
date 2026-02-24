@@ -9,13 +9,20 @@ setup(
         "langchain",
         "langgraph",
         "pyyaml",
-        "python-dotenv"
+        "python-dotenv",
+        "fastapi",
+        "uvicorn",
+        "jinja2",
     ],
     include_package_data=True,
+    package_data={
+        "onto2ai_modeller": ["static/*", "static/**/*"],
+    },
     entry_points={
         "console_scripts": [
             "onto2ai-client=neo4j_onto2ai_toolset.onto2ai_client:cli_main",
-            "onto2ai-mcp=neo4j_onto2ai_toolset.onto2ai_mcp:cli_main"
+            "onto2ai-mcp=neo4j_onto2ai_toolset.onto2ai_mcp:cli_main",
+            "onto2ai-modeller=onto2ai_modeller.main:cli_main",
         ],
     },
     author="Wei Zhang",

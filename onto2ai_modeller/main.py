@@ -3,19 +3,16 @@ Onto2AI Modeller - FastAPI Backend
 
 A web application for reviewing and enhancing ontology schemas in stagingdb.
 """
-import sys
+import argparse
 import os
-
-# Add parent directory to path so we can import from neo4j_onto2ai_toolset
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-from api.schemas import router as schemas_router
+from onto2ai_modeller.api.schemas import router as schemas_router
 
 app = FastAPI(
     title="Onto2AI Modeller",
@@ -42,9 +39,6 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # Templates for injecting server-side config
 templates = Jinja2Templates(directory=STATIC_DIR)
 
-import argparse
-import uvicorn
-
 # Include API routers
 app.include_router(schemas_router, prefix="/api")
 
@@ -62,7 +56,8 @@ async def health():
     return {"status": "healthy", "app": "Onto2AI Modeller"}
 
 
-if __name__ == "__main__":
+def cli_main():
+    """CLI entrypoint for running the Onto2AI Modeller server."""
     parser = argparse.ArgumentParser(description="Start the Onto2AI Modeller")
     parser.add_argument(
         "--model", "-m",
@@ -90,10 +85,10 @@ if __name__ == "__main__":
     )
     
     args = parser.parse_args()
-    
+
     # Store theme in environment for the root handler
     os.environ["APP_THEME"] = args.theme
-    
+
     # Handle shorthand model names
     if args.model:
         model_name = args.model
@@ -103,10 +98,14 @@ if __name__ == "__main__":
             model_name = "gemini-3-flash-preview-001"
         elif model_name.lower() == "gpt":
             model_name = "gpt-5.2"
-            
+
         print(f"🚀 Starting Modeller with model: {model_name}")
         os.environ["LLM_MODEL_NAME"] = model_name
     else:
         print(f"🚀 Starting Modeller with default model")
 
     uvicorn.run(app, host=args.host, port=args.port)
+
+
+if __name__ == "__main__":
+    cli_main()
