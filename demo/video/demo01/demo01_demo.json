@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-02-24T19:23:54.006383+00:00",
+  "demo_id": "demo01",
+  "source_video": {
+    "file_name": "demo01.mov",
+    "path": "/Users/weizhang/github/neo4j-onto2ai-toolset/demo/video/demo01.mov",
+    "duration_seconds": 71.39,
+    "duration_ms": 71390
+  },
+  "assets": {
+    "audio_output": "demo/audio/demo01.mp3",
+    "review_output": "demo/video/review/demo01_synced_with_voice.mp4",
+    "subtitle_output": "demo/video/demo01/demo01.srt"
+  },
+  "narrative_lines": [
+    {
+      "line_id": "L01",
+      "start_ms": 0,
+      "end_ms": 5000,
+      "text": "Onto2AI Modeller is an AI assistant for building and reviewing industry-grade data models.",
+      "notes": "5-second introduction defining what Onto2AI Modeller is."
+    },
+    {
+      "line_id": "L02",
+      "start_ms": 5000,
+      "end_ms": 37000,
+      "text": "Now we launch Onto2AI Modeller by typing the command: onto2ai-modeller --model gpt --host localhost --port 8180. This starts the local Modeller service on port 8180, so we can open it in the browser and continue model review.",
+      "notes": "Command-run narration from 5s to 37s."
+    },
+    {
+      "line_id": "L03",
+      "start_ms": 41000,
+      "end_ms": 44000,
+      "text": "Click http://localhost:8180, and show Onto2AI Modeller UI.",
+      "notes": "Open local URL and reveal the Modeller interface."
+    },
+    {
+      "line_id": "L04",
+      "start_ms": 45000,
+      "end_ms": 52000,
+      "text": "Click CLASSES and RELATIONSHIPS. We can review the number of classes, relationships, individuals, datatypes, and class hierarchy in the staging area under your review.",
+      "notes": "Overview of staging metrics and hierarchy via classes/relationships panels."
+    },
+    {
+      "line_id": "L05",
+      "start_ms": 53000,
+      "end_ms": 57000,
+      "text": "Click CLASSES to expand, then click to review the W-2 form class. Then we will see this class, all datatypes, related classes, and all relationships.",
+      "notes": "Navigate to W-2 class and inspect its full schema context."
+    },
+    {
+      "line_id": "L06",
+      "start_ms": 57000,
+      "end_ms": 62000,
+      "text": "Now click UML DIAGRAM, you will see the same model render as UML diagram.",
+      "notes": "Final transition to UML Diagram view."
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "start_ms": 0,
+      "end_ms": 5000,
+      "visual": "Introduction",
+      "overlay": "Demo title",
+      "line_refs": [
+        "L01"
+      ]
+    },
+    {
+      "scene_id": "S02",
+      "start_ms": 5000,
+      "end_ms": 37000,
+      "visual": "Command typing",
+      "overlay": "Command",
+      "line_refs": [
+        "L02"
+      ]
+    },
+    {
+      "scene_id": "S03",
+      "start_ms": 41000,
+      "end_ms": 44000,
+      "visual": "Open localhost UI",
+      "overlay": "http://localhost:8180",
+      "line_refs": [
+        "L03"
+      ]
+    },
+    {
+      "scene_id": "S04",
+      "start_ms": 45000,
+      "end_ms": 52000,
+      "visual": "Classes and Relationships panels",
+      "overlay": "CLASSES | RELATIONSHIPS",
+      "line_refs": [
+        "L04"
+      ]
+    },
+    {
+      "scene_id": "S05",
+      "start_ms": 53000,
+      "end_ms": 57000,
+      "visual": "Expand classes and select W-2 form",
+      "overlay": "W-2 Form class review",
+      "line_refs": [
+        "L05"
+      ]
+    },
+    {
+      "scene_id": "S06",
+      "start_ms": 57000,
+      "end_ms": 62000,
+      "visual": "Switch to UML Diagram",
+      "overlay": "UML DIAGRAM",
+      "line_refs": [
+        "L06"
+      ]
+    }
+  ],
+  "tts": {
+    "voice": "cedar",
+    "response_format": "mp3",
+    "instructions": "Voice Affect: Warm and composed. Tone: Professional and clear. Pacing: Steady."
+  },
+  "sync": {
+    "default_audio_offset_ms": 0,
+    "keep_full_video_length": true
+  }
+}
