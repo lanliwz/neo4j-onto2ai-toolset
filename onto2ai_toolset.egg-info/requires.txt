@@ -3,3 +3,6 @@ langchain
 langgraph
 pyyaml
 python-dotenv
+fastapi
+uvicorn
+jinja2

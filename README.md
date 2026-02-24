@@ -80,9 +80,9 @@ python -m pip install --force-reinstall --no-deps dist/onto2ai_toolset-0.4.0-py3
 
 ### Modeller
 ```bash
-onto2ai-modeller --model gemini --host 0.0.0.0 --port 8180
+onto2ai-modeller --model gemini --host localhost --port 8180
 # or
-python -m onto2ai_modeller.main --model gemini --host 0.0.0.0 --port 8180
+python -m onto2ai_modeller.main --model gemini --host localhost --port 8180
 ```
 
 ## Reference Docs

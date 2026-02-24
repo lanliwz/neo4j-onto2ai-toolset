@@ -1,4 +1,5 @@
 LICENSE
+MANIFEST.in
 README.md
 setup.py
 neo4j_onto2ai_toolset/__init__.py
@@ -30,6 +31,15 @@ neo4j_onto2ai_toolset/onto2ai_prompt/gojs_template.py
 neo4j_onto2ai_toolset/onto2ai_prompt/onto2schema_prompt.py
 neo4j_onto2ai_toolset/onto2ai_prompt/onto2schema_template.py
 neo4j_onto2ai_toolset/onto2ai_prompt/types.py
+onto2ai_modeller/__init__.py
+onto2ai_modeller/main.py
+onto2ai_modeller/api/__init__.py
+onto2ai_modeller/api/models.py
+onto2ai_modeller/api/schemas.py
+onto2ai_modeller/static/index.html
+onto2ai_modeller/static/css/styles.css
+onto2ai_modeller/static/js/app.js
+onto2ai_modeller/static/js/graph.js
 onto2ai_toolset.egg-info/PKG-INFO
 onto2ai_toolset.egg-info/SOURCES.txt
 onto2ai_toolset.egg-info/dependency_links.txt
