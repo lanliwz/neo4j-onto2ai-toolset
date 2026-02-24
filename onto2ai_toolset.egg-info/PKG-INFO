@@ -1,3 +1,32 @@
+Metadata-Version: 2.4
+Name: onto2ai-toolset
+Version: 0.4.0
+Summary: Onto2AI toolset for ontology-driven modeling with Neo4j and MCP
+Home-page: https://github.com/lanliwz/onto2ai-toolset
+Author: Wei Zhang
+Author-email: zhang.wei.ny@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: neo4j
+Requires-Dist: langchain
+Requires-Dist: langgraph
+Requires-Dist: pyyaml
+Requires-Dist: python-dotenv
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # Onto2AI Toolset
 
 Onto2AI Toolset is a focused toolkit for loading ontologies into Neo4j, interrogating/enhancing schema via MCP tools, and operating a staging workflow for production-oriented model shaping.

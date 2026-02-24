@@ -1,0 +1,3 @@
+[console_scripts]
+onto2ai-client = neo4j_onto2ai_toolset.onto2ai_client:cli_main
+onto2ai-mcp = neo4j_onto2ai_toolset.onto2ai_mcp:cli_main
