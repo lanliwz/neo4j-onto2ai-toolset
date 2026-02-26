@@ -86,17 +86,16 @@ python -m onto2ai_modeller.main --model gemini --host localhost --port 8180
 ```
 
 ### Demo Workflow
-See: [demo/README.md](./demo/README.md)
+See: [demo/README4DEMO](./demo/README4DEMO)
 
 ## Reference Docs
 - Loader: [README4LOADER.md](./README4LOADER.md)
 - MCP: [README4ONTO2AI_MCP.md](./README4ONTO2AI_MCP.md)
-- MCP Server Notes: [MCP_README.md](./MCP_README.md)
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-engineer-only.md](./docs/milestones/onto2ai-engineer-only.md)
 - Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
-- Demo Guide: [demo/README.md](./demo/README.md)
+- Demo Guide: [demo/README4DEMO](./demo/README4DEMO)
 
 ## Notes
 - Root `main.py` is a compatibility shim and is deprecated.

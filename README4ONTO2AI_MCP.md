@@ -13,6 +13,21 @@ This project provides a powerful **Model Context Protocol (MCP)** server and an 
 
 ---
 
+## Server Tool Semantics
+
+### Schema Exploration
+- `get_materialized_schema`: Returns a flattened, production-ready class view.
+  - Formatting: two Markdown tables (Labels->URI and Relationships->URI).
+- `get_ontological_schema`: Returns raw ontology logic (restrictions/domain/range).
+  - Formatting: two Markdown tables (Labels->URI and Properties->URI).
+
+### Schema Manager (AI-Powered)
+- `enhance_schema`: Modifies a `DataModel` using natural language instructions.
+- `generate_schema_code`: Generates SQL, Pydantic, or Neo4j outputs.
+- `generate_shacl_for_modelling`: Generates modeling SHACL while preserving ontological URIs.
+
+---
+
 ## Setup & Installation
 
 ### 1. Requirements
@@ -20,6 +35,11 @@ This project provides a powerful **Model Context Protocol (MCP)** server and an 
 - Python 3.12+
 - A running Neo4j instance with an OWL ontology loaded.
 - (Optional) `langchain-google-genai` for Gemini support.
+- MCP runtime:
+
+```bash
+pip install mcp
+```
 
 ### 2. Environment Configuration
 
@@ -99,6 +119,13 @@ python -m neo4j_onto2ai_toolset.onto2ai_mcp http 8082
 
 > [!NOTE]
 > The default port is `8082`. When running in HTTP mode, clients (like Claude or your own custom integration) should point to `http://localhost:8082/sse`.
+
+### Running in Stdio Mode
+
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+python3 -m neo4j_onto2ai_toolset.onto2ai_mcp
+```
 
 ### Development Mode (with Auto-Reload)
 
@@ -180,3 +207,8 @@ If the client exits unexpectedly with an `ImportError` or `Connection closed`, e
 
 ### 404 Model Not Found (Gemini)
 Gemini 3 models in AI Studio currently require the `-preview` suffix (e.g., `gemini-3-flash-preview`). The client defaults to this ID.
+
+## Example MCP Calls
+1. Browse: `get_materialized_schema(class_names=['Account', 'Person'])`
+2. Transform: `enhance_schema(class_names=['Person'], instructions='Add mandatory SSN')`
+3. Generate: `generate_schema_code(class_names=['Payment'], target_type='sql', instructions='Add status enum')`
