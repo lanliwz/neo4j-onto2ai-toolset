@@ -1,4 +1,4 @@
-# Onto2AI Toolset MCP: Ontology Modeling Tools
+# Onto2AI Engineer MCP: Ontology Modeling Tools
 
 This project provides a powerful **Model Context Protocol (MCP)** server and an AI-driven client designed to interrogate, enhance, and materialize schemas from an OWL ontology loaded into Neo4j.
 
@@ -128,7 +128,7 @@ This mode starts the server automatically when the AI agent starts.
     "onto2ai": {
       "command": "python",
       "args": [
-        "/path/to/onto2ai-toolset/neo4j_onto2ai_toolset/onto2ai_mcp.py"
+        "/path/to/onto2ai-engineer/neo4j_onto2ai_toolset/onto2ai_mcp.py"
       ],
       "env": {
         "NEO4J_MODEL_DB_URL": "bolt://localhost:7687",

@@ -1,6 +1,6 @@
-# Onto2AI Toolset Interface Contract
+# Onto2AI Engineer Interface Contract
 
-This document defines stable runtime interfaces for the `onto2ai-toolset` milestone.
+This document defines stable runtime interfaces for the `onto2ai-engineer` milestone.
 
 ## Canonical Commands
 

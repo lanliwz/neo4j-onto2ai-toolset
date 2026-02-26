@@ -1,4 +1,4 @@
-# Onto2AI Toolset MCP Server
+# Onto2AI Engineer MCP Server
 
 This MCP server provides a powerful set of tools to interrogate, enhance, and materialize schemas from an OWL ontology loaded into Neo4j. It supports the **Model Context Protocol** (MCP), enabling seamless integration with AI agents.
 

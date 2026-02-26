@@ -1,9 +1,9 @@
-# Onto2AI Toolset
+# Onto2AI Engineer
 
-Onto2AI Toolset is a focused toolkit for loading ontologies into Neo4j, interrogating/enhancing schema via MCP tools, and operating a staging workflow for production-oriented model shaping.
+Onto2AI Engineer is a focused toolkit for loading ontologies into Neo4j, interrogating/enhancing schema via MCP tools, and operating a staging workflow for production-oriented model shaping.
 
 ## Value Proposition
-Onto2AI Toolset enables a model-once-serve-all approach for ontology-driven systems:
+Onto2AI Engineer enables a model-once-serve-all approach for ontology-driven systems:
 - Load well-known ontologies into a Neo4j ontology database.
 - Materialize ontology semantics into graph structures that are operationally usable.
 - Generate customized, industry-specialized schemas from those ontology foundations.
@@ -18,7 +18,7 @@ This repository is scoped to Onto2AI workflows only:
 - Onto2AI Modeller web UI for review and operations
 
 ## Onto2AI Modeller
-Onto2AI Modeller is an AI-assisted model-enrichment UI and a core part of the Onto2AI Toolset. It helps users build industry-quality applications without requiring a full traditional team of product managers, architects, and engineers.
+Onto2AI Modeller is an AI-assisted model-enrichment UI and a core part of Onto2AI Engineer. It helps users build industry-quality applications without requiring a full traditional team of product managers, architects, and engineers.
 
 In the staging area, users can review and evolve models in ontology, UML, or object-oriented (class model) formats. You can inspect and refine classes, relationships, properties, and hierarchies, and use AI assistance to add or modify model elements.
 
@@ -75,7 +75,7 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_toolset-0.4.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.5.0-py3-none-any.whl
 ```
 
 ### Modeller
@@ -94,7 +94,7 @@ See: [demo/README.md](./demo/README.md)
 - MCP Server Notes: [MCP_README.md](./MCP_README.md)
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
-- Milestone Plan: [docs/milestones/onto2ai-toolset-only.md](./docs/milestones/onto2ai-toolset-only.md)
+- Milestone Plan: [docs/milestones/onto2ai-engineer-only.md](./docs/milestones/onto2ai-engineer-only.md)
 - Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
 - Demo Guide: [demo/README.md](./demo/README.md)
 

@@ -26,8 +26,8 @@ A premium, interactive web application designed to review, visualize, and enhanc
 ### Installation
 
 ```bash
-# Navigate to the toolset root
-cd onto2ai-toolset
+# Navigate to the engineer root
+cd onto2ai-engineer
 
 # Install dependencies
 pip install fastapi uvicorn neo4j openai
@@ -99,4 +99,4 @@ onto2ai_modeller/
 ```
 
 ---
-Part of the Onto2AI Toolset.
+Part of Onto2AI Engineer.

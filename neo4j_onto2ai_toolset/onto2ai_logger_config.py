@@ -26,7 +26,7 @@ NEO4J_LOG_LEVEL = os.getenv('NEO4J_LOG_LEVEL', 'INFO')
 neo4j_logger = logging.getLogger("neo4j")
 neo4j_logger.setLevel(NEO4J_LOG_LEVEL)
 
-logger = logging.getLogger("onto2ai-toolset")  # Use project name as the root logger
+logger = logging.getLogger("onto2ai-engineer")  # Use project name as the root logger
 logger.setLevel(MY_LOG_LEVEL)
 
 # Create a console handler
@@ -49,4 +49,4 @@ logger.info(f"LLM Model Name (canonical): {os.getenv('LLM_MODEL_NAME')}")
 logger.info(f"LLM GPT Model Name: {os.getenv('GPT_MODEL_NAME')}")
 logger.info(f"LLM Model Reasoning Effort: {os.getenv('GPT_REASONING_EFFORT')}")
 
-# logger.info("Logging is set up neo4j-onto2ai-toolset")
+# logger.info("Logging is set up neo4j-onto2ai-engineer")

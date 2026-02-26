@@ -16,7 +16,7 @@ from .models import (
 )
 
 router = APIRouter(tags=["schemas"])
-logger = logging.getLogger("onto2ai-toolset")
+logger = logging.getLogger("onto2ai-engineer")
 
 # Onto2AI MCP Client (Lazy Initialization)
 from neo4j_onto2ai_toolset.onto2ai_client import Onto2AIClient

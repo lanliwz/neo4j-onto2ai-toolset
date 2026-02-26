@@ -16,7 +16,7 @@ from neo4j_onto2ai_toolset.onto2ai_core.cypher_statement.gen_schema import *
 from neo4j_onto2ai_toolset.onto2ai_prompt.onto2schema_prompt import gen_prompt4schema, gen_pydantic_class
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger as mylogger
 
-ontoToollogger = logging.getLogger("onto2ai-toolset")
+ontoToollogger = logging.getLogger("onto2ai-engineer")
 
 # --- Database Utilities (Merged from neo4j_utility.py) ---
 

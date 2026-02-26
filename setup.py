@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="onto2ai-toolset",
-    version="0.4.0",
+    name="onto2ai-engineer",
+    version="0.5.0",
     packages=find_packages(),
     install_requires=[
         "neo4j",
@@ -27,10 +27,10 @@ setup(
     },
     author="Wei Zhang",
     author_email="zhang.wei.ny@gmail.com",
-    description="Onto2AI toolset for ontology-driven modeling with Neo4j and MCP",
+    description="Onto2AI Engineer for ontology-driven modeling with Neo4j and MCP",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/lanliwz/onto2ai-toolset",
+    url="https://github.com/lanliwz/onto2ai-engineer",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

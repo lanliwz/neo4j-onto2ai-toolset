@@ -1,6 +1,6 @@
-# Onto2AI Toolset Configuration Contract
+# Onto2AI Engineer Configuration Contract
 
-This is the canonical environment-variable contract for Onto2AI Toolset runtime components.
+This is the canonical environment-variable contract for Onto2AI Engineer runtime components.
 
 ## Canonical Variables
 
@@ -34,7 +34,7 @@ This is the canonical environment-variable contract for Onto2AI Toolset runtime 
 
 ## Component Behavior
 
-### MCP / Loader / Core Toolset
+### MCP / Loader / Core Engineer Runtime
 - Resolve Neo4j from `NEO4J_MODEL_DB_*`.
 - Use `NEO4J_STAGING_DB_NAME` for staging operations.
 

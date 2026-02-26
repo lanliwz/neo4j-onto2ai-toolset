@@ -23,7 +23,7 @@ from neo4j_onto2ai_toolset.onto2ai_core.property_materializer import (
     materialize_properties,
 )
 
-logger = logging.getLogger("onto2ai-toolset")
+logger = logging.getLogger("onto2ai-engineer")
 
 DCTERMS = Namespace("http://purl.org/dc/terms/")
 

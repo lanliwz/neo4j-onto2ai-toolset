@@ -1,15 +1,15 @@
-# Milestone: Onto2AI Toolset Only
+# Milestone: Onto2AI Engineer Only
 
-- Milestone ID: `M1-onto2ai-toolset-only`
+- Milestone ID: `M1-onto2ai-engineer-only`
 - Date started: `2026-02-18`
 - Owner: `weizhang`
 - Status: `Released`
 
 ## Objective
-Consolidate this repository into a single-purpose `onto2ai-toolset` project, with aligned naming, structure, runtime configuration, interfaces, and documentation.
+Consolidate this repository into a single-purpose `onto2ai-engineer` project, with aligned naming, structure, runtime configuration, interfaces, and documentation.
 
 ## Definition of Done
-- Project identity is consistently `onto2ai-toolset` in docs, package metadata, and runtime UX.
+- Project identity is consistently `onto2ai-engineer` in docs, package metadata, and runtime UX.
 - Scope is explicit: only Onto2AI-relevant modules remain active.
 - Core workflows run end-to-end (loader, MCP, staging enrichment, schema generation).
 - Release artifacts include migration notes for any breaking changes.
@@ -23,7 +23,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 - [x] Document approved scope matrix in this file.
 
 ### Phase 2: Naming Consolidation
-- [x] Standardize project naming to `onto2ai-toolset` in docs and metadata.
+- [x] Standardize project naming to `onto2ai-engineer` in docs and metadata.
 - [x] Normalize CLI/help text and log identity.
 - [x] Define backward-compatibility aliases (if any) and deprecation notice.
 
@@ -101,7 +101,7 @@ Consolidate this repository into a single-purpose `onto2ai-toolset` project, wit
 - Initial scope audit completed from repository root.
 - Scope decisions approved and matrix finalized.
 - Phase 2 completed:
-  - package metadata renamed to `onto2ai-toolset` in `setup.py`
+  - package metadata renamed to `onto2ai-engineer` in `setup.py`
   - package CLI entrypoint set to `onto2ai-client`
   - root `main.py` converted to deprecated compatibility shim
   - docs updated to package module execution style (`python -m ...`)

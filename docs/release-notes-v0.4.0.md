@@ -1,7 +1,7 @@
-# Release Notes: v0.4.0 (M1 Onto2AI Toolset Only)
+# Release Notes: v0.4.0 (M1 Onto2AI Engineer Only)
 
 ## Summary
-This release finalizes milestone `M1-onto2ai-toolset-only` and completes the Onto2AI-only repository consolidation.
+This release finalizes milestone `M1-onto2ai-engineer-only` and completes the Onto2AI-only repository consolidation.
 
 ## Highlights
 - Renamed prompt package:

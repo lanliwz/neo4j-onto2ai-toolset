@@ -1,10 +1,10 @@
-# Release Notes Draft: M1 Onto2AI Toolset Only
+# Release Notes Draft: M1 Onto2AI Engineer Only
 
 ## Summary
 This milestone narrows the repository to Onto2AI-only scope and standardizes runtime interfaces, configuration, and onboarding.
 
 ## Highlights
-- Rebranded package identity to `onto2ai-toolset`.
+- Rebranded package identity to `onto2ai-engineer`.
 - Standardized canonical CLIs:
   - `onto2ai-client`
   - `onto2ai-mcp`
@@ -48,4 +48,4 @@ This milestone narrows the repository to Onto2AI-only scope and standardizes run
 ## Release Checklist
 - [ ] Run live runtime smoke checks in target environment.
 - [ ] Finalize this document.
-- [ ] Create tag: `v1.0.0-onto2ai-toolset`.
+- [ ] Create tag: `v1.0.0-onto2ai-engineer`.
