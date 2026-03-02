@@ -20,7 +20,7 @@
     </owl:Class>
 
     <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client">
-        <rdfs:subClassOf rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement#Party"/>
+        <rdfs:subClassOf rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:label>client</rdfs:label>
         <skos:definition>A person or entity using the services of a professional person or financial institution.</skos:definition>
     </owl:Class>
@@ -32,39 +32,39 @@
     </owl:Class>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/0XfrAgyFdAcctg -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/XfrAgyFdAcctg">
-        <rdfs:label>transfer agency fund accounting</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/linksToTransferAgencyFundAccounting">
+        <rdfs:label>fund accounting link</rdfs:label>
         <skos:definition xml:lang="en">A technical or operational banking relationship linking a transfer agency fund accounting.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/10DealClOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DealClOnNonLglPrty">
-        <rdfs:label>deal client on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDealClientForNonLegalPartyOf">
+        <rdfs:label>deal client for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as deal client (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/120VaShdwAcct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/VaShdwAcct">
-        <rdfs:label>virtual shadow account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isVirtualShadowOf">
+        <rdfs:label>shadow account</rdfs:label>
         <skos:definition xml:lang="en">A notional account used strictly for reporting, reconciliation, or mirroring a physical account's balances without holding actual funds.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/123CshRsvAccttoClntAcct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CshRsvAccttoClntAcct">
-        <rdfs:label>cash reserve account to client account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCashReserveFor">
+        <rdfs:label>cash reserve to client account</rdfs:label>
         <skos:definition xml:lang="en">A technical or operational banking relationship linking a cash reserve account to client account.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/125Teta -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Tste">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTrusteeOf">
         <rdfs:label>trustee</rdfs:label>
         <skos:definition xml:lang="en">A person or firm that holds and administers property or assets for the benefit of a third party.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -72,23 +72,23 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/1CollPrudOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollPrvdOnNonLglPrty">
-        <rdfs:label>collateral provider on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCollateralProviderForNonLegalPartyOf">
+        <rdfs:label>collateral provider for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as collateral provider (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/1sPrmAstOwnrOnNonLglprty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PrmAstOwnrOnNonLglPrty">
-        <rdfs:label>primary asset owner on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPrimaryAssetOwnerForNonLegalPartyOf">
+        <rdfs:label>primary asset owner for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as primary asset owner (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/2Depositor -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Depositor">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDepositorOf">
         <rdfs:label>depositor</rdfs:label>
         <skos:definition xml:lang="en">An individual or entity that places funds into a bank or financial institution account.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -96,7 +96,7 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/6AuthSgnTy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AuthSignatory">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAuthorizedSignatoryOf">
         <rdfs:label>authorized signatory</rdfs:label>
         <skos:definition xml:lang="en">An individual authorized to execute documents or conduct transactions on behalf of an entity or account.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -104,15 +104,15 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LOBClntOwny -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LOBClntOwnr">
-        <rdfs:label>line of business client owner</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isLineOfBusinessOwnerOf">
+        <rdfs:label>business line owner</rdfs:label>
         <skos:definition xml:lang="en">The specific line of business that owns the overall relationship with a client.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Acctnt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Acctnt">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAccountantOf">
         <rdfs:label>accountant</rdfs:label>
         <skos:definition xml:lang="en">A professional responsible for keeping, interpreting, and auditing financial records.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -120,119 +120,119 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Advs -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Advs">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAdvisorOf">
         <rdfs:label>advisor</rdfs:label>
         <skos:definition xml:lang="en">A professional providing financial, legal, or investment advice to clients.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AdvsTa -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AdvsTa">
-        <rdfs:label>advisor ta</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTransferAgentAdvisorOf">
+        <rdfs:label>transfer agent advisor</rdfs:label>
         <skos:definition xml:lang="en">An advisor acting in the capacity of a transfer agent.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AgntOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AgntOnNonLgiPrty">
-        <rdfs:label>agent on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAgentForNonLegalPartyOf">
+        <rdfs:label>agent for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as agent (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Anlst -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Anlst">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAnalystOf">
         <rdfs:label>analyst</rdfs:label>
         <skos:definition xml:lang="en">A financial professional who evaluates financial data and investment opportunities.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AstOwnAddOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AstOwnAddOnNonLgiPrty">
-        <rdfs:label>asset own additional on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAdditionalAssetOwnerForNonLegalPartyOf">
+        <rdfs:label>additional asset owner for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as asset own additional (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AuthEnthlfCintPrsn -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AuthBhfClntPrsn">
-        <rdfs:label>authorized behalf of client person</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAuthorizedRepresentativeOf">
+        <rdfs:label>authorized client representative</rdfs:label>
         <skos:definition xml:lang="en">An individual authorized to act on behalf of the client.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AuthTpty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/AuthTpty">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isAuthorizedThirdPartyFor">
         <rdfs:label>authorized third party</rdfs:label>
         <skos:definition xml:lang="en">A non-primary party granted express permission to access information or perform specific actions regarding an account or relationship.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BIScyPrudOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BIScyPrvdOnNonLglPrty">
-        <rdfs:label>beneficial interest security provider on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBeneficialInterestSecurityProviderForNonLegalPartyOf">
+        <rdfs:label>beneficial interest security provider for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as beneficial interest security provider (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Bene -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Bene">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBeneficiaryOf">
         <rdfs:label>beneficiary</rdfs:label>
         <skos:definition xml:lang="en">A person or entity entitled to receive the benefits, funds, or property from a trust, will, or financial product.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BeneOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BeneOnNonLglPrty">
-        <rdfs:label>beneficiary on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBeneficiaryForNonLegalPartyOf">
+        <rdfs:label>beneficiary for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as beneficiary (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BeneOwnrOnNonglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BeneOwnrOnNonglPrty">
-        <rdfs:label>beneficiary owner on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBeneficiaryOwnerForNonLegalPartyOf">
+        <rdfs:label>beneficiary owner for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as beneficiary owner (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BkgLE -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BkgLE">
-        <rdfs:label>bkg legal entity</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBookingLegalEntityFor">
+        <rdfs:label>booking legal entity</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of bkg legal entity within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Brkr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Brkr">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBrokerOf">
         <rdfs:label>broker</rdfs:label>
         <skos:definition xml:lang="en">An individual or firm that charges a fee or commission for executing buy and sell orders submitted by an investor.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BrwrOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BrwrOnNonLglPrty">
-        <rdfs:label>borrower on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBorrowerForNonLegalPartyOf">
+        <rdfs:label>borrower for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as borrower (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Buyer -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Buyer">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBuyerOf">
         <rdfs:label>buyer</rdfs:label>
         <skos:definition xml:lang="en">A party which acquires, or agrees to acquire, ownership, in exchange for money or other consideration.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -240,63 +240,63 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BuyerOnNonLgUPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/BuyerOnNonLglPrty">
-        <rdfs:label>buyer on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isBuyerForNonLegalPartyOf">
+        <rdfs:label>buyer for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as buyer (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CFA -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CFA">
-        <rdfs:label>chartered financial analyst</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCharteredFinancialAnalystOf">
+        <rdfs:label>CFA charterholder</rdfs:label>
         <skos:definition xml:lang="en">A professional holding the CFA designation, typically involved in investment analysis and portfolio management.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollRcVrBene -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollRcvrBene">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCollateralReceiverBeneficiaryOf">
         <rdfs:label>collateral receiver beneficiary</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of collateral receiver beneficiary within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/COO -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/COO">
-        <rdfs:label>chief operating officer</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isChiefOperatingOfficerOf">
+        <rdfs:label>COO</rdfs:label>
         <skos:definition xml:lang="en">A senior executive primarily responsible for managing the day-to-day operations of a company.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
-    <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client">
-        <rdfs:label>client</rdfs:label>
-        <skos:definition xml:lang="en">A person or entity using the services of a professional person or company.</skos:definition>
+    <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/HasClient -->
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/hasClient">
+        <rdfs:label>has client</rdfs:label>
+        <skos:definition xml:lang="en">Relates an account to the client that uses or owns it.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
-        <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CntLE -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CntLE">
-        <rdfs:label>cnt legal entity</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCounterpartyLegalEntityFor">
+        <rdfs:label>counterparty legal entity</rdfs:label>
         <skos:definition xml:lang="en">The counterparty legal entity involved in a financial transaction.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CoLlMgrOnNonLgLPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollMgrOnNonLglPrty">
-        <rdfs:label>collateral manager on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCollateralManagerForNonLegalPartyOf">
+        <rdfs:label>collateral manager for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as collateral manager (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollPrud -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollPrvd">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCollateralProviderOf">
         <rdfs:label>collateral provider</rdfs:label>
         <skos:definition xml:lang="en">A party that pledges assets to secure a loan or other credit exposure.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -304,15 +304,15 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollRevrAgnt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CollRcvrAgnt">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCollateralReceiverAgentFor">
         <rdfs:label>collateral receiver agent</rdfs:label>
         <skos:definition xml:lang="en">An agent acting on behalf of the lender or secured party to hold or manage pledged collateral.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Cstdn -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Cstdn">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCustodianOf">
         <rdfs:label>custodian</rdfs:label>
         <skos:definition xml:lang="en">A financial institution that holds customers' securities for safekeeping.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -320,23 +320,23 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CtrctgPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CtrctgPrty">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isContractingPartyFor">
         <rdfs:label>contracting party</rdfs:label>
         <skos:definition xml:lang="en">The party that has entered into a binding agreement or contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DTteeOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DTteeOnNonLglPrty">
-        <rdfs:label>directed trustee on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDirectedTrusteeForNonLegalPartyOf">
+        <rdfs:label>directed trustee for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as directed trustee (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DealAcct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DealAcct">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDealAccountFor">
         <rdfs:label>deal account</rdfs:label>
         <skos:definition xml:lang="en">An account established specifically to record transactions related to a particular deal or syndicate.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
@@ -344,31 +344,31 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DepositorOnNonLgiprty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DepositorOnNonLgiPrty">
-        <rdfs:label>depositor on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDepositorForNonLegalPartyOf">
+        <rdfs:label>depositor for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as depositor (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DeprRcptCsh -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DeprRcptCsh">
-        <rdfs:label>depository receipt cash</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDepositoryReceiptCashAccountFor">
+        <rdfs:label>depository receipt cash account</rdfs:label>
         <skos:definition xml:lang="en">A cash account associated with the issuance or management of depository receipts.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DlrBoxCstdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DlrBoxCstdy">
-        <rdfs:label>dealer box custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDealerBoxCustodianOf">
+        <rdfs:label>dealer box custodian</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of dealer box custody within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Exctr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Exctr">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isExecutorOf">
         <rdfs:label>executor</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of executor within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -376,15 +376,15 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/FdCstdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/FdCstdy">
-        <rdfs:label>fund custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isFundCustodianOf">
+        <rdfs:label>fund custodian</rdfs:label>
         <skos:definition xml:lang="en">Safekeeping services provided for the assets of an investment fund.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grdn -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grdn">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isGuardianOf">
         <rdfs:label>guardian</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of guardian within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -392,7 +392,7 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grantor -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grantor">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isGrantorOf">
         <rdfs:label>grantor</rdfs:label>
         <skos:definition xml:lang="en">The creator of a trust or a person who transfers property rights to another.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -400,39 +400,39 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/GrantorOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/GrantorOnNonLgiPrty">
-        <rdfs:label>grantor on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isGrantorForNonLegalPartyOf">
+        <rdfs:label>grantor for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as grantor (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grtor -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Grtor">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isGuarantorOf">
         <rdfs:label>guarantor</rdfs:label>
         <skos:definition xml:lang="en">An individual or entity that promises to pay a borrower's debt in the event that the borrower defaults.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/HOCoLLRevrAgntOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/HOCoLLRcvrAgntOnNonLgiPrty">
-        <rdfs:label>head office collateral receiver agent on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isHeadOfficeCollateralReceiverAgentForNonLegalPartyOf">
+        <rdfs:label>head office collateral receiver agent for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as head office collateral receiver agent (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ISttSgrtAc -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ISttSgrtAc">
-        <rdfs:label>institutional street segregated account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isInstitutionalStreetSegregatedAccountFor">
+        <rdfs:label>institutional street segregated account role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of institutional street segregated account within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IndirClnt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IndirClnt">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isIndirectClientOf">
         <rdfs:label>indirect client</rdfs:label>
         <skos:definition xml:lang="en">A client whose relationship is managed through an intermediary rather than directly.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -440,103 +440,103 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InsurerOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InsurerOnNonLgiPrty">
-        <rdfs:label>insurer on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isInsurerForNonLegalPartyOf">
+        <rdfs:label>insurer for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as insurer (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntSrcPrtyRefData -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntSrcPrtyRefData">
-        <rdfs:label>internal source party reference data</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isReferenceDataSourceFor">
+        <rdfs:label>party reference data source</rdfs:label>
         <skos:definition xml:lang="en">An internal system or team acting as the authoritative source for party reference data.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroBkDrPrshofc -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroBkDrPrshofc">
-        <rdfs:label>introducing bank dealer pershing office</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPershingOfficeIntroducingBankDealerFor">
+        <rdfs:label>pershing office introducing bank dealer</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of introducing bank dealer pershing office within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroFmIntroBkDr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroFmIntroBkDr">
-        <rdfs:label>introducing firm introducing bank dealer</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isIntroducingFirmBankDealerFor">
+        <rdfs:label>introducing firm bank dealer</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of introducing firm introducing bank dealer within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
-    <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroßkDr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroßkDr">
+    <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IntroBkDr -->
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isIntroducingBankDealerFor">
         <rdfs:label>introducing bank dealer</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of introducing bank dealer within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InvcCpyBilRcpnt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InvcCpyBilRcpnt">
-        <rdfs:label>invoice copy bill recipient</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isInvoiceCopyRecipientFor">
+        <rdfs:label>invoice copy recipient</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of invoice copy bill recipient within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InvcFac -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/InvcFac">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isInvoiceFacilitatorFor">
         <rdfs:label>invoice facilitator</rdfs:label>
         <skos:definition xml:lang="en">A party that facilitates the settlement and processing of invoices.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Issuer -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Issuer">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isIssuerOf">
         <rdfs:label>issuer</rdfs:label>
         <skos:definition xml:lang="en">A legal entity that develops, registers and sells securities to finance its operations.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IssuerOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/IssuerOnNonLgiPrty">
-        <rdfs:label>issuer on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isIssuerForNonLegalPartyOf">
+        <rdfs:label>issuer for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as issuer (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LdSAC -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LdSAC">
-        <rdfs:label>lead sub account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isLeadSubAccountFor">
+        <rdfs:label>lead sub-account</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of lead sub account within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LenderOnNonLgiPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LenderOnNonLgiPrty">
-        <rdfs:label>lender on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isLenderForNonLegalPartyOf">
+        <rdfs:label>lender for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as lender (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Lender -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Lender">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isLenderOf">
         <rdfs:label>lender</rdfs:label>
         <skos:definition xml:lang="en">An individual, a public or private group, or a financial institution that makes funds available to another with the expectation that the funds will be repaid.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LndLrd -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LndLrd">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isLandlordOf">
         <rdfs:label>landlord</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of landlord within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -544,23 +544,23 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LnvcAcm -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/LnvcAcm">
-        <rdfs:label>invoice account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isInvoiceAccountFor">
+        <rdfs:label>invoice account role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of invoice account within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/MnyMgr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/MnyMgr">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isMoneyManagerOf">
         <rdfs:label>money manager</rdfs:label>
         <skos:definition xml:lang="en">A person or financial firm that manages the securities portfolio of an individual or institutional investor.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Obg -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Obg">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isObligorOf">
         <rdfs:label>obligor</rdfs:label>
         <skos:definition xml:lang="en">A person or entity who is legally or contractually obliged to provide a benefit or payment to another.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -568,7 +568,7 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ObgnToWMAcct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ObgnToWMAcct">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/linksToWealthManagementAccount">
         <rdfs:label>obligation to wealth management account</rdfs:label>
         <skos:definition xml:lang="en">A technical or operational banking relationship linking a obligation to wealth management account.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
@@ -576,23 +576,23 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ObgonNonglprty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ObgonNonglPrty">
-        <rdfs:label>obligation on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isObligationPartyForNonLegalPartyOf">
+        <rdfs:label>obligation role for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as obligation on non legal party (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/OthRelPrtyOnNonLglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/OthRelPrtyOnNonLglPrty">
-        <rdfs:label>other relationship party on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isOtherRelationshipPartyForNonLegalPartyOf">
+        <rdfs:label>other relationship party for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as other relationship party (Applied to an entity not recognized as an independent legal person).</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Owner -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Owner">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isOwnerOf">
         <rdfs:label>owner</rdfs:label>
         <skos:definition xml:lang="en">A party possessing the exclusive right to hold, use, benefit from, enjoy, convey, transfer, and otherwise dispose of an asset or property.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -600,79 +600,79 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/OwnrOnNonglPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/OwnrOnNonglPrty">
-        <rdfs:label>owner on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isOwnerForNonLegalPartyOf">
+        <rdfs:label>owner for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as owner (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PledgerOnNonLgUPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PledgerOnNonLglPrty">
-        <rdfs:label>pledger on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPledgerForNonLegalPartyOf">
+        <rdfs:label>pledger for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as pledger (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Prmlarpac -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PrmIrpac">
-        <rdfs:label>primary irpac</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPrimaryIrpacOf">
+        <rdfs:label>primary IRPAC</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of primary irpac within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PwrOfAtty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PwrOfAtty">
-        <rdfs:label>power of attorney</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPowerOfAttorneyAgentFor">
+        <rdfs:label>power of attorney agent</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of power of attorney within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RIA -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RIA">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isRegisteredInvestmentAdvisorOf">
         <rdfs:label>registered investment advisor</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of registered investment advisor within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RIAPrshOfc -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RIAPrshOfc">
-        <rdfs:label>registered investment advisor pershing office</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isRegisteredInvestmentAdvisorPershingOfficeFor">
+        <rdfs:label>RIA pershing office</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of registered investment advisor pershing office within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RelAgr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RelAgr">
-        <rdfs:label>relationship agreement</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isRelationshipAgreementPartyFor">
+        <rdfs:label>relationship agreement party</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of relationship agreement within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Rptonly -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Rptonly">
-        <rdfs:label>report only</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isReportOnlyPartyFor">
+        <rdfs:label>report-only party</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of report only within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ScnAstOwnr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ScnAstOwnr">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSecondaryAssetOwnerOf">
         <rdfs:label>secondary asset owner</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of secondary asset owner within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ScyPrvd -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ScyPrvd">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSecurityProviderOf">
         <rdfs:label>security provider</rdfs:label>
         <skos:definition xml:lang="en">A party pledging assets or guarantees to secure an obligation.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -680,23 +680,23 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SellerOnNonLgUPrty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SellerOnNonLglPrty">
-        <rdfs:label>seller on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSellerForNonLegalPartyOf">
+        <rdfs:label>seller for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as seller (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Settlor -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Settlor">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSettlorOf">
         <rdfs:label>settlor</rdfs:label>
         <skos:definition xml:lang="en">A person or entity that establishes a trust.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SlsRpsnt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SlsRpsnt">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSalesRepresentativeOf">
         <rdfs:label>sales representative</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of sales representative within a financial or legal contract.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -704,47 +704,47 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SolePrp -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SolePrp">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSoleProprietorOf">
         <rdfs:label>sole proprietor</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of sole proprietor within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SrvcLE -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SrvcLE">
-        <rdfs:label>service legal entity</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isServicingLegalEntityFor">
+        <rdfs:label>servicing legal entity</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of service legal entity within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SubAdys -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SubAdvs">
-        <rdfs:label>sub advisor</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isSubAdvisorOf">
+        <rdfs:label>sub-advisor</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of sub advisor within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/TACstdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/TACstdy">
-        <rdfs:label>transfer agency custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTransferAgencyCustodianFor">
+        <rdfs:label>transfer agency custodian</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of transfer agency custody within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Tenant -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Tenant">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTenantOf">
         <rdfs:label>tenant</rdfs:label>
         <skos:definition xml:lang="en">A person or entity who occupies land or property rented from a landlord.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Trustor -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Trustor">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTrustorOf">
         <rdfs:label>trustor</rdfs:label>
         <skos:definition xml:lang="en">An entity or individual that creates a trust and transfers assets into it.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -752,15 +752,15 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/TteeOnNonLgUprty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/TteeOnNonLglPrty">
-        <rdfs:label>trustee on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTrusteeForNonLegalPartyOf">
+        <rdfs:label>trustee for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as trustee (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Undrwrt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Undrwrt">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isUnderwriterOf">
         <rdfs:label>underwriter</rdfs:label>
         <skos:definition xml:lang="en">Any party that evaluates and assumes another party's risk for a fee, typically in insurance, investment banking, or lending.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
@@ -768,87 +768,87 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/eRR -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/RR">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isRegisteredRepresentativeOf">
         <rdfs:label>registered representative</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of registered representative within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/eSvcrOnNonLgiprty -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/SvcrOnNonLgiPrty">
-        <rdfs:label>servicer on non legal party</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isServicerForNonLegalPartyOf">
+        <rdfs:label>servicer for non-legal party</rdfs:label>
         <skos:definition xml:lang="en">Acting as servicer (Applied to an entity not recognized as an independent legal person).</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/eXtnlBkgLE -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/XtnlBkgLE">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isExternalBookingLegalEntityFor">
         <rdfs:label>external booking legal entity</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of external booking legal entity within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/esTriptyCshAc -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/esTriptyCshAc">
-        <rdfs:label>triparty cash account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTripartyCashAccountFor">
+        <rdfs:label>triparty cash account role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of triparty cash account within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/iCstdyCsh -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CstdyCsh">
-        <rdfs:label>custody cash</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isCustodyCashAccountFor">
+        <rdfs:label>custody cash account</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of custody cash within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/noDeprReptCstdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/DeprReptCstdy">
-        <rdfs:label>depository receipt custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDepositoryReceiptCustodianFor">
+        <rdfs:label>depository receipt custodian</rdfs:label>
         <skos:definition xml:lang="en">A custody account or service holding the underlying shares for depository receipts.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/oClrDirDep -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ClrDirDep">
-        <rdfs:label>clearance direct deposit</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isClearanceDirectDepositFor">
+        <rdfs:label>clearance direct deposit role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of clearance direct deposit within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/oFdAcctgestdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/FdAcctgestdy">
-        <rdfs:label>fund accounting custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isFundAccountingCustodianFor">
+        <rdfs:label>fund accounting custodian</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of fund accounting custody within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/osKeySrNgt -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/osKeySrNgt">
-        <rdfs:label>outsourced key senior night</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isOutsourcedSeniorRoleFor">
+        <rdfs:label>outsourced senior role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of outsourced key senior night within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/sCaptlMkPEShACct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/CaptlMkPEShACct">
-        <rdfs:label>capital market private equity share account</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPrivateEquityShareAccountFor">
+        <rdfs:label>private equity share account role</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of capital market private equity share account within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/sObgnToObgnAcct -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ObgnToObgnAcct">
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/linksToObligationAccount">
         <rdfs:label>obligation to obligation account</rdfs:label>
         <skos:definition xml:lang="en">A technical or operational banking relationship linking a obligation to obligation account.</skos:definition>
         <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
@@ -856,34 +856,34 @@
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/w1DealRelDeal -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/w1DealRelDeal">
-        <rdfs:label>deal relationship</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isDealRelationshipPartyFor">
+        <rdfs:label>deal relationship party</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of deal relationship within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/wPrtfTrd -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PrtfTrd">
-        <rdfs:label>portfolio trade</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isPortfolioTradePartyFor">
+        <rdfs:label>portfolio trade party</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of portfolio trade within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/ưXfrAgyClrCstdy -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/XfrAgyClrCstdy">
-        <rdfs:label>transfer agency clearance custody</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isTransferAgencyClearanceCustodianFor">
+        <rdfs:label>transfer agency clearance custodian</rdfs:label>
         <skos:definition xml:lang="en">A party playing the role of transfer agency clearance custody within a financial or legal contract.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 
     <!-- http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PartySvcPrvdr -->
-    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/PartySvcPrvdr">
-        <rdfs:label>party service provider</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/isServiceProviderFor">
+        <rdfs:label>service provider</rdfs:label>
         <skos:definition xml:lang="en">An external or internal entity providing specific services (like custody or clearing) to a party.</skos:definition>
-        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
+        <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party"/>
         <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Account"/>
     </owl:ObjectProperty>
 </rdf:RDF>

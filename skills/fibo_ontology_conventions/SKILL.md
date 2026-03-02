@@ -58,6 +58,16 @@ Furthermore, the physical directory structure MUST map exactly to the URI namesp
 **Example Folder Structure for the above URI:**
 `resource/ontology/www_onto2ai-toolset_com/ontology/bank/AssetManagement.rdf`
 
+### Object Property URI Rule
+Object property URI fragments MUST be written as lowerCamelCase predicates that describe the directed relationship from domain to range.
+
+Use patterns such as:
+- `isSalesRepresentativeOf`
+- `hasClient`
+- `linksToWealthManagementAccount`
+
+Do not use noun-only or role-only object property URI fragments such as `SalesRepresentative`, `Trustee`, or `Client` when the term represents a relationship. A valid quick check is that the URI fragment should read naturally in a triple-like sentence: `Client isSalesRepresentativeOf Account`.
+
 ## 4. Subclassing FIBO Core Concepts
 Where possible, align and subclass new concepts from the core FIBO taxonomy.
 - `Party` -> `fibo-fnd-pty-pty:Party`
@@ -102,3 +112,7 @@ If an OCR string is obviously corrupted but recognizable, replace it with the co
 - `Srvc` -> `Service`
 
 If a term is explicitly "non legal party" or similar syntax originating from "OnNonLglPrty", "OnhonLglPrty", or "OnNonLgiPrty", it should always be expanded to exactly `on non legal party` and its definition should begin with `Acting as [Role] (Applied to an entity not recognized as an independent legal person).`
+
+When those terms appear in object property URI fragments, convert them into predicate form, for example:
+- `isTrusteeForNonLegalPartyOf`
+- `isCollateralProviderForNonLegalPartyOf`

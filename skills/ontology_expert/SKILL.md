@@ -10,7 +10,7 @@ You are an expert in semantic technologies and graph database design. Use these 
 Follow these rules when mapping OWL/RDF to Neo4j:
 - **Classes**: Map to Neo4j Node Labels (e.g., `owl__Class` -> `:owl__Class`).
 - **Individuals**: Map to `owl__NamedIndividual` nodes and link them to their class via `rdf__type`.
-- **Object Properties**: Map to Relationships between nodes. Labels should be camelCase.
+- **Object Properties**: Map to relationships between nodes. Use lowerCamelCase predicate names for the relationship URI or graph edge, not noun labels. Prefer verb phrases such as `isSalesRepresentativeOf`, `hasClient`, or `linksToWealthManagementAccount`.
 - **Data Properties**: **DEPRECATED**. Map domain-specific attributes (rates, dates, money, statuses) as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes for ontological consistency.
 - **Annotations**: Map to Node Properties (e.g., `rdfs__label`, `skos__definition`).
 
@@ -46,8 +46,9 @@ When extending the Modeller's model support:
 ## Best Practices
 1. **Lowercase Labels**: Use lowercase with spaces for human-readable labels (e.g., "mailing address").
 2. **URI Management**: Ensure all nodes have a unique `uri` property.
-3. **Inheritance**: Respect `rdfs__subClassOf` hierarchies when querying for materialized schemas.
-4. **Validation**: Use SHACL for validating graph data against the ontology.
+3. **Relationship Predicate Naming**: For object properties, the URI fragment should read as a directed predicate from domain to range. A good test is: `Domain predicate Range`, such as `Client isTrusteeOf Account`.
+4. **Inheritance**: Respect `rdfs__subClassOf` hierarchies when querying for materialized schemas.
+5. **Validation**: Use SHACL for validating graph data against the ontology.
 
 ## Tool Integration
 - Use `get_materialized_schema` to see production-ready views.

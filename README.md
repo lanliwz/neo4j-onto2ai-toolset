@@ -78,6 +78,11 @@ ls -la dist/
 python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.5.0-py3-none-any.whl
 ```
 
+### Ontology Validation
+```bash
+python scripts/validate_ontology.py resource/ontology/www_onto2ai-toolset_com/ontology
+```
+
 ### Modeller
 ```bash
 onto2ai-modeller --model gemini --host localhost --port 8180
