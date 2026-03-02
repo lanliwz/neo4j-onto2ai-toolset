@@ -7,7 +7,10 @@
      xmlns:skos="http://www.w3.org/2004/02/skos/core#"
      xmlns:fibo-fnd-pty-pty="https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/"
      xmlns:fibo-fbc-pas-caa="https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/">
-    <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"/>
+    <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement">
+        <owl:imports rdf:resource="https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/"/>
+        <owl:imports rdf:resource="https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/"/>
+    </owl:Ontology>
 
     <!-- Classes -->
     <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Party">

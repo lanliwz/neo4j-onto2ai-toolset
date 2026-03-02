@@ -2808,6 +2808,414 @@
       "loaded_ontology_count": 329,
       "failed_ontology_uris": [],
       "failed_ontology_count": 0
+    },
+    {
+      "run_id": "6815fdde19e8",
+      "started_at": "2026-03-02T00:47:24.993481Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T00:47:26.648778Z",
+      "duration_seconds": 1.655,
+      "phase_timings": {
+        "reset_seconds": 1.115,
+        "load_seconds": 0.148,
+        "post_load_seconds": 0.392
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "2dfdd37bdefa",
+      "started_at": "2026-03-02T01:39:26.390571Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T01:39:26.476361Z",
+      "duration_seconds": 0.086,
+      "phase_timings": {
+        "reset_seconds": 0.037,
+        "load_seconds": 0.034,
+        "post_load_seconds": 0.014
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "b4d28627d63c",
+      "started_at": "2026-03-02T01:52:25.296752Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T01:52:25.341104Z",
+      "duration_seconds": 0.044,
+      "phase_timings": {
+        "reset_seconds": 0.01,
+        "load_seconds": 0.015,
+        "post_load_seconds": 0.019
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "0e529ff50b69",
+      "started_at": "2026-03-02T01:58:56.544253Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T01:58:56.597583Z",
+      "duration_seconds": 0.053,
+      "phase_timings": {
+        "reset_seconds": 0.011,
+        "load_seconds": 0.029,
+        "post_load_seconds": 0.014
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "526cf154bfac",
+      "started_at": "2026-03-02T01:59:28.777852Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T01:59:28.817318Z",
+      "duration_seconds": 0.039,
+      "phase_timings": {
+        "reset_seconds": 0.01,
+        "load_seconds": 0.011,
+        "post_load_seconds": 0.018
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "ab5574859939",
+      "started_at": "2026-03-02T02:00:04.937954Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T02:00:05.067170Z",
+      "duration_seconds": 0.129,
+      "phase_timings": {
+        "reset_seconds": 0.009,
+        "load_seconds": 0.012,
+        "post_load_seconds": 0.108
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "247a0ef26128",
+      "started_at": "2026-03-02T02:01:49.579487Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T02:01:49.615363Z",
+      "duration_seconds": 0.036,
+      "phase_timings": {
+        "reset_seconds": 0.009,
+        "load_seconds": 0.011,
+        "post_load_seconds": 0.016
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+      ],
+      "loaded_ontology_count": 1,
+      "failed_ontology_uris": [
+        {
+          "uri": "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+          "stage": "parse",
+          "error": "<unknown>:1:0: no element found"
+        }
+      ],
+      "failed_ontology_count": 1
+    },
+    {
+      "run_id": "fadfcb9011a4",
+      "started_at": "2026-03-02T02:05:01.999235Z",
+      "status": "success",
+      "selection": {
+        "root_iris": [
+          "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+        ],
+        "discover": true,
+        "rdf_format": "application/rdf+xml"
+      },
+      "destination": {
+        "neo4j_uri": "bolt://localhost:7687",
+        "database": "neo4j",
+        "username": "neo4j"
+      },
+      "actions": {
+        "reset_database": true,
+        "materialize_properties": true,
+        "cleanup_duplicate_relationships": true,
+        "local_files_only": false
+      },
+      "ended_at": "2026-03-02T02:05:15.638912Z",
+      "duration_seconds": 13.64,
+      "phase_timings": {
+        "reset_seconds": 0.012,
+        "load_seconds": 4.081,
+        "post_load_seconds": 9.547
+      },
+      "loaded_ontology_iris": [
+        "http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/",
+        "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/",
+        "https://spec.edmcouncil.org/fibo/ontology/FND/Parties/Parties/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/Corporations/Corporations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/FunctionalEntities/FunctionalEntities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/FunctionalEntities/Publishers/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/GovernmentEntities/GovernmentEntities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/CorporateBodies/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/FormalBusinessOrganizations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LEIEntities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/LegalEntities/LegalPersons/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/OwnershipAndControl/ControlParties/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/OwnershipAndControl/CorporateControl/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/OwnershipAndControl/CorporateOwnership/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/OwnershipAndControl/Executives/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/OwnershipAndControl/OwnershipParties/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/Partnerships/Partnerships/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/BE/PrivateLimitedCompanies/PrivateLimitedCompanies/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/DebtAndEquities/Debt/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/FinancialInstruments/FinancialInstruments/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/FunctionalEntities/BusinessRegistries/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/FunctionalEntities/FinancialServicesEntities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/FunctionalEntities/RegistrationAuthorities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/FunctionalEntities/RegulatoryAgencies/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FBC/ProductsAndServices/FinancialProductsAndServices/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Accounting/AccountingEquity/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Accounting/CurrencyAmount/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/Agents/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/People/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Agreements/Agreements/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Agreements/Contracts/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/Arrangements/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/Assessments/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/ClassificationSchemes/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/Documents/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/IdentifiersAndIndices/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/Lifecycles/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Arrangements/Reporting/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/DatesAndTimes/BusinessDates/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/DatesAndTimes/FinancialDates/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/DatesAndTimes/Occurrences/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/GoalsAndObjectives/Objectives/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Law/Jurisdiction/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Law/LegalCapacity/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Law/LegalCore/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Organizations/FormalOrganizations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Organizations/Organizations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/OwnershipAndControl/Control/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/OwnershipAndControl/Ownership/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Parties/Parties/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Places/Addresses/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Places/Facilities/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Places/Locations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Places/RealProperty/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/ProductsAndServices/PaymentsAndSchedules/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/ProductsAndServices/ProductsAndServices/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Relations/Relations/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Utilities/Analytics/",
+        "https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/Utilities/AnnotationVocabulary/",
+        "https://www.omg.org/spec/Commons/AnnotationVocabulary/",
+        "https://www.omg.org/spec/Commons/BusinessAuthorizations/",
+        "https://www.omg.org/spec/Commons/Classifiers/",
+        "https://www.omg.org/spec/Commons/CodesAndCodeSets/",
+        "https://www.omg.org/spec/Commons/Collections/",
+        "https://www.omg.org/spec/Commons/ContextualDesignators/",
+        "https://www.omg.org/spec/Commons/ContextualIdentifiers/",
+        "https://www.omg.org/spec/Commons/DatesAndTimes/",
+        "https://www.omg.org/spec/Commons/Designators/",
+        "https://www.omg.org/spec/Commons/Documents/",
+        "https://www.omg.org/spec/Commons/Identifiers/",
+        "https://www.omg.org/spec/Commons/Locations/",
+        "https://www.omg.org/spec/Commons/Organizations/",
+        "https://www.omg.org/spec/Commons/PartiesAndSituations/",
+        "https://www.omg.org/spec/Commons/QuantitiesAndUnits/",
+        "https://www.omg.org/spec/Commons/RegulatoryAgencies/",
+        "https://www.omg.org/spec/Commons/RolesAndCompositions/",
+        "https://www.omg.org/spec/Commons/TextDatatype/",
+        "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/",
+        "https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/"
+      ],
+      "loaded_ontology_count": 79,
+      "failed_ontology_uris": [],
+      "failed_ontology_count": 0
     }
   ]
 }

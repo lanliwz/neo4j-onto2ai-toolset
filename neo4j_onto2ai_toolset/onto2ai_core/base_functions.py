@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-_DEFAULT_ONTO_ROOT = Path(__file__).resolve().parents[1] / "resource" / "ontology"
+_DEFAULT_ONTO_ROOT = Path(__file__).resolve().parents[2] / "resource" / "ontology"
 ONTO_ROOT = os.getenv("ONTOLOGY_ROOT_PATH") or str(_DEFAULT_ONTO_ROOT)
 
 
