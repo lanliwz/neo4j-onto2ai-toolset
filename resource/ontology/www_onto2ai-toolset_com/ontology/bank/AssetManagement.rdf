@@ -17,10 +17,7 @@
     </owl:Class>
 
     <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/Client">
-        <rdfs:subClassOf rdf:resource="http://www.onto2ai-tool
-
-
-        set.com/ontology/bank/AssetManagement#Party"/>
+        <rdfs:subClassOf rdf:resource="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement#Party"/>
         <rdfs:label>client</rdfs:label>
         <skos:definition>A person or entity using the services of a professional person or financial institution.</skos:definition>
     </owl:Class>
