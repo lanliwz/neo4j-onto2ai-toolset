@@ -1,5 +1,7 @@
 # Onto2AI Engineer
 
+![Onto2AI Engineer Frontpage](./docs/assets/frontpage.svg)
+
 Onto2AI Engineer is a focused toolkit for loading ontologies into Neo4j, interrogating/enhancing schema via MCP tools, and operating a staging workflow for production-oriented model shaping.
 
 ## Value Proposition

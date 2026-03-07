@@ -1,0 +1,121 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Onto2AI Engineer Frontpage</title>
+  <desc id="desc">A dark, graph-inspired landing illustration for Onto2AI Engineer showing ontology nodes, staging workflow, and modeller panels.</desc>
+  <defs>
+    <linearGradient id="bg" x1="140" y1="60" x2="1440" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1020"/>
+      <stop offset="0.52" stop-color="#121A33"/>
+      <stop offset="1" stop-color="#0A1327"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="277" y1="183" x2="1235" y2="691" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5B5AF7"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="465" y1="262" x2="1019" y2="648" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14B8A6"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="947" y1="254" x2="1150" y2="438" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <filter id="blurGlow" x="-200" y="-200" width="2000" height="1300" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="panelShadow" x="140" y="102" width="1320" height="670" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="20" stdDeviation="30" flood-color="#020617" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g opacity="0.55" filter="url(#blurGlow)">
+    <circle cx="268" cy="170" r="122" fill="#5B5AF7"/>
+    <circle cx="1272" cy="194" r="146" fill="#0EA5E9"/>
+    <circle cx="1040" cy="732" r="180" fill="#14B8A6"/>
+  </g>
+
+  <g opacity="0.18" stroke="#94A3B8">
+    <path d="M0 154H1600"/>
+    <path d="M0 294H1600"/>
+    <path d="M0 434H1600"/>
+    <path d="M0 574H1600"/>
+    <path d="M0 714H1600"/>
+    <path d="M188 0V900"/>
+    <path d="M468 0V900"/>
+    <path d="M748 0V900"/>
+    <path d="M1028 0V900"/>
+    <path d="M1308 0V900"/>
+  </g>
+
+  <g filter="url(#panelShadow)">
+    <rect x="171" y="132" width="1258" height="610" rx="28" fill="#0F172A" fill-opacity="0.68" stroke="#FFFFFF" stroke-opacity="0.18"/>
+  </g>
+
+  <rect x="171" y="132" width="1258" height="610" rx="28" fill="url(#bg)" fill-opacity="0.28"/>
+  <rect x="171" y="132" width="1258" height="76" rx="28" fill="#111827" fill-opacity="0.82"/>
+  <rect x="171" y="180" width="1258" height="1" fill="#334155" fill-opacity="0.7"/>
+  <circle cx="220" cy="170" r="8" fill="#FB7185"/>
+  <circle cx="250" cy="170" r="8" fill="#F59E0B"/>
+  <circle cx="280" cy="170" r="8" fill="#10B981"/>
+
+  <rect x="1041" y="154" width="144" height="31" rx="15.5" fill="#1E293B"/>
+  <text x="1113" y="174" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#CBD5E1">GPT-5.2</text>
+  <rect x="1200" y="154" width="184" height="31" rx="15.5" fill="#0F1B38" stroke="#5B5AF7" stroke-opacity="0.45"/>
+  <text x="1292" y="174" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0">stagingdb ready</text>
+
+  <text x="223" y="384" font-family="Georgia, Times New Roman, serif" font-size="78" font-weight="700" fill="#F8FAFC">Onto2AI</text>
+  <text x="223" y="460" font-family="Georgia, Times New Roman, serif" font-size="78" font-weight="700" fill="#F8FAFC">Engineer</text>
+  <text x="226" y="523" font-family="Inter, Segoe UI, sans-serif" font-size="24" font-weight="500" fill="#A5B4FC">Ontology to implementation, with staging, tooling, and modeller in one graph-native workflow.</text>
+
+  <rect x="223" y="572" width="220" height="54" rx="27" fill="url(#violet)"/>
+  <text x="333" y="606" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#F8FAFC">Materialize Schema</text>
+  <rect x="460" y="572" width="188" height="54" rx="27" fill="#12203D" stroke="#334155"/>
+  <text x="554" y="606" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#C7D2FE">Launch Modeller</text>
+
+  <g opacity="0.96">
+    <rect x="872" y="255" width="466" height="366" rx="26" fill="#0F172A" stroke="#334155"/>
+    <rect x="872" y="255" width="466" height="64" rx="26" fill="#111827"/>
+    <text x="914" y="294" font-family="Inter, Segoe UI, sans-serif" font-size="22" font-weight="700" fill="#E2E8F0">Modeller</text>
+
+    <rect x="904" y="344" width="124" height="72" rx="18" fill="#182847" stroke="#4F46E5"/>
+    <text x="966" y="371" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="17" font-weight="700" fill="#E0E7FF">client</text>
+    <text x="966" y="394" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="12" fill="#A5B4FC">owl:Class</text>
+
+    <rect x="1098" y="368" width="142" height="80" rx="18" fill="#182847" stroke="#4F46E5"/>
+    <text x="1169" y="398" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#E0E7FF">account</text>
+    <text x="1169" y="422" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="12" fill="#A5B4FC">customer account</text>
+
+    <rect x="983" y="495" width="180" height="72" rx="18" fill="#0F2A2B" stroke="#14B8A6"/>
+    <text x="1073" y="523" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="16" font-weight="700" fill="#CCFBF1">isSalesRepresentativeOf</text>
+    <text x="1073" y="546" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="12" fill="#99F6E4">object property</text>
+
+    <path d="M1028 380C1056 380 1068 380 1098 392" stroke="url(#violet)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1112 446C1106 468 1096 479 1082 495" stroke="url(#teal)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1007 416C1018 446 1035 470 1053 495" stroke="url(#teal)" stroke-width="4" stroke-linecap="round"/>
+
+    <rect x="1229" y="286" width="76" height="28" rx="14" fill="url(#amber)"/>
+    <text x="1267" y="305" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#111827">LIVE</text>
+  </g>
+
+  <g opacity="0.96">
+    <rect x="796" y="132" width="1" height="610" fill="#334155" fill-opacity="0.6"/>
+    <rect x="739" y="618" width="552" height="86" rx="22" fill="#0C1529" stroke="#1E293B"/>
+    <text x="776" y="651" font-family="Inter, Segoe UI, sans-serif" font-size="18" font-weight="700" fill="#F8FAFC">Workflow</text>
+    <text x="776" y="678" font-family="Inter, Segoe UI, sans-serif" font-size="15" fill="#94A3B8">load ontology  ->  materialize schema  ->  stage classes  ->  review in modeller</text>
+  </g>
+
+  <g opacity="0.92">
+    <circle cx="699" cy="329" r="12" fill="#5B5AF7"/>
+    <circle cx="655" cy="409" r="12" fill="#14B8A6"/>
+    <circle cx="728" cy="472" r="12" fill="#38BDF8"/>
+    <circle cx="596" cy="518" r="12" fill="#F59E0B"/>
+    <circle cx="516" cy="432" r="12" fill="#5B5AF7"/>
+    <path d="M699 329L655 409L728 472L596 518L516 432L655 409L596 518" stroke="#64748B" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="553" y="355" font-family="Inter, Segoe UI, sans-serif" font-size="15" font-weight="700" fill="#CBD5E1">graph-native schema</text>
+  </g>
+
+  <g opacity="0.72">
+    <rect x="223" y="228" width="132" height="28" rx="14" fill="#102043" stroke="#334155"/>
+    <text x="289" y="247" text-anchor="middle" font-family="Inter, Segoe UI, sans-serif" font-size="12" font-weight="700" fill="#A5B4FC">ONTOLOGY OPS</text>
+  </g>
+</svg>
