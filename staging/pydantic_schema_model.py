@@ -7,171 +7,147 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-class TaxAuthority(Enum):
-    """functional entity that is responsible for the administration and enforcement of tax laws"""
-    INTERNAL_REVENUE_SERVICE = "Internal Revenue Service"
+class UserType(Enum):
+    """Classification of a user by the kind of actor it represents for entitlement evaluation."""
+    HUMAN_USER = "human user"
+    PROCESS_USER = "process user"
 
-class Jurisdiction(Enum):
-    """power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area"""
-    UNITED_STATES_JURISDICTION = "United States jurisdiction"
+class RulePriority(Enum):
+    """Enumeration of precedence levels used to order entitlement rules during evaluation."""
+    HIGH_PRIORITY = "high priority"
+    LOW_PRIORITY = "low priority"
+    MEDIUM_PRIORITY = "medium priority"
 
-class FilingStatusConcept(Enum):
-    """concept representing the legal status of a taxpayer for filing purposes"""
-    MARRIED_FILING_JOINTLY = "married filing jointly"
-    SINGLE = "single"
-
-class Reportstatus(Enum):
-    """lifecycle status of a report"""
-    ACCEPTED = "Accepted"
-    DRAFT = "Draft"
-    REJECTED = "Rejected"
-    SUBMITTED = "Submitted"
-
-class Currency(Enum):
-    """medium of exchange"""
-    AUSTRALIAN_DOLLAR = "Australian Dollar"
-    BRITISH_POUND_STERLING = "British Pound (Sterling)"
-    CANADIAN_DOLLAR = "Canadian Dollar"
-    CHINESE_YUAN = "Chinese Yuan"
-    EURO = "Euro"
-    JAPANESE_YEN = "Japanese Yen"
-    SWISS_FRANC = "Swiss Franc"
-    US_DOLLAR = "US Dollar"
-
-class Organization(BaseModel):
-    """framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals"""
+class JdbcConnectionProfile(BaseModel):
+    """JDBC endpoint and driver metadata for a target database."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_ein: Optional[str] = Field(default=None, alias="hasEIN", description="Links an organization to its employer identification number.")
-    has_tax_id: Optional[str] = Field(default=None, alias="hasTaxId", description="Relates an organization to its Employer Identification Number (EIN) used as the organization\u2019s tax identification identifier.")
+    connection_timeout_seconds: Optional[int] = Field(default=None, alias="connectionTimeoutSeconds", description="The connection timeout in seconds for a JDBC connection profile.")
+    jdbc_connection_profile_id: str = Field(alias="jdbcConnectionProfileId", description="The unique identifier assigned to a JDBC connection profile.", json_schema_extra={"unique": True})
+    jdbc_driver: Optional[str] = Field(default=None, alias="jdbcDriver", description="The JDBC driver class or driver identifier for a connection profile.")
+    jdbc_url: Optional[str] = Field(default=None, alias="jdbcUrl", description="The JDBC connection URL for a connection profile.")
+    jdbc_user_name: Optional[str] = Field(default=None, alias="jdbcUserName", description="The user name used by a JDBC connection profile to authenticate to a database.")
+    ssl_mode: Optional[str] = Field(default=None, alias="sslMode", description="The SSL or transport security mode configured for a JDBC connection profile.")
+    connects_to: List[RelationalDatabase] = Field(default_factory=list, alias="connectsTo", description="JDBC profile connects to a target relational database.")
 
-class Exchange(BaseModel):
-    """A marketplace where securities, commodities, derivatives and other financial instruments are traded."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    pass
-
-class W2Form(BaseModel):
-    """IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee."""
+class Column(BaseModel):
+    """Relational column protected by entitlement rules."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_allocated_tips: Optional[str] = Field(default=None, alias="hasAllocatedTips", description="")
-    has_box12_codes: List[str] = Field(default_factory=list, alias="hasBox12Codes", description="")
-    has_dependent_care_benefits: Optional[str] = Field(default=None, alias="hasDependentCareBenefits", description="")
-    has_federal_income_tax_withheld: str = Field(alias="hasFederalIncomeTaxWithheld", description="")
-    has_medicare_tax_withheld: str = Field(alias="hasMedicareTaxWithheld", description="")
-    has_medicare_wages_and_tips: str = Field(alias="hasMedicareWagesAndTips", description="")
-    has_nonqualified_plans: Optional[str] = Field(default=None, alias="hasNonqualifiedPlans", description="")
-    has_other_info: List[str] = Field(default_factory=list, alias="hasOtherInfo", description="")
-    has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Relates a W-2 form to the date and time at which the form is reported or issued for reporting purposes.")
-    has_retirement_plan: Optional[str] = Field(default=None, alias="hasRetirementPlan", description="")
-    has_social_security_tax_withheld: str = Field(alias="hasSocialSecurityTaxWithheld", description="")
-    has_social_security_tips: Optional[str] = Field(default=None, alias="hasSocialSecurityTips", description="")
-    has_social_security_wages: str = Field(alias="hasSocialSecurityWages", description="")
-    has_tax_year: str = Field(alias="hasTaxYear", description="")
-    has_third_party_sick_pay: Optional[str] = Field(default=None, alias="hasThirdPartySickPay", description="")
-    has_wages_tips_other_comp: str = Field(alias="hasWagesTipsOtherComp", description="")
-    is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates a W-2 form to the reporting party that provides and issues it for wage and tax reporting purposes.")
-    is_statutory_employee: Optional[str] = Field(default=None, alias="isStatutoryEmployee", description="")
-    is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates a W-2 form to the submitter that files or submits it to the appropriate authority or recipient.")
-    has_report_status: Reportstatus = Field(alias="hasReportStatus", description="Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.")
-    issued_by: Employer = Field(alias="issuedBy", description="employer that issued the W-2")
-    issued_to: Person = Field(alias="issuedTo", description="employee who received the W-2")
+    column_data_type: Optional[str] = Field(default=None, alias="columnDataType", description="The declared database data type of a relational column.")
+    column_default_value: Optional[str] = Field(default=None, alias="columnDefaultValue", description="The default value expression defined for a relational column.")
+    column_id: str = Field(alias="columnId", description="The unique identifier assigned to a relational column.", json_schema_extra={"unique": True})
+    column_length: Optional[int] = Field(default=None, alias="columnLength", description="The maximum defined length for a relational column value.")
+    column_name: Optional[str] = Field(default=None, alias="columnName", description="The name of a relational column.")
+    column_precision: Optional[int] = Field(default=None, alias="columnPrecision", description="The numeric precision defined for a relational column.")
+    column_scale: Optional[int] = Field(default=None, alias="columnScale", description="The numeric scale defined for a relational column.")
+    is_nullable: Optional[bool] = Field(default=None, alias="isNullable", description="Indicates whether a relational column permits null values.")
+    ordinal_position: Optional[int] = Field(default=None, alias="ordinalPosition", description="The ordinal position of a relational column within its table.")
+    belongs_to_table: List[Table] = Field(default_factory=list, alias="belongsToTable", description="A column belongs to exactly one table.")
 
-class CryptoAsset(BaseModel):
-    """A digital asset designed to work as a medium of exchange."""
+class Schema(BaseModel):
+    """Relational schema/container for tables."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_token_symbol: str = Field(alias="hasTokenSymbol", description="The ticker symbol for the crypto asset.")
-    is_traded_on: List[Exchange] = Field(default_factory=list, alias="isTradedOn", description="Indicates the exchange where the asset is listed.")
+    is_default_schema: Optional[bool] = Field(default=None, alias="isDefaultSchema", description="Indicates whether a relational schema is the default schema in its database context.")
+    schema_description: Optional[str] = Field(default=None, alias="schemaDescription", description="A descriptive summary of the purpose or contents of a relational schema.")
+    schema_id: str = Field(alias="schemaId", description="The unique identifier assigned to a relational schema.", json_schema_extra={"unique": True})
+    schema_name: Optional[str] = Field(default=None, alias="schemaName", description="The name of a relational schema.")
+    schema_owner: Optional[str] = Field(default=None, alias="schemaOwner", description="The owning principal or administrative owner of a relational schema.")
+    schema_type: Optional[str] = Field(default=None, alias="schemaType", description="The functional or administrative type of a relational schema.")
+    belongs_to_database: List[RelationalDatabase] = Field(default_factory=list, alias="belongsToDatabase", description="Schema belongs to a relational database.")
 
-class Person(BaseModel):
-    """individual human being, with consciousness of self"""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    has_age: List[str] = Field(default_factory=list, alias="hasAge", description="relates something to the length of time it has existed")
-    has_citizenship: List[str] = Field(default_factory=list, alias="hasCitizenship", description="links a person to their country of citizenship")
-    has_date_of_birth: str = Field(alias="hasDateOfBirth", description="identifies the date on which an individual was born")
-    has_date_of_death: Optional[str] = Field(default=None, alias="hasDateOfDeath", description="identifies the date on which an individual died")
-    has_name: List[str] = Field(default_factory=list, alias="hasName", description="is known by")
-    has_place_of_birth: str = Field(alias="hasPlaceOfBirth", description="identifies the location where an individual was born")
-    has_residence: List[str] = Field(default_factory=list, alias="hasResidence", description="identifies a dwelling where an individual lives")
-    has_tax_id: List[str] = Field(default_factory=list, alias="hasTaxId", description="Links a person to their tax identifier.")
-    is_employed_by: List[Employer] = Field(default_factory=list, alias="isEmployedBy", description="indicates the employer")
-
-class PhysicalAddress(BaseModel):
-    """A physical address is a structured specification of the real-world location of a premises, such as a residence or business site, used to identify where a party is situated or an activity occurs for financial operations, regulatory reporting, and tax jurisdiction determination."""
+class Policy(BaseModel):
+    """Bundle of row-filter and/or column-mask rules."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    pass
+    definition: List[str] = Field(default_factory=list, alias="definition", description="A textual definition describing the purpose or semantics of a policy.")
+    policy_id: str = Field(alias="policyId", description="The unique identifier assigned to a policy.", json_schema_extra={"unique": True})
+    policy_name: List[str] = Field(default_factory=list, alias="policyName", description="The name assigned to a policy.")
+    has_column_mask_rule: List[ColumnMaskRule] = Field(default_factory=list, alias="hasColumnMaskRule", description="Policy contains column masking rules.")
+    has_row_filter_rule: List[RowFilterRule] = Field(default_factory=list, alias="hasRowFilterRule", description="Policy contains row-level filtering rules.")
 
-class Form1120USCorporationIncomeTaxReturn(BaseModel):
-    """An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    pass
-
-class IndividualTaxReturn(BaseModel):
-    """A tax return filed by an individual person."""
+class RelationalDatabase(BaseModel):
+    """JDBC-connectable relational database platform."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_report_date_time: List[datetime] = Field(default_factory=list, alias="hasReportDateTime", description="Links an individual tax return to the date and time at which it was reported or filed.")
-    is_provided_by: List[str] = Field(default_factory=list, min_length=1, alias="isProvidedBy", description="Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.")
-    is_submitted_by: List[str] = Field(default_factory=list, alias="isSubmittedBy", description="Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.")
-    is_submitted_to: TaxAuthority = Field(alias="isSubmittedTo", description="identifies the party to which the report is submitted")
-    has_taxable_income: MonetaryAmount = Field(alias="hasTaxableIncome", description="Relates an individual tax return to the monetary amount representing the taxpayer\u2019s taxable income as determined for that return under applicable U.S. federal tax rules.")
-    has_report_status: Reportstatus = Field(alias="hasReportStatus", description="Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.")
-    has_agi: MonetaryAmount = Field(alias="hasAGI", description="Relates an individual tax return to the monetary amount representing the filer\u2019s adjusted gross income (AGI) reported for that return.")
-    has_total_tax: MonetaryAmount = Field(alias="hasTotalTax", description="Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.")
-    has_total_payments: MonetaryAmount = Field(alias="hasTotalPayments", description="Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer\u2019s tax liability for the tax period covered by the return.")
-    has_refund_amount: MonetaryAmount = Field(alias="hasRefundAmount", description="Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.")
-    has_amount_owed: MonetaryAmount = Field(alias="hasAmountOwed", description="Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.")
-    has_line1a_wages: MonetaryAmount = Field(alias="hasLine1aWages", description="Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.")
-    has_line2b_taxable_interest: MonetaryAmount = Field(alias="hasLine2bTaxableInterest", description="Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.")
-    has_line3b_ordinary_dividends: MonetaryAmount = Field(alias="hasLine3bOrdinaryDividends", description="Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.")
-    has_line6b_taxable_social_security: MonetaryAmount = Field(alias="hasLine6bTaxableSocialSecurity", description="Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.")
-    has_line12_standard_deduction: MonetaryAmount = Field(alias="hasLine12StandardDeduction", description="Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.")
-    has_line16_tax_value: MonetaryAmount = Field(alias="hasLine16TaxValue", description="Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.")
-    has_line19_child_tax_credit: MonetaryAmount = Field(alias="hasLine19ChildTaxCredit", description="Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.")
-    has_line24_total_tax: MonetaryAmount = Field(alias="hasLine24TotalTax", description="Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.")
-    has_line33_total_payments: MonetaryAmount = Field(alias="hasLine33TotalPayments", description="Relates an individual tax return to the monetary amount reported as the total payments on Line 33.")
+    database_edition: Optional[str] = Field(default=None, alias="databaseEdition", description="The commercial or deployment edition of a relational database instance.")
+    database_name: Optional[str] = Field(default=None, alias="databaseName", description="The logical or configured name of a relational database instance.")
+    database_vendor: Optional[str] = Field(default=None, alias="databaseVendor", description="The database vendor or product family for a relational database instance.")
+    database_version: Optional[str] = Field(default=None, alias="databaseVersion", description="The software version of a relational database instance.")
+    host_name: Optional[str] = Field(default=None, alias="hostName", description="The network host name serving a relational database instance.")
+    port_number: Optional[int] = Field(default=None, alias="portNumber", description="The network port used by a relational database instance.")
+    relational_database_id: str = Field(alias="relationalDatabaseId", description="The unique identifier assigned to a relational database instance.", json_schema_extra={"unique": True})
 
-class MonetaryAmount(BaseModel):
-    """A quantity of money, denominated in a specific currency."""
+class Table(BaseModel):
+    """Relational table containing columns."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_amount: Decimal = Field(alias="hasAmount", description="Numeric amount value represented by this monetary amount.")
-    is_denominated_in: Currency = Field(alias="isDenominatedIn", description="Relates a monetary amount to the currency in which that amount is expressed.")
+    is_temporary_table: Optional[bool] = Field(default=None, alias="isTemporaryTable", description="Indicates whether a relational table is temporary or session-scoped.")
+    row_count_estimate: Optional[int] = Field(default=None, alias="rowCountEstimate", description="An estimated row count for a relational table.")
+    table_description: Optional[str] = Field(default=None, alias="tableDescription", description="A descriptive summary of the purpose or contents of a relational table.")
+    table_id: str = Field(alias="tableId", description="The unique identifier assigned to a relational table.", json_schema_extra={"unique": True})
+    table_name: Optional[str] = Field(default=None, alias="tableName", description="The name of a relational table.")
+    table_owner: Optional[str] = Field(default=None, alias="tableOwner", description="The owning principal or administrative owner of a relational table.")
+    table_type: Optional[str] = Field(default=None, alias="tableType", description="The functional type of a relational table, such as base table or view-backed table.")
+    belongs_to_schema: List[Schema] = Field(default_factory=list, alias="belongsToSchema", description="A table belongs to exactly one schema.")
 
-class Form1040_2025(IndividualTaxReturn):
-    """The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    pass
-
-class TaxPayer(Person):
-    """A person who is obligated to pay taxes and is identified by a tax identifier."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    pass
-
-class Employer(BaseModel):
-    """A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes."""
+class RowFilterRule(BaseModel):
+    """Rule that restricts row visibility using predicates."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    has_address: List[str] = Field(default_factory=list, min_length=1, alias="hasAddress", description="employer business address")
-    has_ein: str = Field(alias="hasEIN", description="Employer Identification Number")
-    has_employer_name: str = Field(alias="hasEmployerName", description="legal name of the employer")
-    has_phone_number: List[str] = Field(default_factory=list, alias="hasPhoneNumber", description="contact phone number")
+    comparison_operator: Optional[str] = Field(default=None, alias="comparisonOperator", description="The comparison operator a row filter rule applies when rewriting a query predicate.")
+    deny_behavior: Optional[str] = Field(default=None, alias="denyBehavior", description="The enforcement behavior applied when a row filter rule denies access, such as return no rows or block query.")
+    filter_action: Optional[str] = Field(default=None, alias="filterAction", description="The action a row filter rule applies when rewriting a query, such as allow or deny.")
+    llm_rewrite_instruction: Optional[str] = Field(default=None, alias="llmRewriteInstruction", description="A canonical instruction telling an LLM how to rewrite a query for this row filter rule.")
+    match_mode: Optional[str] = Field(default=None, alias="matchMode", description="The value cardinality mode a row filter rule expects, such as single value, multiple values, or no value.")
+    rewrite_template: Optional[str] = Field(default=None, alias="rewriteTemplate", description="A deterministic query rewrite template with placeholders for runtime filter values.")
+    row_filter_rule_id: str = Field(alias="rowFilterRuleId", description="The unique identifier assigned to a row filter rule.", json_schema_extra={"unique": True})
+    rule_expression: Optional[str] = Field(default=None, alias="ruleExpression", description="The executable or declarative row-filter expression associated with a row filter rule.")
+    value_source_expression: Optional[str] = Field(default=None, alias="valueSourceExpression", description="The expression, path, or lookup instruction used to resolve row filter values at runtime.")
+    value_source_type: Optional[str] = Field(default=None, alias="valueSourceType", description="The source category used to resolve row filter values, such as static literal, subject attribute, session context, or derived query.")
+    targets_filtered_column: List[Column] = Field(default_factory=list, alias="targetsFilteredColumn", description="Row-filter rule targets a specific column context.")
+    has_priority: Optional[RulePriority] = Field(default=None, alias="hasPriority", description="Associates an entitlement rule with its precedence level.")
+
+class ColumnMaskRule(BaseModel):
+    """Rule that transforms or redacts sensitive column values."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    column_mask_rule_id: str = Field(alias="columnMaskRuleId", description="The unique identifier assigned to a column mask rule.", json_schema_extra={"unique": True})
+    fallback_behavior: Optional[str] = Field(default=None, alias="fallbackBehavior", description="The fallback behavior applied when a column mask rule cannot resolve its masking inputs.")
+    llm_rewrite_instruction: Optional[str] = Field(default=None, alias="llmRewriteInstruction", description="A canonical instruction telling an LLM how to rewrite a query projection for this column mask rule.")
+    mask_action: Optional[str] = Field(default=None, alias="maskAction", description="The masking action a column mask rule applies, such as reveal, redact, tokenize, or substitute.")
+    mask_value_expression: Optional[str] = Field(default=None, alias="maskValueExpression", description="The expression used to compute the masked value emitted by a column mask rule.")
+    masking_method: Optional[str] = Field(default=None, alias="maskingMethod", description="The masking method or transformation strategy used by a column mask rule.")
+    rewrite_template: Optional[str] = Field(default=None, alias="rewriteTemplate", description="A deterministic projection rewrite template with placeholders for masked output values.")
+    rule_expression: Optional[str] = Field(default=None, alias="ruleExpression", description="The executable or declarative masking expression associated with a column mask rule.")
+    value_source_expression: Optional[str] = Field(default=None, alias="valueSourceExpression", description="The expression, path, or lookup instruction used to resolve masking inputs at runtime.")
+    value_source_type: Optional[str] = Field(default=None, alias="valueSourceType", description="The source category used to resolve masking inputs, such as static literal, subject attribute, session context, or derived query.")
+    targets_masked_column: List[Column] = Field(default_factory=list, alias="targetsMaskedColumn", description="Column-mask rule targets a specific column.")
+    has_priority: Optional[RulePriority] = Field(default=None, alias="hasPriority", description="Associates an entitlement rule with its precedence level.")
+
+class PolicyGroup(BaseModel):
+    """Collection of policies mapped to a persona, role, or function."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    policy_group_id: str = Field(alias="policyGroupId", description="The unique identifier assigned to a policy group.", json_schema_extra={"unique": True})
+    policy_group_name: List[str] = Field(default_factory=list, alias="policyGroupName", description="The name assigned to a policy group.")
+    includes_policy: List[Policy] = Field(default_factory=list, alias="includesPolicy", description="Policy group bundles one or more policies.")
+
+class User(BaseModel):
+    """Principal that invokes or is evaluated against entitlement policies, including a human actor or an automated process."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    user_id: str = Field(alias="userId", description="The unique identifier assigned to a user.", json_schema_extra={"unique": True})
+    is_member_of: List[PolicyGroup] = Field(default_factory=list, alias="isMemberOf", description="User inherits policies via policy group membership.")
+    has_user_type: Optional[UserType] = Field(default=None, alias="hasUserType", description="A user is classified by a user type that identifies whether it is a human actor or an automated process.")

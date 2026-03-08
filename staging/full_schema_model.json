@@ -1,1286 +1,901 @@
 {
   "nodes": [
     {
-      "label": "organization",
+      "label": "jdbc connection profile",
       "type": "owl__Class",
       "properties": [
         {
-          "name": "hasEIN",
-          "type": "ein",
-          "description": "Links an organization to its employer identification number.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasEIN"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "ein",
-          "description": "Relates an organization to its Employer Identification Number (EIN) used as the organization’s tax identification identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        }
-      ],
-      "description": "framework of authority within which a person, persons, or groups of people act, or are designated to act, towards some purpose, such as to meet a need or pursue collective goals",
-      "uri": "https://www.omg.org/spec/Commons/Organizations/Organization"
-    },
-    {
-      "label": "exchange",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "A marketplace where securities, commodities, derivatives and other financial instruments are traded.",
-      "uri": "https://model.onto2ai.com/schema/Exchange"
-    },
-    {
-      "label": "W-2 form",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasAllocatedTips",
-          "type": "allocatedTips",
-          "description": null,
+          "name": "connectionTimeoutSeconds",
+          "type": "xsd:integer",
+          "description": "The connection timeout in seconds for a JDBC connection profile.",
           "mandatory": false,
           "cardinality": "0..1",
-          "uri": null
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectionTimeoutSeconds"
         },
         {
-          "name": "hasBox12Codes",
-          "type": "box12Codes",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": null
-        },
-        {
-          "name": "hasDependentCareBenefits",
-          "type": "dependentCareBenefits",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "hasFederalIncomeTaxWithheld",
-          "type": "federalIncomeTaxWithheld",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasMedicareTaxWithheld",
-          "type": "medicareTaxWithheld",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasMedicareWagesAndTips",
-          "type": "medicareWagesAndTips",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasNonqualifiedPlans",
-          "type": "nonqualifiedPlans",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "hasOtherInfo",
-          "type": "otherInfo",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": null
-        },
-        {
-          "name": "hasReportDateTime",
-          "type": "dateTime",
-          "description": "Relates a W-2 form to the date and time at which the form is reported or issued for reporting purposes.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
-        },
-        {
-          "name": "hasRetirementPlan",
-          "type": "retirementPlan",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "hasSocialSecurityTaxWithheld",
-          "type": "socialSecurityTaxWithheld",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasSocialSecurityTips",
-          "type": "socialSecurityTips",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "hasSocialSecurityWages",
-          "type": "socialSecurityWages",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasTaxYear",
-          "type": "taxYear",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "hasThirdPartySickPay",
-          "type": "thirdPartySickPay",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "hasWagesTipsOtherComp",
-          "type": "wagesTipsOtherComp",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": null
-        },
-        {
-          "name": "isProvidedBy",
-          "type": "reportingParty",
-          "description": "Relates a W-2 form to the reporting party that provides and issues it for wage and tax reporting purposes.",
-          "mandatory": true,
-          "cardinality": "1..*",
-          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
-        },
-        {
-          "name": "isStatutoryEmployee",
-          "type": "statutoryEmployee",
-          "description": null,
-          "mandatory": false,
-          "cardinality": "0..1",
-          "uri": null
-        },
-        {
-          "name": "isSubmittedBy",
-          "type": "submitter",
-          "description": "Relates a W-2 form to the submitter that files or submits it to the appropriate authority or recipient.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
-        }
-      ],
-      "description": "IRS Form W-2, Wage and Tax Statement, used by employers to report wages paid and taxes withheld for each employee.",
-      "uri": "https://example.org/ontology/W2Form"
-    },
-    {
-      "label": "crypto asset",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasTokenSymbol",
+          "name": "jdbcConnectionProfileId",
           "type": "string",
-          "description": "The ticker symbol for the crypto asset.",
-          "mandatory": false,
+          "description": "The unique identifier assigned to a JDBC connection profile.",
+          "mandatory": true,
           "cardinality": "1",
-          "uri": "https://model.onto2ai.com/schema/hasTokenSymbol"
-        }
-      ],
-      "description": "A digital asset designed to work as a medium of exchange.",
-      "uri": "https://model.onto2ai.com/schema/CryptoAsset"
-    },
-    {
-      "label": "tax authority",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "functional entity that is responsible for the administration and enforcement of tax laws",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/RegulatoryAgencies/TaxAuthority"
-    },
-    {
-      "label": "person",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasAge",
-          "type": "age",
-          "description": "relates something to the length of time it has existed",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/hasAge"
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcConnectionProfileId"
         },
         {
-          "name": "hasCitizenship",
-          "type": "citizenship",
-          "description": "links a person to their country of citizenship",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasCitizenship"
-        },
-        {
-          "name": "hasDateOfBirth",
-          "type": "dateOfBirth",
-          "description": "identifies the date on which an individual was born",
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfBirth"
-        },
-        {
-          "name": "hasDateOfDeath",
-          "type": "dateOfDeath",
-          "description": "identifies the date on which an individual died",
+          "name": "jdbcDriver",
+          "type": "xsd:string",
+          "description": "The JDBC driver class or driver identifier for a connection profile.",
           "mandatory": false,
           "cardinality": "0..1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfDeath"
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcDriver"
         },
         {
-          "name": "hasName",
-          "type": "personName",
-          "description": "is known by",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://www.omg.org/spec/Commons/Designators/hasName"
-        },
-        {
-          "name": "hasPlaceOfBirth",
-          "type": "birthPlace",
-          "description": "identifies the location where an individual was born",
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasPlaceOfBirth"
-        },
-        {
-          "name": "hasResidence",
-          "type": "fullAddress",
-          "description": "identifies a dwelling where an individual lives",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasResidence"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "ssn",
-          "description": "Links a person to their tax identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "itin",
-          "description": "Relates a person to an Individual Taxpayer Identification Number (ITIN) that serves as that person’s tax identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        }
-      ],
-      "description": "individual human being, with consciousness of self",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/Person"
-    },
-    {
-      "label": "jurisdiction",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "power of a court or regulatory agency to adjudicate cases, issue orders, and interpret and apply the law with respect to some specific geographic area",
-      "uri": "https://www.omg.org/spec/Commons/RegulatoryAgencies/Jurisdiction"
-    },
-    {
-      "label": "physical address",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "A physical address is a structured specification of the real-world location of a premises, such as a residence or business site, used to identify where a party is situated or an activity occurs for financial operations, regulatory reporting, and tax jurisdiction determination.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Places/Addresses/PhysicalAddress"
-    },
-    {
-      "label": "filing status concept",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "concept representing the legal status of a taxpayer for filing purposes",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/FilingStatusConcept"
-    },
-    {
-      "label": "reportStatus",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "lifecycle status of a report",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/ReportStatusConcept"
-    },
-    {
-      "label": "Form 1120 U.S. Corporation Income Tax Return",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "An Internal Revenue Service tax form used by U.S. C corporations to report annual income, gains, losses, deductions, credits, and resulting federal corporate income tax liability.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/Form1120"
-    },
-    {
-      "label": "individual tax return",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasReportDateTime",
-          "type": "dateTime",
-          "description": "Links an individual tax return to the date and time at which it was reported or filed.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
-        },
-        {
-          "name": "isProvidedBy",
-          "type": "reportingParty",
-          "description": "Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.",
-          "mandatory": true,
-          "cardinality": "1..*",
-          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
-        },
-        {
-          "name": "isSubmittedBy",
-          "type": "submitter",
-          "description": "Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
-        }
-      ],
-      "description": "A tax return filed by an individual person.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/IndividualTaxReturn"
-    },
-    {
-      "label": "monetary amount",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasAmount",
-          "type": "decimal",
-          "description": "Numeric amount value represented by this monetary amount.",
-          "mandatory": true,
-          "cardinality": "1",
-          "uri": "https://model.onto2ai.com/schema/hasAmount"
-        }
-      ],
-      "description": "A quantity of money, denominated in a specific currency.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/MonetaryAmount"
-    },
-    {
-      "label": "currency",
-      "type": "owl__Class",
-      "properties": [],
-      "description": "medium of exchange",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency"
-    },
-    {
-      "label": "2025 Form 1040",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasReportDateTime",
-          "type": "dateTime",
-          "description": "Links an individual tax return to the date and time at which it was reported or filed.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportDateTime"
-        },
-        {
-          "name": "isProvidedBy",
-          "type": "reportingParty",
-          "description": "Relates an individual tax return to the reporting party that provides and submits the return for reporting purposes.",
-          "mandatory": true,
-          "cardinality": "1..*",
-          "uri": "https://www.omg.org/spec/Commons/Organizations/isProvidedBy"
-        },
-        {
-          "name": "isSubmittedBy",
-          "type": "submitter",
-          "description": "Relates an individual tax return to the submitter that files or transmits it to the relevant tax authority.",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedBy"
-        }
-      ],
-      "description": "The IRS Form 1040 for tax year 2025, used by U.S. individual taxpayers to file their annual federal income tax return and report income, deductions, credits, and tax liability.",
-      "uri": "https://example.org/tax/filings/2025-Form1040"
-    },
-    {
-      "label": "tax payer",
-      "type": "owl__Class",
-      "properties": [
-        {
-          "name": "hasAge",
-          "type": "age",
-          "description": "relates something to the length of time it has existed",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/DatesAndTimes/FinancialDates/hasAge"
-        },
-        {
-          "name": "hasCitizenship",
-          "type": "citizenship",
-          "description": "links a person to their country of citizenship",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasCitizenship"
-        },
-        {
-          "name": "hasDateOfBirth",
-          "type": "dateOfBirth",
-          "description": "identifies the date on which an individual was born",
-          "mandatory": false,
-          "cardinality": "1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfBirth"
-        },
-        {
-          "name": "hasDateOfDeath",
-          "type": "dateOfDeath",
-          "description": "identifies the date on which an individual died",
+          "name": "jdbcUrl",
+          "type": "xsd:string",
+          "description": "The JDBC connection URL for a connection profile.",
           "mandatory": false,
           "cardinality": "0..1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasDateOfDeath"
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcUrl"
         },
         {
-          "name": "hasName",
-          "type": "personName",
-          "description": "is known by",
+          "name": "jdbcUserName",
+          "type": "xsd:string",
+          "description": "The user name used by a JDBC connection profile to authenticate to a database.",
           "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://www.omg.org/spec/Commons/Designators/hasName"
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcUserName"
         },
         {
-          "name": "hasPlaceOfBirth",
-          "type": "birthPlace",
-          "description": "identifies the location where an individual was born",
+          "name": "sslMode",
+          "type": "xsd:string",
+          "description": "The SSL or transport security mode configured for a JDBC connection profile.",
           "mandatory": false,
-          "cardinality": "1",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasPlaceOfBirth"
-        },
-        {
-          "name": "hasResidence",
-          "type": "fullAddress",
-          "description": "identifies a dwelling where an individual lives",
-          "mandatory": false,
-          "cardinality": "0..*",
-          "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/AgentsAndPeople/People/hasResidence"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "ssn",
-          "description": "Links a person to their tax identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "itin",
-          "description": "Relates a tax payer to the Individual Taxpayer Identification Number (ITIN) assigned to them for tax reporting and identification purposes.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
-        },
-        {
-          "name": "hasTaxId",
-          "type": "itin",
-          "description": "Relates a person to an Individual Taxpayer Identification Number (ITIN) that serves as that person’s tax identifier.",
-          "mandatory": false,
-          "cardinality": "optional",
-          "uri": "https://example.org/ontology/hasTaxId"
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/sslMode"
         }
       ],
-      "description": "A person who is obligated to pay taxes and is identified by a tax identifier.",
-      "uri": "https://example.org/ontology/TaxPayer"
+      "description": "JDBC endpoint and driver metadata for a target database.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"
     },
     {
-      "label": "employer",
+      "label": "column",
       "type": "owl__Class",
       "properties": [
         {
-          "name": "hasAddress",
-          "type": "fullAddress",
-          "description": "employer business address",
+          "name": "columnDataType",
+          "type": "xsd:string",
+          "description": "The declared database data type of a relational column.",
           "mandatory": false,
-          "cardinality": "1..*",
-          "uri": null
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnDataType"
         },
         {
-          "name": "hasEIN",
-          "type": "ein",
-          "description": "Employer Identification Number",
+          "name": "columnDefaultValue",
+          "type": "xsd:string",
+          "description": "The default value expression defined for a relational column.",
           "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnDefaultValue"
+        },
+        {
+          "name": "columnId",
+          "type": "string",
+          "description": "The unique identifier assigned to a relational column.",
+          "mandatory": true,
           "cardinality": "1",
-          "uri": null
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnId"
         },
         {
-          "name": "hasEmployerName",
-          "type": "employerName",
-          "description": "legal name of the employer",
+          "name": "columnLength",
+          "type": "xsd:integer",
+          "description": "The maximum defined length for a relational column value.",
           "mandatory": false,
-          "cardinality": "1",
-          "uri": null
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnLength"
         },
         {
-          "name": "hasPhoneNumber",
-          "type": "phoneNumber",
-          "description": "contact phone number",
+          "name": "columnName",
+          "type": "xsd:string",
+          "description": "The name of a relational column.",
           "mandatory": false,
-          "cardinality": "0..*",
-          "uri": null
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnName"
+        },
+        {
+          "name": "columnPrecision",
+          "type": "xsd:integer",
+          "description": "The numeric precision defined for a relational column.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnPrecision"
+        },
+        {
+          "name": "columnScale",
+          "type": "xsd:integer",
+          "description": "The numeric scale defined for a relational column.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnScale"
+        },
+        {
+          "name": "isNullable",
+          "type": "xsd:boolean",
+          "description": "Indicates whether a relational column permits null values.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isNullable"
+        },
+        {
+          "name": "ordinalPosition",
+          "type": "xsd:integer",
+          "description": "The ordinal position of a relational column within its table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ordinalPosition"
         }
       ],
-      "description": "A legal person or formal organization that employs one or more individuals and is responsible for withholding and reporting taxes.",
-      "uri": "https://example.org/ontology/Employer"
+      "description": "Relational column protected by entitlement rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"
     },
     {
-      "label": "Australian Dollar",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/AustralianDollar"
+      "label": "schema",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "isDefaultSchema",
+          "type": "xsd:boolean",
+          "description": "Indicates whether a relational schema is the default schema in its database context.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isDefaultSchema"
+        },
+        {
+          "name": "schemaDescription",
+          "type": "xsd:string",
+          "description": "A descriptive summary of the purpose or contents of a relational schema.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaDescription"
+        },
+        {
+          "name": "schemaId",
+          "type": "string",
+          "description": "The unique identifier assigned to a relational schema.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaId"
+        },
+        {
+          "name": "schemaName",
+          "type": "xsd:string",
+          "description": "The name of a relational schema.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaName"
+        },
+        {
+          "name": "schemaOwner",
+          "type": "xsd:string",
+          "description": "The owning principal or administrative owner of a relational schema.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaOwner"
+        },
+        {
+          "name": "schemaType",
+          "type": "xsd:string",
+          "description": "The functional or administrative type of a relational schema.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaType"
+        }
+      ],
+      "description": "Relational schema/container for tables.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"
     },
     {
-      "label": "British Pound (Sterling)",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/PoundSterling"
+      "label": "policy",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "definition",
+          "type": "string",
+          "description": "A textual definition describing the purpose or semantics of a policy.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/definition"
+        },
+        {
+          "name": "policyId",
+          "type": "string",
+          "description": "The unique identifier assigned to a policy.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyId"
+        },
+        {
+          "name": "policyName",
+          "type": "string",
+          "description": "The name assigned to a policy.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyName"
+        }
+      ],
+      "description": "Bundle of row-filter and/or column-mask rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Policy"
     },
     {
-      "label": "Canadian Dollar",
-      "type": "owl__NamedIndividual",
+      "label": "user type",
+      "type": "owl__Class",
       "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/CanadianDollar"
+      "description": "Classification of a user by the kind of actor it represents for entitlement evaluation.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType"
     },
     {
-      "label": "Chinese Yuan",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/ChineseYuan"
+      "label": "relational database",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "databaseEdition",
+          "type": "xsd:string",
+          "description": "The commercial or deployment edition of a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseEdition"
+        },
+        {
+          "name": "databaseName",
+          "type": "xsd:string",
+          "description": "The logical or configured name of a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseName"
+        },
+        {
+          "name": "databaseVendor",
+          "type": "xsd:string",
+          "description": "The database vendor or product family for a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseVendor"
+        },
+        {
+          "name": "databaseVersion",
+          "type": "xsd:string",
+          "description": "The software version of a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseVersion"
+        },
+        {
+          "name": "hostName",
+          "type": "xsd:string",
+          "description": "The network host name serving a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hostName"
+        },
+        {
+          "name": "portNumber",
+          "type": "xsd:integer",
+          "description": "The network port used by a relational database instance.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/portNumber"
+        },
+        {
+          "name": "relationalDatabaseId",
+          "type": "string",
+          "description": "The unique identifier assigned to a relational database instance.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/relationalDatabaseId"
+        }
+      ],
+      "description": "JDBC-connectable relational database platform.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"
     },
     {
-      "label": "Euro",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/Euro"
+      "label": "table",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "isTemporaryTable",
+          "type": "xsd:boolean",
+          "description": "Indicates whether a relational table is temporary or session-scoped.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isTemporaryTable"
+        },
+        {
+          "name": "rowCountEstimate",
+          "type": "xsd:integer",
+          "description": "An estimated row count for a relational table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rowCountEstimate"
+        },
+        {
+          "name": "tableDescription",
+          "type": "xsd:string",
+          "description": "A descriptive summary of the purpose or contents of a relational table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableDescription"
+        },
+        {
+          "name": "tableId",
+          "type": "string",
+          "description": "The unique identifier assigned to a relational table.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableId"
+        },
+        {
+          "name": "tableName",
+          "type": "xsd:string",
+          "description": "The name of a relational table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableName"
+        },
+        {
+          "name": "tableOwner",
+          "type": "xsd:string",
+          "description": "The owning principal or administrative owner of a relational table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableOwner"
+        },
+        {
+          "name": "tableType",
+          "type": "xsd:string",
+          "description": "The functional type of a relational table, such as base table or view-backed table.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableType"
+        }
+      ],
+      "description": "Relational table containing columns.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"
     },
     {
-      "label": "Japanese Yen",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/JapaneseYen"
+      "label": "row filter rule",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "comparisonOperator",
+          "type": "xsd:string",
+          "description": "The comparison operator a row filter rule applies when rewriting a query predicate.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/comparisonOperator"
+        },
+        {
+          "name": "denyBehavior",
+          "type": "xsd:string",
+          "description": "The enforcement behavior applied when a row filter rule denies access, such as return no rows or block query.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/denyBehavior"
+        },
+        {
+          "name": "filterAction",
+          "type": "xsd:string",
+          "description": "The action a row filter rule applies when rewriting a query, such as allow or deny.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/filterAction"
+        },
+        {
+          "name": "llmRewriteInstruction",
+          "type": "xsd:string",
+          "description": "A canonical instruction telling an LLM how to rewrite a query for this row filter rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/llmRewriteInstruction"
+        },
+        {
+          "name": "matchMode",
+          "type": "xsd:string",
+          "description": "The value cardinality mode a row filter rule expects, such as single value, multiple values, or no value.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/matchMode"
+        },
+        {
+          "name": "rewriteTemplate",
+          "type": "xsd:string",
+          "description": "A deterministic query rewrite template with placeholders for runtime filter values.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rewriteTemplate"
+        },
+        {
+          "name": "rowFilterRuleId",
+          "type": "string",
+          "description": "The unique identifier assigned to a row filter rule.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rowFilterRuleId"
+        },
+        {
+          "name": "ruleExpression",
+          "type": "xsd:string",
+          "description": "The executable or declarative row-filter expression associated with a row filter rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ruleExpression"
+        },
+        {
+          "name": "valueSourceExpression",
+          "type": "xsd:string",
+          "description": "The expression, path, or lookup instruction used to resolve row filter values at runtime.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression"
+        },
+        {
+          "name": "valueSourceType",
+          "type": "xsd:string",
+          "description": "The source category used to resolve row filter values, such as static literal, subject attribute, session context, or derived query.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceType"
+        }
+      ],
+      "description": "Rule that restricts row visibility using predicates.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"
     },
     {
-      "label": "Swiss Franc",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/SwissFranc"
+      "label": "column mask rule",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "columnMaskRuleId",
+          "type": "string",
+          "description": "The unique identifier assigned to a column mask rule.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnMaskRuleId"
+        },
+        {
+          "name": "fallbackBehavior",
+          "type": "xsd:string",
+          "description": "The fallback behavior applied when a column mask rule cannot resolve its masking inputs.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/fallbackBehavior"
+        },
+        {
+          "name": "llmRewriteInstruction",
+          "type": "xsd:string",
+          "description": "A canonical instruction telling an LLM how to rewrite a query projection for this column mask rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/llmRewriteInstruction"
+        },
+        {
+          "name": "maskAction",
+          "type": "xsd:string",
+          "description": "The masking action a column mask rule applies, such as reveal, redact, tokenize, or substitute.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskAction"
+        },
+        {
+          "name": "maskValueExpression",
+          "type": "xsd:string",
+          "description": "The expression used to compute the masked value emitted by a column mask rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskValueExpression"
+        },
+        {
+          "name": "maskingMethod",
+          "type": "xsd:string",
+          "description": "The masking method or transformation strategy used by a column mask rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskingMethod"
+        },
+        {
+          "name": "rewriteTemplate",
+          "type": "xsd:string",
+          "description": "A deterministic projection rewrite template with placeholders for masked output values.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rewriteTemplate"
+        },
+        {
+          "name": "ruleExpression",
+          "type": "xsd:string",
+          "description": "The executable or declarative masking expression associated with a column mask rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ruleExpression"
+        },
+        {
+          "name": "valueSourceExpression",
+          "type": "xsd:string",
+          "description": "The expression, path, or lookup instruction used to resolve masking inputs at runtime.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression"
+        },
+        {
+          "name": "valueSourceType",
+          "type": "xsd:string",
+          "description": "The source category used to resolve masking inputs, such as static literal, subject attribute, session context, or derived query.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceType"
+        }
+      ],
+      "description": "Rule that transforms or redacts sensitive column values.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"
     },
     {
-      "label": "US Dollar",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/USDollar"
+      "label": "policy group",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "policyGroupId",
+          "type": "string",
+          "description": "The unique identifier assigned to a policy group.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyGroupId"
+        },
+        {
+          "name": "policyGroupName",
+          "type": "string",
+          "description": "The name assigned to a policy group.",
+          "mandatory": false,
+          "cardinality": "0..*",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyGroupName"
+        }
+      ],
+      "description": "Collection of policies mapped to a persona, role, or function.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PolicyGroup"
     },
     {
-      "label": "married filing jointly",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/MarriedFilingJointly"
+      "label": "user",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "The unique identifier assigned to a user.",
+          "mandatory": true,
+          "cardinality": "1",
+          "unique": true,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/userId"
+        }
+      ],
+      "description": "Principal that invokes or is evaluated against entitlement policies, including a human actor or an automated process.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/User"
     },
     {
-      "label": "single",
-      "type": "owl__NamedIndividual",
+      "label": "rule priority",
+      "type": "owl__Class",
       "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/TaxFiling/Single"
+      "description": "Enumeration of precedence levels used to order entitlement rules during evaluation.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority"
     },
     {
-      "label": "United States jurisdiction",
+      "label": "high priority",
       "type": "owl__NamedIndividual",
       "properties": [],
-      "description": null,
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/BE/GovernmentEntities/NorthAmericanJurisdiction/USGovernmentEntitiesAndJurisdictions/UnitedStatesJurisdiction"
+      "description": "Priority level indicating a rule should be evaluated before lower-priority rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HighPriority"
     },
     {
-      "label": "Accepted",
+      "label": "low priority",
       "type": "owl__NamedIndividual",
       "properties": [],
-      "description": "Report was successfully received and processed.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/AcceptedStatus"
+      "description": "Priority level indicating a rule should be evaluated after higher-priority rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/LowPriority"
     },
     {
-      "label": "Draft",
+      "label": "medium priority",
       "type": "owl__NamedIndividual",
       "properties": [],
-      "description": "Report is being edited.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/DraftStatus"
+      "description": "Priority level indicating a rule should be evaluated with standard precedence.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MediumPriority"
     },
     {
-      "label": "Rejected",
+      "label": "human user",
       "type": "owl__NamedIndividual",
       "properties": [],
-      "description": "Report failed validation or processing.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/RejectedStatus"
+      "description": "User type representing an individual human actor authenticated to access protected data.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HumanUser"
     },
     {
-      "label": "Submitted",
+      "label": "process user",
       "type": "owl__NamedIndividual",
       "properties": [],
-      "description": "Report has been sent to the authority.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/SubmittedStatus"
-    },
-    {
-      "label": "Internal Revenue Service",
-      "type": "owl__NamedIndividual",
-      "properties": [],
-      "description": "The Internal Revenue Service is the revenue service of the United States federal government.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/FunctionalEntities/NorthAmericanEntities/USRegulatoryAgencies/InternalRevenueService"
+      "description": "User type representing an automated process, service account, or system integration actor.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ProcessUser"
     }
   ],
   "relationships": [
     {
-      "type": "hasReportStatus",
-      "start_node_label": "W-2 form",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "Links a W-2 form to the report status that indicates its reporting state for filing and compliance purposes.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
-    },
-    {
-      "type": "issuedBy",
-      "start_node_label": "W-2 form",
-      "end_node_label": "employer",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": null,
-      "description": "employer that issued the W-2",
-      "uri": null
-    },
-    {
-      "type": "issuedTo",
-      "start_node_label": "W-2 form",
-      "end_node_label": "person",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": null,
-      "description": "employee who received the W-2",
-      "uri": null
-    },
-    {
-      "type": "isTradedOn",
-      "start_node_label": "crypto asset",
-      "end_node_label": "exchange",
+      "type": "connectsTo",
+      "start_node_label": "jdbc connection profile",
+      "end_node_label": "relational database",
       "properties": [],
       "cardinality": "0..*",
-      "requirement": null,
-      "description": "Indicates the exchange where the asset is listed.",
-      "uri": "https://model.onto2ai.com/schema/isTradedOn"
+      "requirement": "Optional",
+      "unique": false,
+      "description": "JDBC profile connects to a target relational database.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo"
     },
     {
-      "type": "hasJurisdiction",
-      "start_node_label": "tax authority",
-      "end_node_label": "jurisdiction",
-      "properties": [],
-      "cardinality": "1..*",
-      "requirement": "Mandatory",
-      "description": "Relates a tax authority to the jurisdiction over which it has legal or regulatory authority to administer and enforce tax laws.",
-      "uri": "https://www.omg.org/spec/Commons/RegulatoryAgencies/hasJurisdiction"
-    },
-    {
-      "type": "isEmployedBy",
-      "start_node_label": "person",
-      "end_node_label": "employer",
+      "type": "belongsToTable",
+      "start_node_label": "column",
+      "end_node_label": "table",
       "properties": [],
       "cardinality": "0..*",
-      "requirement": null,
-      "description": "indicates the employer",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
-    },
-    {
-      "type": "isSubmittedTo",
-      "start_node_label": "individual tax return",
-      "end_node_label": "Internal Revenue Service",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": null,
-      "description": "identifies the party to which the report is submitted",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
-    },
-    {
-      "type": "hasTaxableIncome",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
       "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
+      "unique": false,
+      "description": "A column belongs to exactly one table.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable"
     },
     {
-      "type": "hasReportStatus",
-      "start_node_label": "individual tax return",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
-    },
-    {
-      "type": "hasAGI",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
-    },
-    {
-      "type": "hasTotalTax",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
-    },
-    {
-      "type": "hasTotalPayments",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
-    },
-    {
-      "type": "hasRefundAmount",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
-    },
-    {
-      "type": "hasAmountOwed",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
-    },
-    {
-      "type": "hasLine1aWages",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
-      "uri": "https://example.org/tax/irs/hasLine1a"
-    },
-    {
-      "type": "hasLine2bTaxableInterest",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
-      "uri": "https://example.org/tax/irs/hasLine2b"
-    },
-    {
-      "type": "hasLine3bOrdinaryDividends",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
-      "uri": "https://example.org/tax/irs/hasLine3b"
-    },
-    {
-      "type": "hasLine6bTaxableSocialSecurity",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
-      "uri": "https://example.org/tax/irs/hasLine6b"
-    },
-    {
-      "type": "hasLine12StandardDeduction",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
-      "uri": "https://example.org/tax/irs/hasLine12"
-    },
-    {
-      "type": "hasLine16TaxValue",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
-      "uri": "https://example.org/tax/irs/hasLine16"
-    },
-    {
-      "type": "hasLine19ChildTaxCredit",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
-      "uri": "https://example.org/tax/irs/hasLine19"
-    },
-    {
-      "type": "hasLine24TotalTax",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
-      "uri": "https://example.org/tax/irs/hasLine24"
-    },
-    {
-      "type": "hasLine33TotalPayments",
-      "start_node_label": "individual tax return",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
-      "uri": "https://example.org/tax/irs/hasLine33"
-    },
-    {
-      "type": "isDenominatedIn",
-      "start_node_label": "monetary amount",
-      "end_node_label": "currency",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "Relates a monetary amount to the currency in which that amount is expressed.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/isDenominatedIn"
-    },
-    {
-      "type": "isSubmittedTo",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "Internal Revenue Service",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": null,
-      "description": "identifies the party to which the report is submitted",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/isSubmittedTo"
-    },
-    {
-      "type": "hasTaxableIncome",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the taxpayer’s taxable income as determined for that return under applicable U.S. federal tax rules.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTaxableIncome"
-    },
-    {
-      "type": "hasReportStatus",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "Relates an individual tax return to the report status that indicates its current reporting state (e.g., filed, pending, accepted, rejected) for reporting purposes.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Arrangements/Reporting/hasReportStatus"
-    },
-    {
-      "type": "hasAGI",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the filer’s adjusted gross income (AGI) reported for that return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAGI"
-    },
-    {
-      "type": "hasTotalTax",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount representing the total tax liability computed for that return for the applicable tax year.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalTax"
-    },
-    {
-      "type": "hasTotalPayments",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the aggregate monetary amount representing the total payments credited toward the taxpayer’s tax liability for the tax period covered by the return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasTotalPayments"
-    },
-    {
-      "type": "hasRefundAmount",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount of any refund due to the filer as determined on that return.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasRefundAmount"
-    },
-    {
-      "type": "hasAmountOwed",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount of tax liability owed by the filer for the return period.",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/TAX/USFederalTax/hasAmountOwed"
-    },
-    {
-      "type": "hasLine1aWages",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as wages on Line 1a of the return.",
-      "uri": "https://example.org/tax/irs/hasLine1a"
-    },
-    {
-      "type": "hasLine2bTaxableInterest",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as taxable interest on IRS Form 1040, line 2b.",
-      "uri": "https://example.org/tax/irs/hasLine2b"
-    },
-    {
-      "type": "hasLine3bOrdinaryDividends",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as ordinary dividends on IRS Form 1040, Line 3b.",
-      "uri": "https://example.org/tax/irs/hasLine3b"
-    },
-    {
-      "type": "hasLine6bTaxableSocialSecurity",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as taxable Social Security benefits on IRS Form 1040 line 6b.",
-      "uri": "https://example.org/tax/irs/hasLine6b"
-    },
-    {
-      "type": "hasLine12StandardDeduction",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as the standard deduction on Line 12 of the return.",
-      "uri": "https://example.org/tax/irs/hasLine12"
-    },
-    {
-      "type": "hasLine16TaxValue",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as tax on Line 16 of the return.",
-      "uri": "https://example.org/tax/irs/hasLine16"
-    },
-    {
-      "type": "hasLine19ChildTaxCredit",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported on IRS Form 1040, line 19, representing the Child Tax Credit claimed for the tax year.",
-      "uri": "https://example.org/tax/irs/hasLine19"
-    },
-    {
-      "type": "hasLine24TotalTax",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as its total tax on IRS Form 1040, line 24.",
-      "uri": "https://example.org/tax/irs/hasLine24"
-    },
-    {
-      "type": "hasLine33TotalPayments",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "monetary amount",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Optional",
-      "description": "Relates an individual tax return to the monetary amount reported as the total payments on Line 33.",
-      "uri": "https://example.org/tax/irs/hasLine33"
-    },
-    {
-      "type": "isEmployedBy",
-      "start_node_label": "tax payer",
-      "end_node_label": "employer",
+      "type": "belongsToDatabase",
+      "start_node_label": "schema",
+      "end_node_label": "relational database",
       "properties": [],
       "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Schema belongs to a relational database.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToDatabase"
+    },
+    {
+      "type": "hasColumnMaskRule",
+      "start_node_label": "policy",
+      "end_node_label": "column mask rule",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Policy contains column masking rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasColumnMaskRule"
+    },
+    {
+      "type": "hasRowFilterRule",
+      "start_node_label": "policy",
+      "end_node_label": "row filter rule",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Policy contains row-level filtering rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasRowFilterRule"
+    },
+    {
+      "type": "belongsToSchema",
+      "start_node_label": "table",
+      "end_node_label": "schema",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "A table belongs to exactly one schema.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToSchema"
+    },
+    {
+      "type": "targetsFilteredColumn",
+      "start_node_label": "row filter rule",
+      "end_node_label": "column",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Row-filter rule targets a specific column context.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn"
+    },
+    {
+      "type": "hasPriority",
+      "start_node_label": "row filter rule",
+      "end_node_label": "rule priority",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates an entitlement rule with its precedence level.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
+    },
+    {
+      "type": "targetsMaskedColumn",
+      "start_node_label": "column mask rule",
+      "end_node_label": "column",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Column-mask rule targets a specific column.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn"
+    },
+    {
+      "type": "hasPriority",
+      "start_node_label": "column mask rule",
+      "end_node_label": "rule priority",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates an entitlement rule with its precedence level.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
+    },
+    {
+      "type": "includesPolicy",
+      "start_node_label": "policy group",
+      "end_node_label": "policy",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Policy group bundles one or more policies.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy"
+    },
+    {
+      "type": "isMemberOf",
+      "start_node_label": "user",
+      "end_node_label": "policy group",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "User inherits policies via policy group membership.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf"
+    },
+    {
+      "type": "hasUserType",
+      "start_node_label": "user",
+      "end_node_label": "user type",
+      "properties": [],
+      "cardinality": "0..1",
       "requirement": null,
-      "description": "indicates the employer",
-      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/FormalOrganizations/isEmployedBy"
+      "unique": false,
+      "description": "A user is classified by a user type that identifies whether it is a human actor or an automated process.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasUserType"
     },
     {
       "type": "rdf__type",
-      "start_node_label": "Australian Dollar",
-      "end_node_label": "currency",
+      "start_node_label": "high priority",
+      "end_node_label": "rule priority",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
+      "unique": false,
       "description": "instance-of relationship",
       "uri": null
     },
     {
       "type": "rdf__type",
-      "start_node_label": "British Pound (Sterling)",
-      "end_node_label": "currency",
+      "start_node_label": "low priority",
+      "end_node_label": "rule priority",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
+      "unique": false,
       "description": "instance-of relationship",
       "uri": null
     },
     {
       "type": "rdf__type",
-      "start_node_label": "Canadian Dollar",
-      "end_node_label": "currency",
+      "start_node_label": "medium priority",
+      "end_node_label": "rule priority",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
+      "unique": false,
       "description": "instance-of relationship",
       "uri": null
     },
     {
       "type": "rdf__type",
-      "start_node_label": "Chinese Yuan",
-      "end_node_label": "currency",
+      "start_node_label": "human user",
+      "end_node_label": "user type",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
+      "unique": false,
       "description": "instance-of relationship",
       "uri": null
     },
     {
       "type": "rdf__type",
-      "start_node_label": "Euro",
-      "end_node_label": "currency",
+      "start_node_label": "process user",
+      "end_node_label": "user type",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
+      "unique": false,
       "description": "instance-of relationship",
       "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Japanese Yen",
-      "end_node_label": "currency",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Swiss Franc",
-      "end_node_label": "currency",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "US Dollar",
-      "end_node_label": "currency",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "married filing jointly",
-      "end_node_label": "filing status concept",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "single",
-      "end_node_label": "filing status concept",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "United States jurisdiction",
-      "end_node_label": "jurisdiction",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Accepted",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Draft",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Rejected",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Submitted",
-      "end_node_label": "reportStatus",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdf__type",
-      "start_node_label": "Internal Revenue Service",
-      "end_node_label": "tax authority",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "instance-of relationship",
-      "uri": null
-    },
-    {
-      "type": "rdfs__subClassOf",
-      "start_node_label": "2025 Form 1040",
-      "end_node_label": "individual tax return",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "subclass-of relationship",
-      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
-    },
-    {
-      "type": "rdfs__subClassOf",
-      "start_node_label": "tax payer",
-      "end_node_label": "person",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "description": "subclass-of relationship",
-      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
     }
   ],
   "metadata": {
     "source_classes": [
-      "organization",
-      "exchange",
-      "W-2 form",
-      "crypto asset",
-      "tax authority",
-      "person",
-      "jurisdiction",
-      "physical address",
-      "filing status concept",
-      "reportStatus",
-      "Form 1120 U.S. Corporation Income Tax Return",
-      "individual tax return",
-      "monetary amount",
-      "currency",
-      "2025 Form 1040",
-      "tax payer",
-      "employer"
+      "jdbc connection profile",
+      "column",
+      "schema",
+      "policy",
+      "user type",
+      "relational database",
+      "table",
+      "row filter rule",
+      "column mask rule",
+      "policy group",
+      "user",
+      "rule priority"
     ],
     "engine": "Onto2AI-Materialized",
     "database": "stagingdb",
-    "named_individual_count": 16
+    "named_individual_count": 5
   }
 }

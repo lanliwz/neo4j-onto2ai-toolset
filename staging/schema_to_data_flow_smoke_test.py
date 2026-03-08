@@ -211,6 +211,21 @@ def _to_neo4j_props(data: Dict[str, object]) -> Dict[str, object]:
     return out
 
 
+def _is_entitlement_model() -> bool:
+    return all(
+        hasattr(pydantic_schema_model, name)
+        for name in (
+            "User",
+            "PolicyGroup",
+            "Policy",
+            "RowFilterRule",
+            "ColumnMaskRule",
+            "RelationalDatabase",
+            "JdbcConnectionProfile",
+        )
+    )
+
+
 def load_sample_data(
     driver,
     db_name: str,
@@ -222,6 +237,190 @@ def load_sample_data(
 
     Subclass nodes receive multi-labels so a TaxPayer node is (:TaxPayer:Person).
     """
+    if _is_entitlement_model():
+        relational_database = pydantic_schema_model.RelationalDatabase(
+            relationalDatabaseId="db-001",
+            databaseName="warehouse",
+            databaseVendor="postgresql",
+            databaseVersion="16",
+            databaseEdition="community",
+            hostName="db.internal.local",
+            portNumber=5432,
+        )
+        jdbc_profile = pydantic_schema_model.JdbcConnectionProfile(
+            jdbcConnectionProfileId="jdbc-001",
+            jdbcUrl="jdbc:postgresql://db.internal.local:5432/warehouse",
+            jdbcDriver="org.postgresql.Driver",
+            jdbcUserName="entitlement_app",
+            connectionTimeoutSeconds=30,
+            sslMode="require",
+        )
+        schema = pydantic_schema_model.Schema(
+            schemaId="schema-001",
+            schemaName="analytics",
+            schemaOwner="data_platform",
+            schemaType="application",
+            schemaDescription="Analytics schema protected by entitlement rules.",
+            isDefaultSchema=True,
+        )
+        table = pydantic_schema_model.Table(
+            tableId="table-001",
+            tableName="customer_account",
+            tableType="base table",
+            tableOwner="data_platform",
+            tableDescription="Customer account table.",
+            rowCountEstimate=125000,
+            isTemporaryTable=False,
+        )
+        column = pydantic_schema_model.Column(
+            columnId="column-001",
+            columnName="region_code",
+            columnDataType="varchar",
+            columnLength=20,
+            isNullable=False,
+            ordinalPosition=3,
+        )
+        row_filter_rule = pydantic_schema_model.RowFilterRule(
+            rowFilterRuleId="rfr-001",
+            filterAction="allow",
+            matchMode="multiple values",
+            comparisonOperator="in list",
+            valueSourceType="subject attribute",
+            valueSourceExpression="user.allowed_regions",
+            denyBehavior="return no rows",
+            llmRewriteInstruction="Rewrite the WHERE clause to restrict region_code to the allowed values.",
+            rewriteTemplate="WHERE region_code IN ({values})",
+            ruleExpression="region_code IN allowed_regions",
+            hasPriority=pydantic_schema_model.RulePriority.HIGH_PRIORITY,
+        )
+        column_mask_rule = pydantic_schema_model.ColumnMaskRule(
+            columnMaskRuleId="cmr-001",
+            maskAction="redact",
+            maskingMethod="static substitution",
+            maskValueExpression="'***'",
+            fallbackBehavior="block query",
+            llmRewriteInstruction="Rewrite the SELECT projection to mask region_code when access is denied.",
+            rewriteTemplate="CASE WHEN {condition} THEN region_code ELSE '***' END",
+            ruleExpression="mask region_code when unauthorized",
+            valueSourceType="session context",
+            valueSourceExpression="user.masking_scope",
+            hasPriority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY,
+        )
+        policy = pydantic_schema_model.Policy(
+            policyId="policy-001",
+            policyName=["Regional access policy"],
+            definition=["Applies row filtering and masking to regional account data."],
+        )
+        policy_group = pydantic_schema_model.PolicyGroup(
+            policyGroupId="pg-001",
+            policyGroupName=["regional analysts"],
+        )
+        user = pydantic_schema_model.User(
+            userId="user-001",
+            hasUserType=pydantic_schema_model.UserType.HUMAN_USER,
+        )
+
+        model_instances = {
+            "RelationalDatabase": relational_database,
+            "JdbcConnectionProfile": jdbc_profile,
+            "Schema": schema,
+            "Table": table,
+            "Column": column,
+            "RowFilterRule": row_filter_rule,
+            "ColumnMaskRule": column_mask_rule,
+            "Policy": policy,
+            "PolicyGroup": policy_group,
+            "User": user,
+        }
+
+        created_labels: Set[str] = set()
+        model_node_ids: Dict[str, str] = {}
+        enum_node_ids: Dict[Tuple[str, str], str] = {}
+
+        with driver.session(database=db_name) as session:
+            session.run("MATCH (n {testRun: $run}) DETACH DELETE n", run=test_run)
+
+            for enum_class, members in sorted(enum_members_by_class.items()):
+                for member_label in sorted(members):
+                    node_id = str(uuid.uuid4())
+                    session.run(
+                        f"""
+                        CREATE (n:`{enum_class}`:owl__NamedIndividual {{
+                          id: $id,
+                          rdfs__label: $label,
+                          testRun: $run,
+                          sampleTag: 'schema_workflow',
+                          sampleCreatedAt: $ts
+                        }})
+                        """,
+                        id=node_id,
+                        label=member_label,
+                        run=test_run,
+                        ts=datetime.now(timezone.utc).isoformat(),
+                    )
+                    enum_node_ids[(enum_class, member_label)] = node_id
+                    created_labels.add(enum_class)
+
+            for label, instance in model_instances.items():
+                node_id = str(uuid.uuid4())
+                dumped = instance.model_dump(by_alias=True, exclude_none=True, mode="json")
+                props = _to_neo4j_props(dumped)
+                props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
+                label_expr = _label_chain(label, subclass_map)
+                session.run(
+                    f"CREATE (n:{label_expr} {{id: $id}}) SET n += $props",
+                    id=node_id,
+                    props=props,
+                )
+                model_node_ids[label] = node_id
+                created_labels.add(label)
+
+            session.run(
+                """
+                MATCH (j:JdbcConnectionProfile {id: $jdbc_id, testRun: $run})
+                MATCH (d:RelationalDatabase {id: $db_id, testRun: $run})
+                MATCH (s:Schema {id: $schema_id, testRun: $run})
+                MATCH (t:Table {id: $table_id, testRun: $run})
+                MATCH (c:Column {id: $column_id, testRun: $run})
+                MATCH (rf:RowFilterRule {id: $row_rule_id, testRun: $run})
+                MATCH (cm:ColumnMaskRule {id: $mask_rule_id, testRun: $run})
+                MATCH (p:Policy {id: $policy_id, testRun: $run})
+                MATCH (pg:PolicyGroup {id: $policy_group_id, testRun: $run})
+                MATCH (u:User {id: $user_id, testRun: $run})
+                MATCH (ut:UserType {rdfs__label: $user_type, testRun: $run})
+                MATCH (high:RulePriority {rdfs__label: $high_priority, testRun: $run})
+                MATCH (medium:RulePriority {rdfs__label: $medium_priority, testRun: $run})
+                CREATE (j)-[:connectsTo]->(d)
+                CREATE (s)-[:belongsToDatabase]->(d)
+                CREATE (t)-[:belongsToSchema]->(s)
+                CREATE (c)-[:belongsToTable]->(t)
+                CREATE (rf)-[:targetsFilteredColumn]->(c)
+                CREATE (rf)-[:hasPriority]->(high)
+                CREATE (cm)-[:targetsMaskedColumn]->(c)
+                CREATE (cm)-[:hasPriority]->(medium)
+                CREATE (p)-[:hasRowFilterRule]->(rf)
+                CREATE (p)-[:hasColumnMaskRule]->(cm)
+                CREATE (pg)-[:includesPolicy]->(p)
+                CREATE (u)-[:isMemberOf]->(pg)
+                CREATE (u)-[:hasUserType]->(ut)
+                """,
+                jdbc_id=model_node_ids["JdbcConnectionProfile"],
+                db_id=model_node_ids["RelationalDatabase"],
+                schema_id=model_node_ids["Schema"],
+                table_id=model_node_ids["Table"],
+                column_id=model_node_ids["Column"],
+                row_rule_id=model_node_ids["RowFilterRule"],
+                mask_rule_id=model_node_ids["ColumnMaskRule"],
+                policy_id=model_node_ids["Policy"],
+                policy_group_id=model_node_ids["PolicyGroup"],
+                user_id=model_node_ids["User"],
+                user_type=pydantic_schema_model.UserType.HUMAN_USER.value,
+                high_priority=pydantic_schema_model.RulePriority.HIGH_PRIORITY.value,
+                medium_priority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY.value,
+                run=test_run,
+            )
+
+        return created_labels
 
     employer = pydantic_schema_model.Employer(
         has_address=["1 Main St, New York, NY 10001"],
@@ -526,68 +725,57 @@ def validate_sample_data(
         if missing:
             raise AssertionError(f"Class {cls} missing mandatory properties: {missing}")
 
-    # Validate mandatory enum relationships for MonetaryAmount based on topology + enum members.
-    money_rels = topology_map.get("MonetaryAmount", {})
-    enum_targets = []
-    for rel_type, targets in money_rels.items():
-        for tgt in targets:
-            if tgt in enum_members_by_class:
-                enum_targets.append((rel_type, tgt))
-
     with driver.session(database=db_name) as session:
-        for rel_type, enum_cls in enum_targets:
-            rows = session.run(
-                f"""
-                MATCH (m:MonetaryAmount {{testRun: $run}})-[:`{rel_type}`]->(e:`{enum_cls}`)
-                RETURN e.rdfs__label AS label
-                """,
-                run=test_run,
-            ).data()
-            if not rows:
-                raise AssertionError(
-                    f"Missing mandatory enum relationship MonetaryAmount-[:{rel_type}]->{enum_cls}"
-                )
-            allowed = enum_members_by_class.get(enum_cls, set())
-            for row in rows:
-                label = row.get("label")
-                if label not in allowed:
+        if "MonetaryAmount" in target_classes:
+            money_rels = topology_map.get("MonetaryAmount", {})
+            enum_targets = []
+            for rel_type, targets in money_rels.items():
+                for tgt in targets:
+                    if tgt in enum_members_by_class:
+                        enum_targets.append((rel_type, tgt))
+            for rel_type, enum_cls in enum_targets:
+                rows = session.run(
+                    f"""
+                    MATCH (m:MonetaryAmount {{testRun: $run}})-[:`{rel_type}`]->(e:`{enum_cls}`)
+                    RETURN e.rdfs__label AS label
+                    """,
+                    run=test_run,
+                ).data()
+                if not rows:
                     raise AssertionError(
-                        f"Enum value '{label}' is not allowed for {enum_cls}; allowed={sorted(allowed)}"
+                        f"Missing mandatory enum relationship MonetaryAmount-[:{rel_type}]->{enum_cls}"
                     )
+                allowed = enum_members_by_class.get(enum_cls, set())
+                for row in rows:
+                    label = row.get("label")
+                    if label not in allowed:
+                        raise AssertionError(
+                            f"Enum value '{label}' is not allowed for {enum_cls}; allowed={sorted(allowed)}"
+                        )
 
-    # Validate the workflow scenario:
-    # taxpayer/person receives W-2 from organization and submits 1040.
-    with driver.session(database=db_name) as session:
-        scenario_checks = [
-            (
-                """
-                MATCH (w:W2Form {testRun: $run})-[:issuedTo]->(p:Person {testRun: $run})
-                RETURN count(*) AS c
-                """,
-                "Missing W2Form -> issuedTo -> Person relationship",
-            ),
-            (
-                """
-                MATCH (w:W2Form {testRun: $run})-[:issuedBy]->(o:Organization {testRun: $run})
-                RETURN count(*) AS c
-                """,
-                "Missing W2Form -> issuedBy -> Organization relationship",
-            ),
-            (
-                """
-                MATCH (f:Form1040_2025 {testRun: $run})-[:isSubmittedBy]->(t:TaxPayer {testRun: $run})
-                RETURN count(*) AS c
-                """,
-                "Missing Form1040_2025 -> isSubmittedBy -> TaxPayer relationship",
-            ),
-            (
-                """
-                MATCH (p:Person {testRun: $run})-[:hasResidence]->(:PhysicalAddress {testRun: $run})
-                RETURN count(*) AS c
-                """,
-                "Missing Person -> hasResidence -> PhysicalAddress relationship",
-            ),
-        ]
+        if "User" in target_classes and "PolicyGroup" in target_classes:
+            scenario_checks = [
+                ("MATCH (u:User {testRun: $run})-[:isMemberOf]->(:PolicyGroup {testRun: $run}) RETURN count(*) AS c", "Missing User -> isMemberOf -> PolicyGroup relationship"),
+                ("MATCH (:PolicyGroup {testRun: $run})-[:includesPolicy]->(:Policy {testRun: $run}) RETURN count(*) AS c", "Missing PolicyGroup -> includesPolicy -> Policy relationship"),
+                ("MATCH (:Policy {testRun: $run})-[:hasRowFilterRule]->(:RowFilterRule {testRun: $run}) RETURN count(*) AS c", "Missing Policy -> hasRowFilterRule -> RowFilterRule relationship"),
+                ("MATCH (:Policy {testRun: $run})-[:hasColumnMaskRule]->(:ColumnMaskRule {testRun: $run}) RETURN count(*) AS c", "Missing Policy -> hasColumnMaskRule -> ColumnMaskRule relationship"),
+                ("MATCH (:RowFilterRule {testRun: $run})-[:targetsFilteredColumn]->(:Column {testRun: $run}) RETURN count(*) AS c", "Missing RowFilterRule -> targetsFilteredColumn -> Column relationship"),
+                ("MATCH (:ColumnMaskRule {testRun: $run})-[:targetsMaskedColumn]->(:Column {testRun: $run}) RETURN count(*) AS c", "Missing ColumnMaskRule -> targetsMaskedColumn -> Column relationship"),
+                ("MATCH (:User {testRun: $run})-[:hasUserType]->(:UserType {testRun: $run}) RETURN count(*) AS c", "Missing User -> hasUserType -> UserType relationship"),
+                ("MATCH (:RowFilterRule {testRun: $run})-[:hasPriority]->(:RulePriority {testRun: $run}) RETURN count(*) AS c", "Missing RowFilterRule -> hasPriority -> RulePriority relationship"),
+                ("MATCH (:ColumnMaskRule {testRun: $run})-[:hasPriority]->(:RulePriority {testRun: $run}) RETURN count(*) AS c", "Missing ColumnMaskRule -> hasPriority -> RulePriority relationship"),
+                ("MATCH (:JdbcConnectionProfile {testRun: $run})-[:connectsTo]->(:RelationalDatabase {testRun: $run}) RETURN count(*) AS c", "Missing JdbcConnectionProfile -> connectsTo -> RelationalDatabase relationship"),
+                ("MATCH (:Schema {testRun: $run})-[:belongsToDatabase]->(:RelationalDatabase {testRun: $run}) RETURN count(*) AS c", "Missing Schema -> belongsToDatabase -> RelationalDatabase relationship"),
+                ("MATCH (:Table {testRun: $run})-[:belongsToSchema]->(:Schema {testRun: $run}) RETURN count(*) AS c", "Missing Table -> belongsToSchema -> Schema relationship"),
+                ("MATCH (:Column {testRun: $run})-[:belongsToTable]->(:Table {testRun: $run}) RETURN count(*) AS c", "Missing Column -> belongsToTable -> Table relationship"),
+            ]
+        else:
+            scenario_checks = [
+                ("MATCH (w:W2Form {testRun: $run})-[:issuedTo]->(:Person {testRun: $run}) RETURN count(*) AS c", "Missing W2Form -> issuedTo -> Person relationship"),
+                ("MATCH (w:W2Form {testRun: $run})-[:issuedBy]->(:Organization {testRun: $run}) RETURN count(*) AS c", "Missing W2Form -> issuedBy -> Organization relationship"),
+                ("MATCH (f:Form1040_2025 {testRun: $run})-[:isSubmittedBy]->(:TaxPayer {testRun: $run}) RETURN count(*) AS c", "Missing Form1040_2025 -> isSubmittedBy -> TaxPayer relationship"),
+                ("MATCH (p:Person {testRun: $run})-[:hasResidence]->(:PhysicalAddress {testRun: $run}) RETURN count(*) AS c", "Missing Person -> hasResidence -> PhysicalAddress relationship"),
+            ]
         for query, message in scenario_checks:
             count = session.run(query, run=test_run).single()["c"]
             if count < 1:
