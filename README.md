@@ -77,7 +77,7 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.5.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.6.0-py3-none-any.whl
 ```
 
 ### Ontology Validation

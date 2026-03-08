@@ -7,6 +7,7 @@ class Property(BaseModel):
     description: Optional[str] = None
     mandatory: bool = False
     cardinality: str = "0..1"
+    unique: bool = False
     uri: Optional[str] = None
 
 class Node(BaseModel):
@@ -23,6 +24,7 @@ class Relationship(BaseModel):
     properties: List[Property] = []
     cardinality: str = "0..1"
     requirement: Optional[str] = None
+    unique: bool = False
     description: Optional[str] = None
     uri: Optional[str] = None
 

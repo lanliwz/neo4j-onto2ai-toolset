@@ -4,6 +4,59 @@
 
 let myDiagram = null;
 
+function formatPydanticFieldType(attr) {
+    const rawType = attr?.type || "str";
+    const normalized = String(rawType)
+        .replace(/^xsd:/i, "")
+        .trim()
+        .toLowerCase();
+
+    const primitiveMap = {
+        string: "str",
+        str: "str",
+        integer: "int",
+        int: "int",
+        decimal: "Decimal",
+        float: "float",
+        double: "float",
+        number: "float",
+        boolean: "bool",
+        bool: "bool",
+        date: "date",
+        datetime: "datetime",
+        timestamp: "datetime"
+    };
+
+    if (primitiveMap[normalized]) return primitiveMap[normalized];
+
+    if (/^[a-z0-9_]+$/.test(rawType) && normalized === rawType.toLowerCase()) {
+        return rawType;
+    }
+
+    return String(rawType)
+        .replace(/^xsd:/i, "")
+        .replace(/\s+/g, "_")
+        .replace(/(^|_)([a-z])/g, (_, __, c) => c.toUpperCase());
+}
+
+function formatPydanticFieldSuffix(attr) {
+    const pyType = formatPydanticFieldType(attr);
+    const card = String(attr?.cardinality || "0..1").trim();
+    const unique = !!attr?.unique;
+    const uniqueArg = unique ? ', json_schema_extra={"unique": True}' : "";
+
+    if (card === "1") {
+        return `: ${pyType} = Field(...${uniqueArg})`;
+    }
+    if (card === "1..*") {
+        return `: List[${pyType}] = Field(default_factory=list, min_length=1${uniqueArg})`;
+    }
+    if (card === "0..*") {
+        return `: List[${pyType}] = Field(default_factory=list${uniqueArg})`;
+    }
+    return `: Optional[${pyType}] = Field(default=None${uniqueArg})`;
+}
+
 /**
  * Initialize the GoJS diagram
  */
@@ -265,7 +318,7 @@ function initGraph() {
             stroke: "#a78bfa"
         },
             new go.Binding("stroke", "isLight", (light) => light ? "#6d28d9" : "#a78bfa").ofModel(),
-            new go.Binding("text", "type", (t) => `: Optional[${t}] = None`))
+            new go.Binding("text", "", (data) => data?.pydanticSuffix || formatPydanticFieldSuffix(data)))
     );
 
     myDiagram.nodeTemplateMap.add("pydantic",

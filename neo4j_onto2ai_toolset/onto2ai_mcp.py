@@ -92,6 +92,10 @@ def _map_type(type_name: str, class_by_norm: Dict[str, str]) -> str:
         return "str"
 
     norm = raw.lower().replace(" ", "").replace("_", "")
+    if "xmlschema#" in norm:
+        norm = norm.split("xmlschema#", 1)[1]
+    elif "xmlschema/" in norm:
+        norm = norm.rsplit("/", 1)[-1]
     if norm.startswith("xsd:"):
         norm = norm[4:]
 
@@ -131,18 +135,29 @@ def _merge_cardinality(cards: List[str], has_duplicates: bool) -> str:
         return "0..1"
     return "0..1"
 
-def _render_field_line(field_name: str, alias: str, py_type: str, cardinality: str, description: Optional[str]) -> str:
+def _render_field_line(
+    field_name: str,
+    alias: str,
+    py_type: str,
+    cardinality: str,
+    description: Optional[str],
+    unique: bool = False,
+) -> str:
     desc = json.dumps(description if description is not None else "")
+    field_args = [f'alias="{alias}"', f"description={desc}"]
+    if unique:
+        field_args.append('json_schema_extra={"unique": True}')
+    field_args_str = ", ".join(field_args)
     if cardinality == "1":
-        return f'    {field_name}: {py_type} = Field(alias="{alias}", description={desc})'
+        return f'    {field_name}: {py_type} = Field({field_args_str})'
     if cardinality == "1..*":
         return (
             f'    {field_name}: List[{py_type}] = Field('
-            f'default_factory=list, min_length=1, alias="{alias}", description={desc})'
+            f'default_factory=list, min_length=1, {field_args_str})'
         )
     if cardinality == "0..*":
-        return f'    {field_name}: List[{py_type}] = Field(default_factory=list, alias="{alias}", description={desc})'
-    return f'    {field_name}: Optional[{py_type}] = Field(default=None, alias="{alias}", description={desc})'
+        return f'    {field_name}: List[{py_type}] = Field(default_factory=list, {field_args_str})'
+    return f'    {field_name}: Optional[{py_type}] = Field(default=None, {field_args_str})'
 
 def _generate_pydantic_strict(data_model: DataModel) -> str:
     """Deterministic strict-parity generator from DataModel to Pydantic v2 code.
@@ -223,6 +238,7 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
                     "type": _map_type(p.type, class_by_norm),
                     "cardinality": p.cardinality or ("1" if p.mandatory else "0..1"),
                     "description": p.description,
+                    "unique": getattr(p, "unique", False),
                 }
             )
 
@@ -244,6 +260,7 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
                 "type": tgt_class,
                 "cardinality": getattr(r, "cardinality", "0..1"),
                 "description": r.description,
+                "unique": getattr(r, "unique", False),
             }
         )
 
@@ -331,7 +348,8 @@ def _generate_pydantic_strict(data_model: DataModel) -> str:
                     py_type = t
                     break
             desc = next((e.get("description") for e in entries if e.get("description")), "")
-            lines.append(_render_field_line(field_name, alias, py_type, card, desc))
+            unique = any(bool(e.get("unique")) for e in entries)
+            lines.append(_render_field_line(field_name, alias, py_type, card, desc, unique=unique))
 
         if not rendered:
             lines.append("    pass")
@@ -507,8 +525,9 @@ MATERIALIZED_SCHEMA_QUERY = """
       r.skos__definition AS RelDef,
       coalesce(r.cardinality, "0..1") AS Cardinality,
       r.requirement AS Requirement,
+      coalesce(r.unique, false) AS Unique,
       coalesce(r.property_type, "owl__ObjectProperty") AS PropMetaType, // Default to ObjectProperty
-      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      coalesce(target.xsd__type, target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
     
@@ -532,8 +551,9 @@ MATERIALIZED_SCHEMA_QUERY = """
       r.skos__definition AS RelDef,
       coalesce(r.cardinality, "0..1") AS Cardinality,
       r.requirement AS Requirement,
+      coalesce(r.unique, false) AS Unique,
       coalesce(r.property_type, "owl__DatatypeProperty") AS PropMetaType, // Default to DatatypeProperty
-      coalesce(target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
+      coalesce(target.xsd__type, target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
     
@@ -874,6 +894,7 @@ async def extract_data_model(
                 description=row['RelDef'],
                 mandatory=(row['Requirement'] == 'Mandatory'),
                 cardinality=row['Cardinality'],
+                unique=bool(row.get('Unique')),
                 uri=row['RelURI']
             )
             
@@ -884,6 +905,7 @@ async def extract_data_model(
                     end_node_label=row['TargetClassLabel'],
                     cardinality=row['Cardinality'],
                     requirement=row['Requirement'],
+                    unique=bool(row.get('Unique')),
                     description=row['RelDef'],
                     uri=row['RelURI']
                 ))
@@ -1456,8 +1478,7 @@ async def staging_materialized_schema(
                 if 'rdfs__Datatype' in tgt_labels or is_xsd_datatype:
                     if tgt_uri not in datatypes:
                         if is_xsd_datatype:
-                            short_label = tgt_uri.split('#')[-1] if '#' in tgt_uri else tgt_uri.split('/')[-1]
-                            label = f"xsd:{short_label}"
+                            label = tgt_uri.split('#')[-1] if '#' in tgt_uri else tgt_uri.split('/')[-1]
                         else:
                             label = str(tgt_label).lower().strip()
                         datatypes[tgt_uri] = {

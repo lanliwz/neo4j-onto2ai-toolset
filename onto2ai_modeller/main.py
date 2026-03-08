@@ -17,7 +17,7 @@ from onto2ai_modeller.api.schemas import router as schemas_router
 app = FastAPI(
     title="Onto2AI Modeller",
     description="Web application to review and enhance ontology schemas",
-    version="1.0.0"
+    version="0.6.0"
 )
 
 # CORS middleware for development

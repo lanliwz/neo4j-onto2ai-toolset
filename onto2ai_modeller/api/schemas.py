@@ -43,6 +43,56 @@ _db_connection = None
 AVAILABLE_LLMS = ["gemini-3-flash-preview-001", "gpt-5.2"]
 _current_llm = None  # Lazy init in get_llm_status/get_onto2ai_client
 
+
+def _map_pydantic_attr_type(raw_type: Any) -> str:
+    value = str(raw_type or "str").strip()
+    norm = value.lower().replace(" ", "").replace("_", "")
+    if norm.startswith("xsd:"):
+        norm = norm[4:]
+    if "xmlschema#" in norm:
+        norm = norm.split("xmlschema#", 1)[1]
+    elif "xmlschema/" in norm:
+        norm = norm.rsplit("/", 1)[-1]
+
+    primitive_map = {
+        "string": "str",
+        "str": "str",
+        "integer": "int",
+        "int": "int",
+        "decimal": "Decimal",
+        "float": "float",
+        "double": "float",
+        "number": "float",
+        "boolean": "bool",
+        "bool": "bool",
+        "date": "date",
+        "datetime": "datetime",
+        "timestamp": "datetime",
+    }
+    if norm in primitive_map:
+        return primitive_map[norm]
+
+    if value.islower() and " " not in value and "_" not in value:
+        return value
+
+    tokens = [t for t in str(value).replace(":", " ").replace("_", " ").split() if t]
+    return "".join(token[:1].upper() + token[1:] for token in tokens) or "str"
+
+
+def _format_pydantic_field_suffix(attr: Dict[str, Any]) -> str:
+    py_type = _map_pydantic_attr_type(attr.get("type"))
+    cardinality = str(attr.get("cardinality") or "0..1").strip()
+    unique = bool(attr.get("unique"))
+    unique_arg = ', json_schema_extra={"unique": True}' if unique else ""
+
+    if cardinality == "1":
+        return f": {py_type} = Field(...{unique_arg})"
+    if cardinality == "1..*":
+        return f": List[{py_type}] = Field(default_factory=list, min_length=1{unique_arg})"
+    if cardinality == "0..*":
+        return f": List[{py_type}] = Field(default_factory=list{unique_arg})"
+    return f": Optional[{py_type}] = Field(default=None{unique_arg})"
+
 def get_db():
     """Get or create the staging database connection."""
     global _db_connection
@@ -332,27 +382,37 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
             tgt_label = tgt.get("rdfs__label") or tgt.get("label") or "Resource"
             if isinstance(tgt_label, list):
                 tgt_label = tgt_label[0] if tgt_label else "Resource"
+            xsd_type = tgt.get("xsd__type")
+            display_type = xsd_type or tgt_label
 
             if is_attribute:
                 cardinality = rel.get("cardinality") or "0..1"
-                attributes_by_class[src_id].append({
+                attr = {
                     "name": rel_type,
-                    "type": tgt_label,
+                    "type": display_type,
                     "cardinality": cardinality,
-                    "definition": rel.get("skos__definition")
-                })
+                    "definition": rel.get("skos__definition"),
+                    "unique": bool(rel.get("unique")),
+                    "requirement": rel.get("requirement")
+                }
+                attr["pydanticSuffix"] = _format_pydantic_field_suffix(attr)
+                attributes_by_class[src_id].append(attr)
             else:
                 tgt_id = ensure_class(tgt)
                 if tgt_id:
                     # Also list association inside the class box
                     cardinality = rel.get("cardinality") or ""
-                    attributes_by_class[src_id].append({
+                    attr = {
                         "name": rel_type,
                         "type": tgt_label,
                         "cardinality": cardinality,
                         "definition": rel.get("skos__definition"),
-                        "kind": "association"
-                    })
+                        "kind": "association",
+                        "unique": bool(rel.get("unique")),
+                        "requirement": rel.get("requirement")
+                    }
+                    attr["pydanticSuffix"] = _format_pydantic_field_suffix(attr)
+                    attributes_by_class[src_id].append(attr)
                     link_key = (src_id, tgt_id, rel_type)
                     if link_key not in seen_links:
                         links.append({
@@ -394,7 +454,12 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
         seen_attrs = set()
         deduped = []
         for attr in raw_attrs:
-            attr_key = (attr["name"], attr["type"])
+            attr_key = (
+                attr["name"],
+                attr["type"],
+                attr.get("cardinality"),
+                attr.get("unique"),
+            )
             if attr_key not in seen_attrs:
                 seen_attrs.add(attr_key)
                 deduped.append(attr)

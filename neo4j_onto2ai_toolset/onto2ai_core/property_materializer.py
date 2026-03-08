@@ -1,6 +1,20 @@
 from neo4j_onto2ai_toolset.onto2ai_utility import Neo4jDatabase
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 
+def normalize_xsd_primitive_datatypes(db: Neo4jDatabase):
+    """
+    Ensure primitive XSD datatype resources are materialized as rdfs__Datatype
+    nodes with a human-readable rdfs__label such as 'string' or 'integer'.
+    """
+    normalize_query = """
+    MATCH (n:Resource)
+    WHERE n.uri STARTS WITH 'http://www.w3.org/2001/XMLSchema#'
+    WITH n, last(split(n.uri, '#')) AS primitive_name
+    SET n:rdfs__Datatype,
+        n.rdfs__label = primitive_name
+    """
+    db.execute_cypher(normalize_query, name="normalize_xsd_primitive_datatypes")
+
 def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
     """
     Generic function to materialize OWL properties (Object or Datatype) as native Neo4j relationships.
@@ -93,6 +107,7 @@ def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
 
     db.execute_cypher(domain_range_query, name=f"materialize_{prop_label}_domain_range")
     db.execute_cypher(restriction_query, name=f"materialize_{prop_label}_restrictions")
+    normalize_xsd_primitive_datatypes(db)
 
 def cleanup_duplicate_relationships(db: Neo4jDatabase):
     """

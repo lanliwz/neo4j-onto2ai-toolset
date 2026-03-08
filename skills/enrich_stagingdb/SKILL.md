@@ -116,6 +116,13 @@ CREATE (addr)-[:hasState {materialized: true, cardinality: '1'}]->(state)
 - `xsd:decimal` — monetary amounts
 - `xsd:boolean` — true/false flags
 
+**Primitive XSD staging rule:**
+- If a staging class resource uses a primitive XSD URI such as `http://www.w3.org/2001/XMLSchema#string`, `#integer`, `#boolean`, `#date`, or similar, normalize that node as `:rdfs__Datatype`.
+- Keep the node URI equal to the XSD URI.
+- Set `rdfs__label` to the primitive local name only, such as `string`, `integer`, `boolean`, or `date`.
+- Do not leave primitive XSD targets as bare `:Resource` nodes.
+- Apply this normalization consistently so primitive XSD targets behave the same way as other staged datatype nodes.
+
 ### Creating Named Individuals
 Create instances of classes using `owl__NamedIndividual` nodes with `rdf__type` links.
 
