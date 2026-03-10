@@ -240,12 +240,12 @@ After changing enum classes, named individuals, subclass relationships, or manda
 3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/neo4j_query_context.md`
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
 4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/neo4j_constraint.cypher`
-5. Reset test DB in Neo4j `system` database before validation:
-   - `DROP DATABASE test IF EXISTS;`
-   - `CREATE DATABASE test IF NOT EXISTS;`
-6. Run workflow validation test:
-   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
-7. Ensure workflow semantics are covered by test data:
+5. Run workflow validation test:
+   - `python staging/schema_to_data_flow_smoke_test.py`
+   - The smoke test must always recreate and use `testdb`
+   - Keep the sample data in `testdb` by default for manual review
+   - Review the printed summary before considering finalization complete
+6. Ensure workflow semantics are covered by test data:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to IRS

@@ -89,6 +89,9 @@ After enum/NamedIndividual or schema updates, regenerate local artifacts:
 ## 10. Finalization Gate (Recommended)
 Before distributing the model:
 1. Run end-to-end validation:
-   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
+   - `python staging/schema_to_data_flow_smoke_test.py`
+   - this always recreates and uses `testdb`
+   - it keeps the sample data in `testdb` for review by default
+   - review the printed summary before considering finalization complete
 2. Confirm generated artifacts are in sync and committed together.
 3. Validate key business query scenarios against `stagingdb`.

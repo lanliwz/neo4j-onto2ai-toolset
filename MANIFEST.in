@@ -1,2 +1,3 @@
 recursive-include onto2ai_modeller/static *
-
+recursive-include onto2ai_entitlement/ontology *.rdf
+recursive-include onto2ai_entitlement/staging *.json *.py *.md *.cypher

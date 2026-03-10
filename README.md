@@ -31,10 +31,12 @@ Before publishing, users can generate sample data, run end-to-end application da
 2. Load ontology data into Neo4j.
 3. Run MCP server/client for schema extraction and enhancement.
 4. Stage and consolidate schema for implementation.
-5. Reset test database and run staging schema workflow test:
-   - `DROP DATABASE test IF EXISTS; CREATE DATABASE test IF NOT EXISTS;` (in Neo4j `system` database)
-   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
-6. Finalize schema design and review in Modeller UI.
+5. Finalize schema design and review in Modeller UI.
+6. Finalize `stagingdb` by running the dedicated smoke test as the last step:
+   - the smoke test always recreates and uses `testdb`
+   - the smoke test keeps the sample data in `testdb` for review by default
+   - `python staging/schema_to_data_flow_smoke_test.py`
+   - review the printed summary before distribution
 
 ## Quickstart
 See: [docs/quickstart.md](./docs/quickstart.md)
@@ -77,7 +79,29 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.6.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.7.0-py3-none-any.whl
+```
+
+### Entitlement Package Contents
+The distribution now includes a dedicated `onto2ai_entitlement` package that ships:
+- the entitlement ontology RDF
+- the finalized staging model JSON
+- the generated Pydantic schema
+- the generated Neo4j schema description
+- the generated Neo4j constraint script
+- the final smoke test script
+
+After install, these artifacts are available from Python:
+
+```python
+from onto2ai_entitlement import (
+    ONTOLOGY_PATH,
+    STAGING_MODEL_PATH,
+    STAGING_PYDANTIC_PATH,
+    STAGING_QUERY_CONTEXT_PATH,
+    STAGING_CONSTRAINT_PATH,
+    SMOKE_TEST_PATH,
+)
 ```
 
 ### Ontology Validation

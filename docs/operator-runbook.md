@@ -46,15 +46,15 @@ After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship chang
 2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/pydantic_schema_model.py`
 3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/neo4j_query_context.md`
 4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/neo4j_constraint.cypher`
-5. Reset the test database from Neo4j `system` database:
-   - `DROP DATABASE test IF EXISTS;`
-   - `CREATE DATABASE test IF NOT EXISTS;`
-6. Run end-to-end staging schema test: `python staging/schema_to_data_flow_smoke_test.py --test-db test`
+5. Run end-to-end staging schema test: `python staging/schema_to_data_flow_smoke_test.py`
+   - the script always recreates and uses `testdb`
+   - it keeps the sample data in `testdb` for review by default
+   - review the printed summary as the last step of finalization
 7. Confirm the workflow scenario exists in the test graph:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to the IRS
-8. Finalize schema design only after the schema workflow test passes.
+8. Finalize schema design only after the schema workflow test passes and the summary is reviewed.
 
 ### Finalization Workflow
 Use this gate before publishing a schema for downstream API/UI/data usage:
@@ -65,7 +65,9 @@ Use this gate before publishing a schema for downstream API/UI/data usage:
    - `staging/neo4j_query_context.md`
    - `staging/neo4j_constraint.cypher`
 3. Run the end-to-end smoke test:
-   - `python staging/schema_to_data_flow_smoke_test.py --test-db test`
+   - `python staging/schema_to_data_flow_smoke_test.py`
+   - it always recreates and uses `testdb`
+   - it keeps the sample data in `testdb` for review by default
 4. Verify representative query scenarios pass against staging.
 5. Proceed to distribution only when the smoke test and query checks pass.
 
