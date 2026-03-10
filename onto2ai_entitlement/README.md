@@ -52,6 +52,7 @@ The intended finalization flow for this package is:
 2. Regenerate the staging artifacts from `stagingdb`.
 3. Build the distribution.
 4. Run the smoke test as the last step.
+5. Publish the ontology package only after the smoke test passes.
 
 Smoke test command:
 
@@ -107,3 +108,4 @@ Before publishing, confirm:
 - build succeeds
 - smoke test passes on `testdb`
 - smoke-test summary is reviewed
+- the package is published from `onto2ai_entitlement/`

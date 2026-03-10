@@ -32,11 +32,14 @@ Before publishing, users can generate sample data, run end-to-end application da
 3. Run MCP server/client for schema extraction and enhancement.
 4. Stage and consolidate schema for implementation.
 5. Finalize schema design and review in Modeller UI.
-6. Finalize `stagingdb` by running the dedicated smoke test as the last step:
+6. Finalize `stagingdb` by running the dedicated packaged smoke test as the last step:
    - the smoke test always recreates and uses `testdb`
    - the smoke test keeps the sample data in `testdb` for review by default
-   - `python staging/schema_to_data_flow_smoke_test.py`
+   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - review the printed summary before distribution
+7. Publish the ontology package:
+   - build the distribution
+   - publish the packaged entitlement ontology and finalized staging artifacts from `onto2ai_entitlement/`
 
 ## Quickstart
 See: [docs/quickstart.md](./docs/quickstart.md)
@@ -103,6 +106,8 @@ from onto2ai_entitlement import (
     SMOKE_TEST_PATH,
 )
 ```
+
+Root `staging/` is now treated as a transient local workspace only. Permanent entitlement artifacts live under `onto2ai_entitlement/`.
 
 ### Ontology Validation
 ```bash

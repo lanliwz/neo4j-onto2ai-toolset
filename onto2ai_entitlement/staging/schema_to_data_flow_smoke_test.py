@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""End-to-end schema workflow test for staging models.
+"""End-to-end schema workflow test for the packaged entitlement schema.
 
 Workflow:
 1. Optionally create/use a test Neo4j database.
-2. Apply generated constraints from staging/neo4j_constraint.cypher.
-3. Load sample data using Pydantic models from staging/pydantic_schema_model.py.
-4. Validate inserted data against staging/neo4j_query_context.md.
+2. Apply generated constraints from the packaged entitlement artifacts.
+3. Load sample data using the packaged Pydantic models.
+4. Validate inserted data against the packaged schema description.
 """
 
 from __future__ import annotations
@@ -23,13 +23,10 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 from neo4j import GraphDatabase
-# Local generated models (support both direct script execution and package import)
-try:
-    import staging.pydantic_schema_model as pydantic_schema_model
-except ModuleNotFoundError:
-    import pydantic_schema_model as pydantic_schema_model
+from onto2ai_entitlement.staging import pydantic_schema_model
 
 TEST_DB_NAME = "testdb"
+THIS_DIR = Path(__file__).resolve().parent
 
 
 @dataclass
@@ -777,12 +774,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run staging schema workflow test")
     parser.add_argument(
         "--constraints",
-        default="staging/neo4j_constraint.cypher",
+        default=str(THIS_DIR / "neo4j_constraint.cypher"),
         help="Path to generated constraints Cypher file",
     )
     parser.add_argument(
         "--schema-description",
-        default="staging/neo4j_query_context.md",
+        default=str(THIS_DIR / "neo4j_query_context.md"),
         help="Path to generated schema description markdown",
     )
     parser.add_argument(
@@ -808,7 +805,7 @@ def main() -> int:
 
     mandatory_props_by_class, enum_members_by_class, topology_map = parse_schema_description(schema_desc_path)
 
-    data_model_path = Path("staging/full_schema_model.json")
+    data_model_path = THIS_DIR / "full_schema_model.json"
     subclass_map = build_subclass_map(data_model_path)
     if subclass_map:
         print(f"Subclass map loaded: {subclass_map}")

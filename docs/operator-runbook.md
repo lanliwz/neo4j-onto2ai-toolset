@@ -42,34 +42,34 @@ Use MCP tools:
 
 ### Artifact Regeneration Workflow
 After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship changes:
-1. Regenerate full model data: `extract_data_model` -> `staging/full_schema_model.json`
-2. Regenerate Pydantic code: `generate_schema_code(target_type='pydantic')` -> `staging/pydantic_schema_model.py`
-3. Regenerate schema docs: `generate_neo4j_schema_description` -> `staging/neo4j_query_context.md`
-4. Regenerate constraints: `generate_neo4j_schema_constraint` -> `staging/neo4j_constraint.cypher`
-5. Run end-to-end staging schema test: `python staging/schema_to_data_flow_smoke_test.py`
+1. Regenerate transient local review artifacts as needed under `staging/`
+2. Copy finalized entitlement artifacts into `onto2ai_entitlement/staging/`
+3. Run end-to-end packaged schema test: `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - the script always recreates and uses `testdb`
    - it keeps the sample data in `testdb` for review by default
    - review the printed summary as the last step of finalization
-7. Confirm the workflow scenario exists in the test graph:
+4. Confirm the workflow scenario exists in the test graph:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to the IRS
-8. Finalize schema design only after the schema workflow test passes and the summary is reviewed.
+5. Finalize schema design only after the schema workflow test passes and the summary is reviewed.
+6. Publish the ontology package from `onto2ai_entitlement/`.
 
 ### Finalization Workflow
 Use this gate before publishing a schema for downstream API/UI/data usage:
 1. Review model quality in Onto2AI Modeller (ontology, UML, and class-model views).
 2. Ensure artifacts are regenerated and in sync:
-   - `staging/full_schema_model.json`
-   - `staging/pydantic_schema_model.py`
-   - `staging/neo4j_query_context.md`
-   - `staging/neo4j_constraint.cypher`
+   - `onto2ai_entitlement/staging/full_schema_model.json`
+   - `onto2ai_entitlement/staging/pydantic_schema_model.py`
+   - `onto2ai_entitlement/staging/neo4j_query_context.md`
+   - `onto2ai_entitlement/staging/neo4j_constraint.cypher`
 3. Run the end-to-end smoke test:
-   - `python staging/schema_to_data_flow_smoke_test.py`
+   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - it always recreates and uses `testdb`
    - it keeps the sample data in `testdb` for review by default
 4. Verify representative query scenarios pass against staging.
-5. Proceed to distribution only when the smoke test and query checks pass.
+5. Build and publish the ontology package from `onto2ai_entitlement/`.
+6. Proceed to distribution only when the smoke test, query checks, and package build pass.
 
 ## Smoke Checks
 - MCP stdio startup succeeds.

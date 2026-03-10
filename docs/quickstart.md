@@ -81,17 +81,16 @@ Open: `http://localhost:8180`
 
 ## 9. Regenerate Local Schema Artifacts (Recommended)
 After enum/NamedIndividual or schema updates, regenerate local artifacts:
-- `staging/full_schema_model.json` from `extract_data_model`
-- `staging/pydantic_schema_model.py` from `generate_schema_code(target_type='pydantic')`
-- `staging/neo4j_query_context.md` from `generate_neo4j_schema_description`
-- `staging/neo4j_constraint.cypher` from `generate_neo4j_schema_constraint`
+- transient local review artifacts may be regenerated under `staging/`
+- permanent entitlement artifacts are published under `onto2ai_entitlement/staging/`
 
 ## 10. Finalization Gate (Recommended)
 Before distributing the model:
 1. Run end-to-end validation:
-   - `python staging/schema_to_data_flow_smoke_test.py`
+   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - this always recreates and uses `testdb`
    - it keeps the sample data in `testdb` for review by default
    - review the printed summary before considering finalization complete
+2. Build and publish the ontology package from `onto2ai_entitlement/`.
 2. Confirm generated artifacts are in sync and committed together.
 3. Validate key business query scenarios against `stagingdb`.

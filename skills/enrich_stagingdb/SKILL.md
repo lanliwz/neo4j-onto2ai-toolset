@@ -223,7 +223,7 @@ Maintain a textual representation of the entire graph schema for easy reference 
 - Ensure the schema description includes an explicit enumeration members section for review.
 
 ### Data Schema Constraints (Archival)
-To ensure data integrity, maintain a Cypher constraints file (for example, `staging/neo4j_constraint.cypher`) that defines the physical constraints of the Neo4j database.
+To ensure data integrity, maintain a Cypher constraints file for the finalized deliverable (for example, `onto2ai_entitlement/staging/neo4j_constraint.cypher`) that defines the physical constraints of the Neo4j database.
 
 **Core Principles:**
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
@@ -233,19 +233,21 @@ To ensure data integrity, maintain a Cypher constraints file (for example, `stag
 
 ### Regeneration Workflow (After Enum or Relationship Updates)
 After changing enum classes, named individuals, subclass relationships, or mandatory relationships, regenerate in this order:
-1. `extract_data_model(database='stagingdb')` → `staging/full_schema_model.json`
+1. `extract_data_model(database='stagingdb')` → transient local review output under `staging/`
    - Note: `rdfs__subClassOf` relationships are automatically included in the extracted model.
-2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → `staging/pydantic_schema_model.py`
+2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → transient local review output under `staging/`
    - Child classes inherit from their parent Pydantic class; inherited fields are not redeclared.
-3. `generate_neo4j_schema_description(database='stagingdb')` → `staging/neo4j_query_context.md`
+3. `generate_neo4j_schema_description(database='stagingdb')` → transient local review output under `staging/`
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
-4. `generate_neo4j_schema_constraint(database='stagingdb')` → `staging/neo4j_constraint.cypher`
+4. `generate_neo4j_schema_constraint(database='stagingdb')` → transient local review output under `staging/`
+5. Copy finalized release artifacts into `onto2ai_entitlement/staging/`
 5. Run workflow validation test:
-   - `python staging/schema_to_data_flow_smoke_test.py`
+   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - The smoke test must always recreate and use `testdb`
    - Keep the sample data in `testdb` by default for manual review
    - Review the printed summary before considering finalization complete
-6. Ensure workflow semantics are covered by test data:
+6. Publish the ontology package from `onto2ai_entitlement/` only after the smoke test passes.
+7. Ensure workflow semantics are covered by test data:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to IRS
