@@ -1519,6 +1519,38 @@ async def staging_materialized_schema(
                 "property_type": row.get('PropertyType'),
                 "target_labels": tgt_labels
             })
+
+        # Step 2b: Pull enum-style named individuals typed by classes in scope.
+        class_uris = list(classes.keys())
+        if class_uris:
+            from neo4j_onto2ai_toolset.onto2ai_core.prefixes import uri_to_neo4j_key
+
+            for class_uri in class_uris:
+                class_key = uri_to_neo4j_key(class_uri)
+                if not class_key:
+                    continue
+                individual_query = f"""
+                MATCH (i:owl__NamedIndividual:`{class_key}`)
+                RETURN DISTINCT
+                  i.uri AS IndividualURI,
+                  i.rdfs__label AS IndividualLabel,
+                  i.skos__definition AS IndividualDef
+                ORDER BY IndividualLabel
+                """
+                individual_rows = semanticdb.execute_cypher(
+                    individual_query,
+                    name="staging_enum_individual_extract",
+                )
+                for row in individual_rows or []:
+                    ind_uri = row["IndividualURI"]
+                    if not ind_uri:
+                        continue
+                    named_individuals[ind_uri] = {
+                        "uri": ind_uri,
+                        "label": str(row["IndividualLabel"]).lower().strip(),
+                        "definition": row["IndividualDef"],
+                        "class_uri": class_uri,
+                    }
         
         # Step 3: Connect to staging database
         staging_db = get_staging_db(staging_db_name)
@@ -1548,6 +1580,17 @@ async def staging_materialized_schema(
             """
             for ind in named_individuals.values():
                 staging_db.execute_cypher(individual_insert_query, params=ind, name="staging_individual_insert")
+
+            individual_type_query = """
+            MATCH (i:owl__NamedIndividual {uri: $uri})
+            MATCH (c:owl__Class {uri: $class_uri})
+            MERGE (i)-[r:rdf__type]->(c)
+            SET r.materialized = true,
+                r.uri = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+                r.skos__definition = 'Named individual is a member of the target class.'
+            """
+            for ind in named_individuals.values():
+                staging_db.execute_cypher(individual_type_query, params=ind, name="staging_individual_type_insert")
 
             # Step 5: Insert relationships
             rel_types_created = set()
