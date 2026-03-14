@@ -21,6 +21,10 @@ PREFIXES_CANON: Dict[str, str] = {
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "dct":  "http://purl.org/dc/terms/",
 
+    # Onto2AI local ontologies
+    "onto2ai_iam": "http://www.onto2ai-toolset.com/ontology/iam/Onto2AIIAM/",
+    "onto2ai_houseplan": "http://www.onto2ai-toolset.com/ontology/houseplan/HousePlan/#",
+
     # OMG Commons (short, unique)
     "c":      "https://www.omg.org/spec/Commons/",
     "c_av":   "https://www.omg.org/spec/Commons/AnnotationVocabulary/",
@@ -195,6 +199,8 @@ PREFIXES_CANON: Dict[str, str] = {
 PREFIXES_ALIAS: Dict[str, str] = {
     # common alternates
     "dcterms": PREFIXES_CANON["dct"],
+    "onto2ai-iam": PREFIXES_CANON["onto2ai_iam"],
+    "onto2ai-houseplan": PREFIXES_CANON["onto2ai_houseplan"],
 
     # your old long forms (if you want to keep docs/queries compatible)
     "cmns_av": PREFIXES_CANON["c_av"],

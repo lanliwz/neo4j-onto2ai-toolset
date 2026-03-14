@@ -47,6 +47,15 @@ onto2ai_entitlement/staging/neo4j_constraint.cypher
 onto2ai_entitlement/staging/neo4j_query_context.md
 onto2ai_entitlement/staging/pydantic_schema_model.py
 onto2ai_entitlement/staging/schema_to_data_flow_smoke_test.py
+onto2ai_houseplan/README.md
+onto2ai_houseplan/__init__.py
+onto2ai_houseplan/artifacts.py
+onto2ai_houseplan/importers/__init__.py
+onto2ai_houseplan/importers/geojson_import.py
+onto2ai_houseplan/ontology/HousePlan.rdf
+onto2ai_houseplan/ontology/__init__.py
+onto2ai_houseplan/staging/__init__.py
+onto2ai_houseplan/staging/neo4j_constraint.cypher
 onto2ai_modeller/__init__.py
 onto2ai_modeller/main.py
 onto2ai_modeller/api/__init__.py

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="onto2ai-engineer",
-    version="0.7.0",
+    version="0.8.0",
     packages=find_packages(),
     install_requires=[
         "neo4j",
@@ -23,6 +23,11 @@ setup(
             "staging/*.py",
             "staging/*.md",
             "staging/*.cypher",
+        ],
+        "onto2ai_houseplan": [
+            "ontology/*.rdf",
+            "staging/*.cypher",
+            "*.md",
         ],
     },
     entry_points={

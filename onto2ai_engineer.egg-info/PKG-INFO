@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: onto2ai-engineer
-Version: 0.7.0
+Version: 0.8.0
 Summary: Onto2AI Engineer for ontology-driven modeling with Neo4j and MCP
 Home-page: https://github.com/lanliwz/onto2ai-engineer
 Author: Wei Zhang
@@ -104,7 +104,7 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.7.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.8.0-py3-none-any.whl
 ```
 
 ### Entitlement Package Contents
