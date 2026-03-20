@@ -1,0 +1,347 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://www.onto2ai-toolset.com/ontology/parcel/Parcel/"
+    xml:base="http://www.onto2ai-toolset.com/ontology/parcel/Parcel/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+  <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/parcel/Parcel/">
+    <rdfs:label>parcel ontology</rdfs:label>
+    <skos:definition>Ontology for modeling a tax parcel GeoJSON feature collection, parcel identifiers, parcel address metadata, polygon parcel geometry, and ordered boundary vertices.</skos:definition>
+  </owl:Ontology>
+
+  <owl:Class rdf:about="#GeoJSONFeatureCollection">
+    <rdfs:label>GeoJSON feature collection</rdfs:label>
+    <skos:definition>A GeoJSON feature collection resource that groups one or more parcel features sourced from a file or service response.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#GeoJSONFeature">
+    <rdfs:label>GeoJSON feature</rdfs:label>
+    <skos:definition>A GeoJSON feature that carries a geometry and source properties describing a parcel or related mapped object.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Parcel">
+    <rdfs:label>parcel</rdfs:label>
+    <skos:definition>A legally identified tract of land represented in a tax parcel dataset and described by parcel identifiers, address metadata, and polygon geometry.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Address">
+    <rdfs:label>address</rdfs:label>
+    <skos:definition>A structured location designator used to describe the civic location associated with a parcel.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#USPostalAddress">
+    <rdfs:subClassOf rdf:resource="#Address"/>
+    <rdfs:label>US postal address</rdfs:label>
+    <skos:definition>A United States civic mailing or site address associated with a parcel record, including street, city, postal code, subdivision, and country information.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Country">
+    <rdfs:label>country</rdfs:label>
+    <skos:definition>A sovereign country used as an enumerated reference value for parcel addresses.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#CountrySubdivision">
+    <rdfs:label>country subdivision</rdfs:label>
+    <skos:definition>A first-level administrative subdivision, such as a U.S. state, used as an enumerated reference value for parcel addresses.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Geometry">
+    <rdfs:label>geometry</rdfs:label>
+    <skos:definition>A geometric representation of a mapped parcel feature.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#PolygonGeometry">
+    <rdfs:subClassOf rdf:resource="#Geometry"/>
+    <rdfs:label>polygon geometry</rdfs:label>
+    <skos:definition>A closed polygon geometry used to represent an areal parcel boundary.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#GPSCoordinate">
+    <rdfs:label>GPS coordinate</rdfs:label>
+    <skos:definition>A geospatial coordinate that records a latitude and longitude position.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#BoundaryVertex">
+    <rdfs:subClassOf rdf:resource="#GPSCoordinate"/>
+    <rdfs:label>boundary vertex</rdfs:label>
+    <skos:definition>An ordered GPS coordinate used as a vertex in the polygon boundary of a parcel geometry.</skos:definition>
+  </owl:Class>
+
+  <owl:ObjectProperty rdf:about="#hasFeature">
+    <rdfs:label>has feature</rdfs:label>
+    <skos:definition>Relates a GeoJSON feature collection to a contained GeoJSON feature.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeatureCollection"/>
+    <rdfs:range rdf:resource="#GeoJSONFeature"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#representsParcel">
+    <rdfs:label>represents parcel</rdfs:label>
+    <skos:definition>Relates a GeoJSON feature to the parcel represented by that feature.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeature"/>
+    <rdfs:range rdf:resource="#Parcel"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasParcelAddress">
+    <rdfs:label>has parcel address</rdfs:label>
+    <skos:definition>Relates a parcel to the postal address carried by the parcel record.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="#USPostalAddress"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasParcelGeometry">
+    <rdfs:label>has parcel geometry</rdfs:label>
+    <skos:definition>Relates a parcel to the polygon geometry that describes its mapped boundary.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="#PolygonGeometry"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasBoundaryVertex">
+    <rdfs:label>has boundary vertex</rdfs:label>
+    <skos:definition>Relates a polygon geometry to an ordered boundary vertex used in the polygon coordinate sequence.</skos:definition>
+    <rdfs:domain rdf:resource="#PolygonGeometry"/>
+    <rdfs:range rdf:resource="#BoundaryVertex"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasCountry">
+    <rdfs:label>has country</rdfs:label>
+    <skos:definition>Relates a parcel postal address to the sovereign country used for the address.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="#Country"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasSubdivision">
+    <rdfs:label>has subdivision</rdfs:label>
+    <skos:definition>Relates a parcel postal address to the state or other first-level subdivision used for the address.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="#CountrySubdivision"/>
+  </owl:ObjectProperty>
+
+  <owl:DatatypeProperty rdf:about="#featureCollectionId">
+    <rdfs:label>feature collection id</rdfs:label>
+    <skos:definition>Stable identifier for a GeoJSON feature collection resource.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeatureCollection"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#featureId">
+    <rdfs:label>feature id</rdfs:label>
+    <skos:definition>Stable identifier for a GeoJSON feature record.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#sourceObjectId">
+    <rdfs:label>source object id</rdfs:label>
+    <skos:definition>Source system object identifier associated with a GeoJSON feature.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#geometryTypeName">
+    <rdfs:label>geometry type name</rdfs:label>
+    <skos:definition>Name of the geometry type carried by a GeoJSON feature, such as Polygon.</skos:definition>
+    <rdfs:domain rdf:resource="#GeoJSONFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#parcelId">
+    <rdfs:label>parcel id</rdfs:label>
+    <skos:definition>Stable identifier for a parcel instance.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#parcelIdentifier">
+    <rdfs:label>parcel identifier</rdfs:label>
+    <skos:definition>Source parcel identifier carried by the parcel dataset, such as a jurisdiction parcel key.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#districtCode">
+    <rdfs:label>district code</rdfs:label>
+    <skos:definition>District code assigned to the parcel in the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#sectionCode">
+    <rdfs:label>section code</rdfs:label>
+    <skos:definition>Section code assigned to the parcel in the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#blockCode">
+    <rdfs:label>block code</rdfs:label>
+    <skos:definition>Block code assigned to the parcel in the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#lotCode">
+    <rdfs:label>lot code</rdfs:label>
+    <skos:definition>Lot code assigned to the parcel in the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#municipalityName">
+    <rdfs:label>municipality name</rdfs:label>
+    <skos:definition>Municipality or locality name associated with the parcel in the source dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#parcelPostalCode">
+    <rdfs:label>parcel postal code</rdfs:label>
+    <skos:definition>Postal ZIP code carried directly on the parcel record by the source dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#fullAddressText">
+    <rdfs:label>full address text</rdfs:label>
+    <skos:definition>Full address string carried by the parcel record.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#parcelAreaAcres">
+    <rdfs:label>parcel area acres</rdfs:label>
+    <skos:definition>Parcel area expressed in acres as reported by the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#landUseText">
+    <rdfs:label>land use text</rdfs:label>
+    <skos:definition>Land-use code and description string assigned to the parcel in the source dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#lastUpdateText">
+    <rdfs:label>last update text</rdfs:label>
+    <skos:definition>Last-update text value carried by the source parcel dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#createDateText">
+    <rdfs:label>create date text</rdfs:label>
+    <skos:definition>Source create-date text value associated with the parcel record.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#titleFlagText">
+    <rdfs:label>title flag text</rdfs:label>
+    <skos:definition>Source text flag indicating whether the parcel record is title-related.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#parcelStatusText">
+    <rdfs:label>parcel status text</rdfs:label>
+    <skos:definition>Status string assigned to the parcel in the source dataset.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#overlapFlagText">
+    <rdfs:label>overlap flag text</rdfs:label>
+    <skos:definition>Source text flag indicating whether the parcel overlaps another mapped area.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#recordedDeedAcres">
+    <rdfs:label>recorded deed acres</rdfs:label>
+    <skos:definition>Recorded deed area of the parcel expressed in acres.</skos:definition>
+    <rdfs:domain rdf:resource="#Parcel"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#addressId">
+    <rdfs:label>address id</rdfs:label>
+    <skos:definition>Stable identifier for an address instance associated with a parcel.</skos:definition>
+    <rdfs:domain rdf:resource="#Address"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#streetAddressLine1">
+    <rdfs:label>street address line 1</rdfs:label>
+    <skos:definition>Primary street address line associated with the parcel.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#addressLine2">
+    <rdfs:label>address line 2</rdfs:label>
+    <skos:definition>Optional second address line for apartment, suite, unit, or similar delivery detail.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#cityName">
+    <rdfs:label>city name</rdfs:label>
+    <skos:definition>City, town, or municipality name recorded as part of the parcel address.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#postalCode">
+    <rdfs:label>postal code</rdfs:label>
+    <skos:definition>Postal ZIP code recorded as part of the parcel address.</skos:definition>
+    <rdfs:domain rdf:resource="#USPostalAddress"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#geometryId">
+    <rdfs:label>geometry id</rdfs:label>
+    <skos:definition>Stable identifier for a geometry instance associated with a parcel feature.</skos:definition>
+    <rdfs:domain rdf:resource="#Geometry"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#coordinateSequenceText">
+    <rdfs:label>coordinate sequence text</rdfs:label>
+    <skos:definition>Serialized coordinate sequence or ring text representing the parcel polygon geometry.</skos:definition>
+    <rdfs:domain rdf:resource="#PolygonGeometry"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#gpsCoordinateId">
+    <rdfs:label>GPS coordinate id</rdfs:label>
+    <skos:definition>Stable identifier for a GPS coordinate or boundary vertex instance.</skos:definition>
+    <rdfs:domain rdf:resource="#GPSCoordinate"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#latitude">
+    <rdfs:label>latitude</rdfs:label>
+    <skos:definition>Latitude component of a GPS coordinate expressed in decimal degrees.</skos:definition>
+    <rdfs:domain rdf:resource="#GPSCoordinate"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#longitude">
+    <rdfs:label>longitude</rdfs:label>
+    <skos:definition>Longitude component of a GPS coordinate expressed in decimal degrees.</skos:definition>
+    <rdfs:domain rdf:resource="#GPSCoordinate"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#vertexSequenceNumber">
+    <rdfs:label>vertex sequence number</rdfs:label>
+    <skos:definition>1-based sequence number of a boundary vertex within the parcel polygon ring.</skos:definition>
+    <rdfs:domain rdf:resource="#BoundaryVertex"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+</rdf:RDF>

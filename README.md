@@ -82,7 +82,7 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.8.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.9.0-py3-none-any.whl
 ```
 
 ### Entitlement Package Contents

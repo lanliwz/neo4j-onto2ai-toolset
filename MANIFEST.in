@@ -1,6 +1,6 @@
 recursive-include onto2ai_modeller/static *
 recursive-include onto2ai_entitlement/ontology *.rdf
 recursive-include onto2ai_entitlement/staging *.json *.py *.md *.cypher
-recursive-include onto2ai_houseplan/ontology *.rdf
-recursive-include onto2ai_houseplan/staging *.cypher
-recursive-include onto2ai_houseplan *.md
+recursive-include onto2ai_parcel/ontology *.rdf
+recursive-include onto2ai_parcel/staging *.py *.md *.cypher
+recursive-include onto2ai_parcel *.md
