@@ -1,9 +1,16 @@
 from setuptools import setup, find_packages
 
+
+PACKAGES = find_packages() + [
+    "onto2ai_modeller.static",
+    "onto2ai_modeller.static.css",
+    "onto2ai_modeller.static.js",
+]
+
 setup(
     name="onto2ai-engineer",
     version="1.0.0",
-    packages=find_packages(),
+    packages=PACKAGES,
     install_requires=[
         "neo4j",
         "langchain",
