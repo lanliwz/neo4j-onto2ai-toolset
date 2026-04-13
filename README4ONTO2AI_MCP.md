@@ -1,6 +1,12 @@
-# Onto2AI Engineer MCP: Ontology Modeling Tools
+# Onto2AI MCP: Ontology Exploration and Modeling Tools
 
-This project provides a powerful **Model Context Protocol (MCP)** server and an AI-driven client designed to interrogate, enhance, and materialize schemas from an OWL ontology loaded into Neo4j.
+This project provides a **Model Context Protocol (MCP)** server and an AI-driven client designed to explore, interrogate, extract, enhance, and materialize schemas from an OWL ontology loaded into Neo4j.
+
+The MCP workflow is meant to support a generic ontology-engineering process:
+- load a well-known ontology into Neo4j
+- inspect concepts, properties, restrictions, and axioms
+- extract a useful subset for your use case
+- refine that subset into your own ontology or implementation-ready schema
 
 ## Features
 
@@ -10,6 +16,7 @@ This project provides a powerful **Model Context Protocol (MCP)** server and an 
 - **SHACL Generation**: Modeling-ready SHACL files for ontology-driven data validation.
 - **Multi-Model Support**: Seamlessly switch between **Gemini 2.0 Flash** and **GPT-5.2 (OpenAI)**.
 - **Clean Agentic Workflow**: Modern LangChain integration using the `create_agent` factory.
+- **Ontology Workbench for AI Engineers**: Lets AI engineers use Neo4j plus MCP as a workbench for exploring well-known ontologies and designing derived ontologies.
 
 ---
 
@@ -20,6 +27,7 @@ This project provides a powerful **Model Context Protocol (MCP)** server and an 
   - Formatting: two Markdown tables (Labels->URI and Relationships->URI).
 - `get_ontological_schema`: Returns raw ontology logic (restrictions/domain/range).
   - Formatting: two Markdown tables (Labels->URI and Properties->URI).
+- `extract_data_model`: Returns a structured model view suitable for subset extraction, implementation design, and downstream code generation.
 
 ### Schema Manager (AI-Powered)
 - `enhance_schema`: Modifies a `DataModel` using natural language instructions.
@@ -52,7 +60,7 @@ The system relies on system environment variables for security. Do **not** hardc
 export NEO4J_MODEL_DB_URL="bolt://localhost:7687"
 export NEO4J_MODEL_DB_USERNAME="neo4j"
 export NEO4J_MODEL_DB_PASSWORD="your_neo4j_password"
-export NEO4J_MODEL_DB_NAME="neo4j"
+export NEO4J_MODEL_DB_NAME="fibo"
 
 # LLM Selection (choose one or both)
 export GOOGLE_API_KEY="your_google_api_key"
@@ -76,7 +84,7 @@ export LLM_MODEL_NAME="gemini-3-flash-preview" # or "gpt-5.2"
 
 ### Running the Onto2AI Client
 
-The client serves as your primary interface. It automatically starts the MCP server as a subprocess.
+The client serves as your primary interface. It automatically starts the MCP server as a subprocess and gives you an ontology workbench over the loaded Neo4j graph.
 
 ```bash
 onto2ai-client
@@ -93,6 +101,13 @@ Upon startup, the client will:
 3. Connect to the MCP server.
 4. List available tools.
 5. Execute a test query (e.g., fetching the 'person' class schema).
+
+In practice, a common workflow is:
+1. load a well-known ontology into Neo4j
+2. inspect a candidate class or domain slice with `get_ontological_schema`
+3. extract a structured subset with `extract_data_model`
+4. refine or simplify that subset with `enhance_schema`
+5. generate implementation artifacts or a custom ontology-aligned schema
 
 ### Using Specific Models
 
@@ -161,7 +176,7 @@ This mode starts the server automatically when the AI agent starts.
         "NEO4J_MODEL_DB_URL": "bolt://localhost:7687",
         "NEO4J_MODEL_DB_USERNAME": "neo4j",
         "NEO4J_MODEL_DB_PASSWORD": "your_password",
-        "NEO4J_MODEL_DB_NAME": "neo4j",
+        "NEO4J_MODEL_DB_NAME": "fibo",
         "OPENAI_API_KEY": "your_key",
         "GOOGLE_API_KEY": "your_key"
       }
@@ -190,7 +205,7 @@ Use this if the server is already running independently on port 8082.
 | Tool Name | Description |
 |-----------|-------------|
 | `get_materialized_schema` | Returns classes and relationships as Markdown tables. |
-| `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels). |
+| `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels) that is useful for subset extraction and custom ontology design. |
 | `get_ontological_schema` | Returns the raw meta-model view of an ontology class. |
 | `enhance_schema` | AI-driven schema enhancement based on custom instructions. |
 | `generate_shacl_for_modelling` | Generates official SHACL files for class-based validation. |
@@ -209,6 +224,7 @@ If the client exits unexpectedly with an `ImportError` or `Connection closed`, e
 Gemini 3 models in AI Studio currently require the `-preview` suffix (e.g., `gemini-3-flash-preview`). The client defaults to this ID.
 
 ## Example MCP Calls
-1. Browse: `get_materialized_schema(class_names=['Account', 'Person'])`
-2. Transform: `enhance_schema(class_names=['Person'], instructions='Add mandatory SSN')`
-3. Generate: `generate_schema_code(class_names=['Payment'], target_type='sql', instructions='Add status enum')`
+1. Explore: `get_ontological_schema(class_name='Person')`
+2. Extract: `extract_data_model(class_names=['Account', 'Person'])`
+3. Refine: `enhance_schema(class_names=['Person'], instructions='Keep only the subset needed for customer onboarding')`
+4. Generate: `generate_schema_code(class_names=['Payment'], target_type='sql', instructions='Add status enum')`
