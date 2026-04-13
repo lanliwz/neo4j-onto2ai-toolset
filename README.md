@@ -24,6 +24,17 @@ This repository is scoped to ontology-centric workflows:
 - packaging finalized ontology deliverables
 - Onto2AI Modeller web UI for review and operations
 
+## Harness Modes
+The toolset now starts from an explicit harness boundary so agentic work stays reliable instead of relying on prompts alone.
+
+The four operating modes are:
+- `ontology mode`: RDF-first ontology authoring with URI rules and `xmllint` validation
+- `schema mode`: generate and validate Cypher, query context, and Pydantic artifacts from ontology intent
+- `dataset mode`: dataset-only smoke tests in `testdb` with no `owl__Class`, `rdf__type`, or `rdfs__subClassOf`
+- `release mode`: package checks, versioning, milestone notes, and release discipline
+
+See: [docs/harness/modes.md](./docs/harness/modes.md)
+
 ## Typical Uses
 This toolset is especially useful when you want to:
 - inspect a large public ontology and understand its reusable conceptual structure
@@ -128,6 +139,7 @@ See: [demo/README4DEMO](./demo/README4DEMO)
 ## Reference Docs
 - Loader: [README4LOADER.md](./README4LOADER.md)
 - MCP: [README4ONTO2AI_MCP.md](./README4ONTO2AI_MCP.md)
+- Harness Modes: [docs/harness/modes.md](./docs/harness/modes.md)
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-engineer-only.md](./docs/milestones/onto2ai-engineer-only.md)
