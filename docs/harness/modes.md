@@ -9,6 +9,10 @@ Core idea:
 
 These modes are intentionally strict. They reduce drift between RDF, Neo4j artifacts, sample data, and package outputs.
 
+Operational checklist:
+
+- [checklists.md](/Users/weizhang/github/neo4j-onto2ai-toolset/docs/harness/checklists.md)
+
 ## Overview
 
 The default operating modes are:

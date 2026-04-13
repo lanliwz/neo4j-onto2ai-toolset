@@ -41,35 +41,30 @@ Use MCP tools:
 - `generate_neo4j_schema_constraint`
 
 ### Artifact Regeneration Workflow
-After enum, `owl__NamedIndividual`, `rdf__type`, or mandatory-relationship changes:
-1. Regenerate transient local review artifacts as needed under `staging/`
-2. Copy finalized entitlement artifacts into `onto2ai_entitlement/staging/`
-3. Run end-to-end packaged schema test: `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
-   - the script always recreates and uses `testdb`
-   - it keeps the sample data in `testdb` for review by default
-   - review the printed summary as the last step of finalization
-4. Confirm the workflow scenario exists in the test graph:
-   - person/taxpayer has residence/address
-   - W-2 is issued by organization/employer and issued to person
-   - Form 1040 is submitted by taxpayer to the IRS
-5. Finalize schema design only after the schema workflow test passes and the summary is reviewed.
-6. Publish the ontology package from `onto2ai_entitlement/`.
+After ontology or schema changes:
+1. Run preflight for the intended mode:
+   - `python scripts/harness_preflight.py ontology`
+   - `python scripts/harness_preflight.py schema`
+   - `python scripts/harness_preflight.py dataset`
+   - `python scripts/harness_preflight.py release`
+2. Regenerate transient local review artifacts as needed under `staging/`
+3. Keep finalized domain artifacts in their canonical package or release paths, not in transient root `staging/`
+4. Run generic harness verification:
+   - `python scripts/harness_verify_ontology.py`
+   - `python scripts/harness_verify_mode_boundaries.py`
+5. Run any domain-specific schema validation or dataset smoke tests in the downstream package or workspace that owns them
+6. Finalize schema design only after the generic harness checks and any downstream domain checks pass
 
 ### Finalization Workflow
 Use this gate before publishing a schema for downstream API/UI/data usage:
 1. Review model quality in Onto2AI Modeller (ontology, UML, and class-model views).
-2. Ensure artifacts are regenerated and in sync:
-   - `onto2ai_entitlement/staging/full_schema_model.json`
-   - `onto2ai_entitlement/staging/pydantic_schema_model.py`
-   - `onto2ai_entitlement/staging/neo4j_query_context.md`
-   - `onto2ai_entitlement/staging/neo4j_constraint.cypher`
-3. Run the end-to-end smoke test:
-   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
-   - it always recreates and uses `testdb`
-   - it keeps the sample data in `testdb` for review by default
-4. Verify representative query scenarios pass against staging.
-5. Build and publish the ontology package from `onto2ai_entitlement/`.
-6. Proceed to distribution only when the smoke test, query checks, and package build pass.
+2. Ensure artifacts are regenerated and in sync in the canonical package or release location.
+3. Run release verification:
+   - `python scripts/harness_verify_release.py`
+   - optional build check: `python scripts/harness_verify_release.py --build`
+4. Verify representative query or smoke-test scenarios pass in the downstream package or workspace that owns them.
+5. Build and publish the relevant package or release artifact from its canonical location.
+6. Proceed to distribution only when generic harness checks, downstream validation, and package build all pass.
 
 ## Smoke Checks
 - MCP stdio startup succeeds.

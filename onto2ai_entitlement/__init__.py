@@ -18,4 +18,4 @@ __all__ = [
     "SMOKE_TEST_PATH",
 ]
 
-__version__ = "0.9.0"
+__version__ = "1.0.0"

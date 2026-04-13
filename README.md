@@ -4,6 +4,8 @@
 
 Onto2AI Toolset is a generic toolkit for loading, exploring, extracting, shaping, and packaging ontologies with Neo4j and AI-assisted workflows.
 
+Current release: `v1.0.0`, the first harness-compatible release of the toolset.
+
 This repository is the toolset itself. Field-specific ontologies and models such as entitlement or parcel are examples of outputs that can be produced with the toolset, not the core product definition.
 
 ## Value Proposition
@@ -34,6 +36,8 @@ The four operating modes are:
 - `release mode`: package checks, versioning, milestone notes, and release discipline
 
 See: [docs/harness/modes.md](./docs/harness/modes.md)
+Checklist: [docs/harness/checklists.md](./docs/harness/checklists.md)
+Preflight: `python scripts/harness_preflight.py <ontology|schema|dataset|release>`
 
 ## Typical Uses
 This toolset is especially useful when you want to:
@@ -108,7 +112,7 @@ python -m build
 ls -la dist/
 
 # optional: install built wheel locally
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-0.9.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-1.0.0-py3-none-any.whl
 ```
 
 ### Example Outputs
@@ -126,6 +130,16 @@ Examples created with this toolset have included entitlement-oriented and parcel
 python scripts/validate_ontology.py resource/ontology/www_onto2ai-toolset_com/ontology
 ```
 
+### Harness Verification
+```bash
+python scripts/harness_run.py verify
+python scripts/harness_run.py release
+python scripts/harness_preflight.py ontology
+python scripts/harness_verify_ontology.py
+python scripts/harness_verify_mode_boundaries.py
+python scripts/harness_verify_release.py
+```
+
 ### Modeller
 ```bash
 onto2ai-modeller --model gemini --host localhost --port 8180
@@ -140,9 +154,11 @@ See: [demo/README4DEMO](./demo/README4DEMO)
 - Loader: [README4LOADER.md](./README4LOADER.md)
 - MCP: [README4ONTO2AI_MCP.md](./README4ONTO2AI_MCP.md)
 - Harness Modes: [docs/harness/modes.md](./docs/harness/modes.md)
+- Harness Checklists: [docs/harness/checklists.md](./docs/harness/checklists.md)
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-engineer-only.md](./docs/milestones/onto2ai-engineer-only.md)
+- Release Notes: [docs/release-notes-v1.0.0.md](./docs/release-notes-v1.0.0.md)
 - Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
 - Demo Guide: [demo/README4DEMO](./demo/README4DEMO)
 

@@ -16,7 +16,7 @@ pip install .
 export NEO4J_MODEL_DB_URL="bolt://localhost:7687"
 export NEO4J_MODEL_DB_USERNAME="neo4j"
 export NEO4J_MODEL_DB_PASSWORD="your_password"
-export NEO4J_MODEL_DB_NAME="neo4j"
+export NEO4J_MODEL_DB_NAME="fibo"
 
 export NEO4J_STAGING_DB_NAME="stagingdb"
 
@@ -82,15 +82,23 @@ Open: `http://localhost:8180`
 ## 9. Regenerate Local Schema Artifacts (Recommended)
 After enum/NamedIndividual or schema updates, regenerate local artifacts:
 - transient local review artifacts may be regenerated under `staging/`
-- permanent entitlement artifacts are published under `onto2ai_entitlement/staging/`
+- finalized domain outputs should be published from their canonical package or release location, not from transient root `staging/`
 
 ## 10. Finalization Gate (Recommended)
-Before distributing the model:
-1. Run end-to-end validation:
-   - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
-   - this always recreates and uses `testdb`
-   - it keeps the sample data in `testdb` for review by default
-   - review the printed summary before considering finalization complete
-2. Build and publish the ontology package from `onto2ai_entitlement/`.
-2. Confirm generated artifacts are in sync and committed together.
-3. Validate key business query scenarios against `stagingdb`.
+Before distributing a toolset-driven ontology output:
+1. Run harness preflight for the mode you are about to enter:
+   - `python scripts/harness_preflight.py ontology`
+   - `python scripts/harness_preflight.py schema`
+   - `python scripts/harness_preflight.py dataset`
+   - `python scripts/harness_preflight.py release`
+   - or run the generic flow directly: `python scripts/harness_run.py verify`
+2. Run generic ontology verification:
+   - `python scripts/harness_verify_ontology.py`
+3. Run generic mode-boundary verification:
+   - `python scripts/harness_verify_mode_boundaries.py`
+4. Run release verification:
+   - `python scripts/harness_verify_release.py`
+   - optional build check: `python scripts/harness_verify_release.py --build`
+   - or full release flow: `python scripts/harness_run.py release`
+5. Confirm generated artifacts are in sync and committed together.
+6. Validate any domain-specific query or smoke-test scenarios in the appropriate downstream package or workspace.

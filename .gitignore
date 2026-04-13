@@ -4,3 +4,4 @@
 /demo/audio/
 /demo/video/review/
 /log/ontology_load_history.json
+/log/harness_runs.jsonl
