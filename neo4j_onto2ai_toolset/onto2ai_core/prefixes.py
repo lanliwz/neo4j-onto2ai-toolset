@@ -24,6 +24,7 @@ PREFIXES_CANON: Dict[str, str] = {
     # Onto2AI local ontologies
     "onto2ai_iam": "http://www.onto2ai-toolset.com/ontology/iam/Onto2AIIAM/",
     "onto2ai_houseplan": "http://www.onto2ai-toolset.com/ontology/houseplan/HousePlan/#",
+    "onto2ai_parcel": "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/",
 
     # OMG Commons (short, unique)
     "c":      "https://www.omg.org/spec/Commons/",
