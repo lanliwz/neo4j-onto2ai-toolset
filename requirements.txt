@@ -1,9 +1,21 @@
-# show current version of package, e.g
-# pip show langchain-community langchain langchain-cli langgraph
+# Core runtime dependencies
+fastapi
+jinja2
+langchain>=0.3.27
+langchain-community>=0.3.27
+langchain-core>=0.3.15
+langchain-google-genai
+langchain-mcp-adapters
+langchain-neo4j
+langchain-openai
 langgraph>=0.3.27
 langgraph-prebuilt>=0.0.8
-langchain>=0.3.27
-langchain-core>=0.3.15
+mcp
 neo4j==5.28.1
-langchain-community>=0.3.27
-langchain-cli>=0.0.35
+pydantic>=2
+pyyaml
+python-dotenv
+rdflib
+rdflib-neo4j
+typing-extensions
+uvicorn

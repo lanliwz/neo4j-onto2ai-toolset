@@ -1,4 +1,6 @@
-from setuptools import setup, find_packages
+from pathlib import Path
+
+from setuptools import find_packages, setup
 
 
 PACKAGES = find_packages() + [
@@ -12,14 +14,26 @@ setup(
     version="1.0.0",
     packages=PACKAGES,
     install_requires=[
-        "neo4j",
-        "langchain",
-        "langgraph",
+        "fastapi",
+        "jinja2",
+        "langchain>=0.3.27",
+        "langchain-community>=0.3.27",
+        "langchain-core>=0.3.15",
+        "langchain-google-genai",
+        "langchain-mcp-adapters",
+        "langchain-neo4j",
+        "langchain-openai",
+        "langgraph>=0.3.27",
+        "langgraph-prebuilt>=0.0.8",
+        "mcp",
+        "neo4j==5.28.1",
+        "pydantic>=2",
         "pyyaml",
         "python-dotenv",
-        "fastapi",
+        "rdflib",
+        "rdflib-neo4j",
+        "typing-extensions",
         "uvicorn",
-        "jinja2",
     ],
     include_package_data=True,
     package_data={
@@ -48,10 +62,10 @@ setup(
     },
     author="Wei Zhang",
     author_email="zhang.wei.ny@gmail.com",
-    description="Onto2AI Engineer for ontology-driven modeling with Neo4j and MCP",
-    long_description=open("README.md").read(),
+    description="Onto2AI Toolset for ontology-driven modeling with Neo4j and MCP",
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
-    url="https://github.com/lanliwz/onto2ai-engineer",
+    url="https://github.com/lanliwz/neo4j-onto2ai-toolset",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

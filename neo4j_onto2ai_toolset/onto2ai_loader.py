@@ -14,7 +14,11 @@ from rdflib import Graph, Namespace, OWL
 from rdflib.plugins.sparql import prepareQuery
 from rdflib_neo4j import HANDLE_VOCAB_URI_STRATEGY, Neo4jStore, Neo4jStoreConfig
 
-from neo4j_onto2ai_toolset.onto2ai_tool_config import auth_data, neo4j_model, semanticdb
+from neo4j_onto2ai_toolset.onto2ai_tool_config import (
+    get_auth_data,
+    get_neo4j_model_config,
+    semanticdb,
+)
 from neo4j_onto2ai_toolset.onto2ai_core.base_functions import get_rdf_data, url_to_filepath
 from neo4j_onto2ai_toolset.onto2ai_core.onto_db_initializer import reset_neo4j_db
 from neo4j_onto2ai_toolset.onto2ai_core.prefixes import PREFIXES_CANON as prefixes
@@ -50,12 +54,13 @@ _DEFAULT_HISTORY_PATH = (
     Path(__file__).resolve().parents[1] / "log" / "ontology_load_history.json"
 )
 
-config = Neo4jStoreConfig(
-    auth_data=auth_data,
-    custom_prefixes=prefixes,
-    handle_vocab_uri_strategy=HANDLE_VOCAB_URI_STRATEGY.SHORTEN,
-    batching=True,
-)
+def _build_store_config() -> Neo4jStoreConfig:
+    return Neo4jStoreConfig(
+        auth_data=get_auth_data(),
+        custom_prefixes=prefixes,
+        handle_vocab_uri_strategy=HANDLE_VOCAB_URI_STRATEGY.SHORTEN,
+        batching=True,
+    )
 
 # Kept for backward compatibility with older callers.
 imported_onto_set: set[str] = set()
@@ -255,7 +260,7 @@ def load_neo4j_db(
             local_files_only=local_files_only,
         )
 
-    neo4j_rdf_graph = Graph(store=Neo4jStore(config=config))
+    neo4j_rdf_graph = Graph(store=Neo4jStore(config=_build_store_config()))
     for triple in discovery_graph:
         neo4j_rdf_graph.add(triple)
     neo4j_rdf_graph.close(True)
@@ -296,6 +301,7 @@ def execute_loader_run(
     local_files_only: bool = False,
 ) -> dict[str, Any]:
     """Run ontology loader and persist a detailed history record."""
+    neo4j_model = get_neo4j_model_config()
     imported_onto_set.clear()
     loaded_uris: set[str] = set()
     failed_uris: list[dict[str, str]] = []

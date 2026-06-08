@@ -5,3 +5,14 @@
 /demo/video/review/
 /log/ontology_load_history.json
 /log/harness_runs.jsonl
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.idea/
+.DS_Store
+.codex_tmp/
+.codex-skill-staging/
