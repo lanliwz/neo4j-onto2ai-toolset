@@ -223,9 +223,15 @@ function initGraph() {
 
     // UML Style Template
     const umlPropertyTemplate = $(go.Panel, "Horizontal",
+        {
+            margin: new go.Margin(2, 0, 2, 0),
+            minSize: new go.Size(NaN, 18)
+        },
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
-            margin: new go.Margin(0, 5, 0, 0)
+            margin: new go.Margin(0, 5, 0, 0),
+            spacingAbove: 1,
+            spacingBelow: 2
         },
             new go.Binding("text", "name", (n) => `+ ${n}`),
             new go.Binding("stroke", "kind", (k, obj) => {
@@ -235,7 +241,9 @@ function initGraph() {
             }).ofModel()),
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
-            stroke: "#94a3b8"
+            stroke: "#94a3b8",
+            spacingAbove: 1,
+            spacingBelow: 2
         },
             new go.Binding("stroke", "isLight", (light) => light ? "#475569" : "#94a3b8").ofModel(),
             new go.Binding("text", "type", (t) => `: ${t}`))
@@ -291,7 +299,7 @@ function initGraph() {
                         stretch: go.GraphObject.Horizontal,
                         defaultAlignment: go.Spot.Left,
                         background: "rgba(0,0,0,0.3)",
-                        padding: 8,
+                        padding: new go.Margin(10, 10, 10, 10),
                         itemTemplate: umlPropertyTemplate
                     },
                     new go.Binding("background", "isLight", (light) => light ? "#f1f5f9" : "rgba(0,0,0,0.3)").ofModel(),
@@ -303,9 +311,15 @@ function initGraph() {
 
     // Pydantic Style Template (Code-like)
     const pydanticPropertyTemplate = $(go.Panel, "Horizontal",
+        {
+            margin: new go.Margin(2, 0, 2, 0),
+            minSize: new go.Size(NaN, 18)
+        },
         $(go.TextBlock, {
             font: "italic 11px 'Fira Code', monospace",
-            margin: new go.Margin(0, 4, 0, 0)
+            margin: new go.Margin(0, 4, 0, 0),
+            spacingAbove: 1,
+            spacingBelow: 2
         },
             new go.Binding("text", "name"),
             new go.Binding("stroke", "", (data, obj) => {
@@ -315,7 +329,9 @@ function initGraph() {
             })),
         $(go.TextBlock, {
             font: "11px 'Fira Code', monospace",
-            stroke: "#a78bfa"
+            stroke: "#a78bfa",
+            spacingAbove: 1,
+            spacingBelow: 2
         },
             new go.Binding("stroke", "isLight", (light) => light ? "#6d28d9" : "#a78bfa").ofModel(),
             new go.Binding("text", "", (data) => data?.pydanticSuffix || formatPydanticFieldSuffix(data)))
@@ -374,7 +390,9 @@ function initGraph() {
                         font: "italic 11px 'Fira Code', monospace",
                         stroke: "#8b949e",
                         maxSize: new go.Size(200, NaN),
-                        wrap: go.TextBlock.WrapFit
+                        wrap: go.TextBlock.WrapFit,
+                        spacingAbove: 2,
+                        spacingBelow: 3
                     },
                         new go.Binding("stroke", "isLight", (light) => light ? "#4b5563" : "#8b949e").ofModel(),
                         new go.Binding("text", "definition", (d) => d ? `\"\"\"\n${d}\n\"\"\"` : ""))
@@ -384,7 +402,7 @@ function initGraph() {
                     {
                         stretch: go.GraphObject.Horizontal,
                         defaultAlignment: go.Spot.Left,
-                        padding: new go.Margin(4, 16, 8, 16),
+                        padding: new go.Margin(8, 16, 10, 16),
                         itemTemplate: pydanticPropertyTemplate,
                         alignment: go.Spot.Left
                     },
