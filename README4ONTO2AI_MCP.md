@@ -12,7 +12,7 @@ The MCP workflow is meant to support a generic ontology-engineering process:
 
 - **Materialized Schema Retrieval**: Flattened, production-ready views of ontology classes.
 - **Data Model Extraction**: High-fidelity structured JSON extraction (classes, attributes, relationships).
-- **AI Enhancement**: On-the-fly schema refinement using GPT models.
+- **Schema Artifact Generation**: Generate implementation artifacts from extracted ontology subsets.
 - **SHACL Generation**: Modeling-ready SHACL files for ontology-driven data validation.
 - **Multi-Model Support**: Seamlessly switch between **Gemini 2.0 Flash** and **GPT-5.2 (OpenAI)**.
 - **Clean Agentic Workflow**: Modern LangChain integration using the `create_agent` factory.
@@ -29,8 +29,7 @@ The MCP workflow is meant to support a generic ontology-engineering process:
   - Formatting: two Markdown tables (Labels->URI and Properties->URI).
 - `extract_data_model`: Returns a structured model view suitable for subset extraction, implementation design, and downstream code generation.
 
-### Schema Manager (AI-Powered)
-- `enhance_schema`: Modifies a `DataModel` using natural language instructions.
+### Schema Artifact Generation
 - `generate_schema_code`: Generates SQL, Pydantic, or Neo4j outputs.
 - `generate_shacl_for_modelling`: Generates modeling SHACL while preserving ontological URIs.
 
@@ -106,7 +105,7 @@ In practice, a common workflow is:
 1. load a well-known ontology into Neo4j
 2. inspect a candidate class or domain slice with `get_ontological_schema`
 3. extract a structured subset with `extract_data_model`
-4. refine or simplify that subset with `enhance_schema`
+4. refine or simplify that subset through the staging/modeling workflow
 5. generate implementation artifacts or a custom ontology-aligned schema
 
 ### Using Specific Models
@@ -207,7 +206,6 @@ Use this if the server is already running independently on port 8082.
 | `get_materialized_schema` | Returns classes and relationships as Markdown tables. |
 | `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels) that is useful for subset extraction and custom ontology design. |
 | `get_ontological_schema` | Returns the raw meta-model view of an ontology class. |
-| `enhance_schema` | AI-driven schema enhancement based on custom instructions. |
 | `generate_shacl_for_modelling` | Generates official SHACL files for class-based validation. |
 | `generate_schema_code` | Generates SQL, Pydantic, or Neo4j code for ontology classes. |
 | `staging_materialized_schema` | Copies materialized schema components to a staging database. |
@@ -226,5 +224,5 @@ Gemini 3 models in AI Studio currently require the `-preview` suffix (e.g., `gem
 ## Example MCP Calls
 1. Explore: `get_ontological_schema(class_name='Person')`
 2. Extract: `extract_data_model(class_names=['Account', 'Person'])`
-3. Refine: `enhance_schema(class_names=['Person'], instructions='Keep only the subset needed for customer onboarding')`
-4. Generate: `generate_schema_code(class_names=['Payment'], target_type='sql', instructions='Add status enum')`
+3. Stage: `staging_materialized_schema(class_names=['Person'], flatten_inheritance=True)`
+4. Generate: `generate_schema_code(class_names=['Payment'], target_type='sql')`

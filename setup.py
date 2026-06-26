@@ -3,7 +3,7 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 
-PACKAGES = find_packages() + [
+PACKAGES = find_packages(exclude=["onto2ai_entitlement*", "onto2ai_parcel*"]) + [
     "onto2ai_modeller.static",
     "onto2ai_modeller.static.css",
     "onto2ai_modeller.static.js",
@@ -38,20 +38,6 @@ setup(
     include_package_data=True,
     package_data={
         "onto2ai_modeller": ["static/*", "static/**/*"],
-        "onto2ai_entitlement": [
-            "ontology/*.rdf",
-            "staging/*.json",
-            "staging/*.py",
-            "staging/*.md",
-            "staging/*.cypher",
-        ],
-        "onto2ai_parcel": [
-            "ontology/*.rdf",
-            "staging/*.py",
-            "staging/*.md",
-            "staging/*.cypher",
-            "*.md",
-        ],
     },
     entry_points={
         "console_scripts": [

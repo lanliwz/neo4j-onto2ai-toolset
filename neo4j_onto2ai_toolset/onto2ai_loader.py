@@ -120,7 +120,7 @@ def _resolve_selection(preset: str | None, uris: list[str] | None) -> list[str]:
         if preset not in _SELECTION_PRESETS:
             raise ValueError(f"Unknown preset '{preset}'.")
         return list(_SELECTION_PRESETS[preset])
-    return list(DEFAULT_SELECTION)
+    raise ValueError("No ontology selection provided. Use --uri <ontology_iri> or --preset <preset>.")
 
 
 def load_ontology_with_imports(
@@ -556,8 +556,8 @@ def build_parser() -> argparse.ArgumentParser:
     load_parser.add_argument(
         "--preset",
         choices=sorted(_SELECTION_PRESETS.keys()),
-        default="default-domains",
-        help="Predefined ontology selection",
+        default=None,
+        help="Predefined ontology selection. Use 'default-domains' for the FND+BE+BP+FBC FIBO slice.",
     )
     load_parser.add_argument(
         "--uri",
@@ -621,8 +621,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    # Keep backward-compatible behavior when no subcommand is provided.
-    command = args.command or "load"
+    if not args.command:
+        parser.print_help()
+        return 2
+
+    command = args.command
     history_path = _resolve_history_path(getattr(args, "history_path", None))
 
     if command == "history":
@@ -644,7 +647,7 @@ def main(argv: list[str] | None = None) -> int:
             local_files_only=args.local_files_only,
         )
 
-    preset = getattr(args, "preset", "default-domains")
+    preset = getattr(args, "preset", None)
     uris = getattr(args, "uri", None)
     rdf_format = getattr(args, "rdf_format", DEFAULT_RDF_FORMAT)
     discover = getattr(args, "discover", True)

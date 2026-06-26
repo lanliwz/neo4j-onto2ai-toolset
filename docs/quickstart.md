@@ -35,11 +35,14 @@ Full variable contract: [configuration.md](./configuration.md)
 
 ## 4. Load Ontology
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
 ```
 
 Useful loader operations:
 ```bash
+# load the default FIBO domain slice explicitly
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
+
 # list recent load runs
 python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10
 
@@ -63,6 +66,9 @@ onto2ai-mcp http 8082
 ## 6. Run Client
 ```bash
 onto2ai-client
+
+# one-shot prompt
+onto2ai-client --message "Extract the data model for the person class."
 ```
 
 ## 7. Start Modeller (Optional)

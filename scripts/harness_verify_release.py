@@ -7,6 +7,8 @@ import argparse
 import re
 import subprocess
 import sys
+import tarfile
+import zipfile
 from pathlib import Path
 
 from harness_log import append_harness_log
@@ -86,6 +88,29 @@ def check_no_root_staging_packaging() -> None:
         )
 
 
+def check_no_example_output_packaging() -> None:
+    setup_text = read_text(SETUP_PY)
+    manifest_text = read_text(MANIFEST_IN)
+    forbidden_tokens = ("onto2ai_entitlement", "onto2ai_parcel")
+    for token in forbidden_tokens:
+        require(
+            f"recursive-include {token}" not in manifest_text,
+            f"MANIFEST.in must not package example output package: {token}",
+        )
+        require(
+            f"prune {token}" in manifest_text,
+            f"MANIFEST.in must explicitly prune example output package: {token}",
+        )
+
+    package_assignment = re.search(r"PACKAGES\s*=\s*(?P<body>.+?)\n\nsetup\(", setup_text, re.DOTALL)
+    require(package_assignment is not None, "setup.py must define PACKAGES before setup()")
+    package_block = package_assignment.group("body")
+    require(
+        'exclude=["onto2ai_entitlement*", "onto2ai_parcel*"]' in package_block,
+        "setup.py must exclude example output packages from the generic distribution",
+    )
+
+
 def expected_dist_paths(version: str) -> tuple[Path, Path]:
     return (
         DIST_DIR / f"onto2ai_engineer-{version}-py3-none-any.whl",
@@ -97,6 +122,19 @@ def check_dist_artifacts(version: str) -> None:
     wheel_path, sdist_path = expected_dist_paths(version)
     require(wheel_path.exists(), f"Missing built wheel artifact: {wheel_path}")
     require(sdist_path.exists(), f"Missing built source artifact: {sdist_path}")
+    with zipfile.ZipFile(wheel_path) as wheel:
+        wheel_names = wheel.namelist()
+    with tarfile.open(sdist_path) as sdist:
+        sdist_names = sdist.getnames()
+    for forbidden_prefix in ("onto2ai_entitlement/", "onto2ai_parcel/"):
+        require(
+            not any(name.startswith(forbidden_prefix) for name in wheel_names),
+            f"Wheel must not contain example output package files: {forbidden_prefix}",
+        )
+        require(
+            not any(f"/{forbidden_prefix}" in name for name in sdist_names),
+            f"Source distribution must not contain example output package files: {forbidden_prefix}",
+        )
 
 
 def main() -> int:
@@ -122,6 +160,7 @@ def main() -> int:
 
         check_generic_docs()
         check_no_root_staging_packaging()
+        check_no_example_output_packaging()
 
         if args.build:
             subprocess.run([sys.executable, "-m", "build", "--no-isolation"], check=True, cwd=REPO_ROOT)

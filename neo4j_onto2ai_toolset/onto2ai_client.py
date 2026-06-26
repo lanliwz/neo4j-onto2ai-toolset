@@ -1,18 +1,20 @@
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain.agents import create_agent
-from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 import asyncio
+import argparse
+import json
 import os
 import sys
-import json
+
+from langchain.agents import create_agent
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_openai import ChatOpenAI
 
 class ToolLoggingCallbackHandler(BaseCallbackHandler):
     """Callback handler for logging tool usage."""
     def on_tool_start(self, serialized: dict, input_str: str, **kwargs) -> None:
         tool_name = serialized.get("name", "Unknown Tool")
-        print(f"\n🛠️  [MCP TOOL CALL] {tool_name}")
+        print(f"\n[MCP TOOL CALL] {tool_name}")
         print(f"   Input: {input_str}")
 
 class Onto2AIClient:
@@ -21,8 +23,9 @@ class Onto2AIClient:
     Handles tool discovery and agent creation.
     """
     
-    def __init__(self, model_name: str = None):
+    def __init__(self, model_name: str = None, *, log_tools: bool = True):
         self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "gemini-3-flash-preview")
+        self.log_tools = log_tools
         self.llm = self._get_model()
         self.client = None
         self.tools = []
@@ -72,7 +75,7 @@ class Onto2AIClient:
         if not self.agent:
             await self.connect()
         
-        callbacks = [ToolLoggingCallbackHandler()]
+        callbacks = [ToolLoggingCallbackHandler()] if self.log_tools else []
         response = await self.agent.ainvoke(
             {"messages": [("user", message)]},
             config={"callbacks": callbacks}
@@ -99,8 +102,6 @@ class Onto2AIClient:
         data_model = None
         # Iterate backwards to find the latest tool output
         for msg in reversed(response["messages"]):
-            print(f"DEBUG: Message type: {type(msg)}, Name: {getattr(msg, 'name', 'N/A')}")
-            
             # More robust check: look for specific tool output
             if getattr(msg, "name", None) == "extract_data_model" or \
                (hasattr(msg, "tool_call_id") and getattr(msg, "name", None) == "onto2ai:extract_data_model"):
@@ -143,25 +144,76 @@ class Onto2AIClient:
             self.client = None
             self.agent = None
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Onto2AI ontology workbench client.")
+    parser.add_argument(
+        "--message",
+        "-m",
+        help="Run one ontology workbench prompt and exit.",
+    )
+    parser.add_argument(
+        "--model",
+        help="LLM model to use. Defaults to LLM_MODEL_NAME or gemini-3-flash-preview.",
+    )
+    parser.add_argument(
+        "--quiet-tools",
+        action="store_true",
+        help="Do not print MCP tool-call traces.",
+    )
+    parser.add_argument(
+        "--list-tools",
+        action="store_true",
+        help="List available MCP tools and exit.",
+    )
+    return parser.parse_args()
+
+
 async def main():
+    args = parse_args()
+
     # Pre-connection check: ensure required Neo4j credentials are in the environment
     if not os.getenv("NEO4J_MODEL_DB_PASSWORD"):
         print("ERROR: NEO4J_MODEL_DB_PASSWORD not found in environment.")
         return
 
-    client = Onto2AIClient()
+    client = Onto2AIClient(model_name=args.model, log_tools=not args.quiet_tools)
     await client.connect()
     
     print("\n=== Available Tools ===")
     for tool in client.tools:
         print(f"- {tool.name}: {tool.description.split('.')[0]}")
+
+    if args.list_tools:
+        await client.close()
+        return
+
+    if args.message:
+        response = await client.chat(args.message)
+        print("\n=== AI Response ===")
+        print(response["response"])
+        if response.get("data_model"):
+            print("\n=== Data Model ===")
+            print(json.dumps(response["data_model"], indent=2))
+        await client.close()
+        return
     
-    print("\nOnto2AI Client Ready. Sending test query...")
-    message = "Get the materialized schema for the 'person' class."
-    response = await client.chat(message)
-    
-    print("\n=== AI Response ===")
-    print(response)
+    print("\nOnto2AI Client Ready. Type a question, or 'exit' to quit.")
+    while True:
+        try:
+            message = input("\nonto2ai> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        if not message:
+            continue
+        if message.lower() in {"exit", "quit", ":q"}:
+            break
+        response = await client.chat(message)
+        print("\n" + response["response"])
+        if response.get("data_model"):
+            print("\nData model returned. Use --message for JSON output in one-shot mode.")
+
+    await client.close()
 
 def cli_main():
     """Synchronous CLI entrypoint for console_scripts."""

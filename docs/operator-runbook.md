@@ -12,11 +12,12 @@
 
 ### Load/Reload Ontology
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
 ```
 Use when baseline ontology content must be refreshed.
 
 Related commands:
+- Load default FIBO domain slice: `python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains`
 - List history: `python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10`
 - Reload prior run: `python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded`
 - Reload local-only (no network fetch): `python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded --local-files-only`

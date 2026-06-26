@@ -28,8 +28,12 @@ Although it has strong support for FIBO and related standards, the loader is des
 2. Run loader commands:
 
 ```bash
-# Default load (FND+BE+BP+FBC, discover enabled)
-python -m neo4j_onto2ai_toolset.onto2ai_loader
+# Load any ontology IRI you want to inspect in Neo4j
+python -m neo4j_onto2ai_toolset.onto2ai_loader load \
+  --uri <ontology_iri>
+
+# Load the default FIBO domain slice explicitly
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
 
 # Explicit load command using a preset
 python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset fnd
@@ -37,10 +41,6 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset fnd
 # Load specific ontology IRI(s)
 python -m neo4j_onto2ai_toolset.onto2ai_loader load \
   --uri https://spec.edmcouncil.org/fibo/ontology/FND/MetadataFND/FNDDomain
-
-# Load any ontology IRI you want to inspect in Neo4j
-python -m neo4j_onto2ai_toolset.onto2ai_loader load \
-  --uri <ontology_iri>
 
 # List recent load history
 python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10

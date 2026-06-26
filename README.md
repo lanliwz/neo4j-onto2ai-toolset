@@ -98,10 +98,13 @@ onto2ai-mcp http 8082
 
 ### Loader
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
+
+# or load a known preset, such as the default FIBO domain slice
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
 ```
 
-The loader is not limited to one ontology family. You can use it to bring well-known ontologies into Neo4j, inspect them, and prepare them for subset extraction and downstream ontology design.
+The loader requires an explicit ontology URI or preset. You can use it to bring well-known ontologies into Neo4j, inspect them, and prepare them for subset extraction and downstream ontology design.
 
 ### Packaging
 ```bash
@@ -123,7 +126,7 @@ Using the toolset, you can produce field-specific deliverables such as:
 - a generated Pydantic model
 - a domain-specific smoke test
 
-Examples created with this toolset have included entitlement-oriented and parcel-oriented ontology packages. Those are domain outputs built by using the toolset, not the generic definition of the toolset itself.
+Examples created with this toolset have included entitlement-oriented and parcel-oriented ontology packages. Those are domain outputs built by using the toolset, not the generic definition of the toolset itself, and they are not part of the generic install surface.
 
 ### Ontology Validation
 ```bash

@@ -1,9 +1,9 @@
 from langchain_core.messages import AnyMessage
 from neo4j_onto2ai_toolset.onto2ai_prompt.types import AgentState
-from neo4j_onto2ai_toolset.onto2ai_tool_config import ONTOLOGY_DOMAIN,logger
+from neo4j_onto2ai_toolset.onto2ai_tool_config import ONTOLOGY_DOMAIN, logger
 
 ONTO2AI_CONTEXT="Context: Ontology-driven Cypher query generation for Neo4j.\n"
-uri_domain = ONTOLOGY_DOMAIN
+uri_domain = ONTOLOGY_DOMAIN or "http://www.onto2ai-toolset.com/ontology/custom/Model/"
 def create_model_prompt(
     state: AgentState
 ) -> list[AnyMessage]:
@@ -24,7 +24,7 @@ def create_model_prompt(
         "- Always MATCH or MERGE nodes/relationships by uri.\n"
         "- Include as many valid relationships as possible.\n"
         "- Output must be strictly the JSON array of Cypher statements, nothing else.\n"
-        "Next Step: Pass the output directly to tool modify_model, then run it.\n"
+        "Next Step: Review the generated Cypher, then apply it through the appropriate schema/database workflow.\n"
         )
         logger.debug(f"create_model_prompt - {prompt}")
         return [{"role": "system", "content": prompt}] + state["messages"]
@@ -48,7 +48,7 @@ def enhance_model_prompt(
         "- Always MATCH or MERGE nodes/relationships by uri.\n"
         "- Include as many valid relationships as possible.\n"
         "- Output must be strictly the JSON array of Cypher statements, nothing else.\n"
-        "Next Step: Pass the output directly to tool modify_model, then run it.\n"
+        "Next Step: Review the generated Cypher, then apply it through the appropriate schema/database workflow.\n"
         )
         logger.debug(f"enhance_model_prompt - {prompt}")
         return [{"role": "system", "content": prompt}] + state["messages"]
@@ -68,7 +68,7 @@ def validate_and_clean_model_prompt(
         "- Relationship types must be camelCase, starting lowercase. \n"
         "- Always MATCH nodes/relationships by uri.\n"
         "- Output must be strictly the JSON array of Cypher statements, nothing else.\n"
-        "Next Step: Pass the output directly to tool modify_model, then run it.\n"
+        "Next Step: Review the generated Cypher, then apply it through the appropriate schema/database workflow.\n"
         )
         logger.debug(f"validate_and_clean_model_prompt - {prompt}")
         return [{"role": "system", "content": prompt}] + state["messages"]

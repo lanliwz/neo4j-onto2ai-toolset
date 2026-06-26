@@ -1,8 +1,8 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: onto2ai-engineer
 Version: 1.0.0
-Summary: Onto2AI Engineer for ontology-driven modeling with Neo4j and MCP
-Home-page: https://github.com/lanliwz/onto2ai-engineer
+Summary: Onto2AI Toolset for ontology-driven modeling with Neo4j and MCP
+Home-page: https://github.com/lanliwz/neo4j-onto2ai-toolset
 Author: Wei Zhang
 Author-email: zhang.wei.ny@gmail.com
 Classifier: Programming Language :: Python :: 3
@@ -11,14 +11,36 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: neo4j
-Requires-Dist: langchain
-Requires-Dist: langgraph
+Requires-Dist: fastapi
+Requires-Dist: jinja2
+Requires-Dist: langchain>=0.3.27
+Requires-Dist: langchain-community>=0.3.27
+Requires-Dist: langchain-core>=0.3.15
+Requires-Dist: langchain-google-genai
+Requires-Dist: langchain-mcp-adapters
+Requires-Dist: langchain-neo4j
+Requires-Dist: langchain-openai
+Requires-Dist: langgraph>=0.3.27
+Requires-Dist: langgraph-prebuilt>=0.0.8
+Requires-Dist: mcp
+Requires-Dist: neo4j==5.28.1
+Requires-Dist: pydantic>=2
 Requires-Dist: pyyaml
 Requires-Dist: python-dotenv
-Requires-Dist: fastapi
+Requires-Dist: rdflib
+Requires-Dist: rdflib-neo4j
+Requires-Dist: typing-extensions
 Requires-Dist: uvicorn
-Requires-Dist: jinja2
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 # Onto2AI Toolset
 
@@ -120,10 +142,13 @@ onto2ai-mcp http 8082
 
 ### Loader
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
+
+# or load a known preset, such as the default FIBO domain slice
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
 ```
 
-The loader is not limited to one ontology family. You can use it to bring well-known ontologies into Neo4j, inspect them, and prepare them for subset extraction and downstream ontology design.
+The loader requires an explicit ontology URI or preset. You can use it to bring well-known ontologies into Neo4j, inspect them, and prepare them for subset extraction and downstream ontology design.
 
 ### Packaging
 ```bash
@@ -145,7 +170,7 @@ Using the toolset, you can produce field-specific deliverables such as:
 - a generated Pydantic model
 - a domain-specific smoke test
 
-Examples created with this toolset have included entitlement-oriented and parcel-oriented ontology packages. Those are domain outputs built by using the toolset, not the generic definition of the toolset itself.
+Examples created with this toolset have included entitlement-oriented and parcel-oriented ontology packages. Those are domain outputs built by using the toolset, not the generic definition of the toolset itself, and they are not part of the generic install surface.
 
 ### Ontology Validation
 ```bash
