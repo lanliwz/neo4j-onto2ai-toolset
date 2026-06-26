@@ -11,6 +11,7 @@
 | UserType | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType | Classification of a user by the kind of actor it represents for entitlement evaluation. |
 | RelationalDatabase | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase | JDBC-connectable relational database platform. |
 | Table | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table | Relational table containing columns. |
+| EntitlementRule | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule | Abstract superclass for entitlement rules that constrain row visibility or column values. |
 | RowFilterRule | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule | Rule that restricts row visibility using predicates. |
 | ColumnMaskRule | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule | Rule that transforms or redacts sensitive column values. |
 | PolicyGroup | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PolicyGroup | Collection of policies mapped to a persona, role, or function. |
@@ -37,6 +38,7 @@
 | includesPolicy | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy | Policy group bundles one or more policies. | 0..* |
 | isMemberOf | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf | User inherits policies via policy group membership. | 0..* |
 | rdf__type |  | instance-of relationship | 1 |
+| rdfs__subClassOf | http://www.w3.org/2000/01/rdf-schema#subClassOf | row filter rule is a subclass of entitlement rule | 1 |
 | targetsFilteredColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn | Row-filter rule targets a specific column context. | 0..* |
 | targetsMaskedColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn | Column-mask rule targets a specific column. | 0..* |
 
@@ -82,6 +84,11 @@
 | Table | tableName | xsd:string | No |
 | Table | tableOwner | xsd:string | No |
 | Table | tableType | xsd:string | No |
+| EntitlementRule | llmRewriteInstruction | xsd:string | No |
+| EntitlementRule | rewriteTemplate | xsd:string | No |
+| EntitlementRule | ruleExpression | xsd:string | No |
+| EntitlementRule | valueSourceExpression | xsd:string | No |
+| EntitlementRule | valueSourceType | xsd:string | No |
 | RowFilterRule | comparisonOperator | xsd:string | No |
 | RowFilterRule | denyBehavior | xsd:string | No |
 | RowFilterRule | filterAction | xsd:string | No |
@@ -115,6 +122,8 @@
 - `(:Policy)-[:hasRowFilterRule]->(:RowFilterRule)`
 - `(:Table)-[:belongsToSchema]->(:Schema)`
 - `(:RowFilterRule)-[:targetsFilteredColumn]->(:Column)`
+- `(:RowFilterRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
+- `(:ColumnMaskRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
 - `(:RowFilterRule)-[:hasPriority]->(:RulePriority)`
 - `(:ColumnMaskRule)-[:targetsMaskedColumn]->(:Column)`
 - `(:ColumnMaskRule)-[:hasPriority]->(:RulePriority)`

@@ -23,6 +23,11 @@ from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 from neo4j import GraphDatabase
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from onto2ai_entitlement.staging import pydantic_schema_model
 
 TEST_DB_NAME = "testdb"
@@ -332,7 +337,7 @@ def load_sample_data(
                     node_id = str(uuid.uuid4())
                     session.run(
                         f"""
-                        CREATE (n:`{enum_class}`:owl__NamedIndividual {{
+                        CREATE (n:`{enum_class}` {{
                           id: $id,
                           rdfs__label: $label,
                           testRun: $run,
@@ -541,13 +546,13 @@ def load_sample_data(
         # Clean previous data for idempotent reruns.
         session.run("MATCH (n {testRun: $run}) DETACH DELETE n", run=test_run)
 
-        # Create sample enum/named individual nodes for enum classes.
+        # Create sample enum/reference nodes for enum classes.
         for enum_class, members in sorted(enum_members_by_class.items()):
             for member_label in sorted(members):
                 node_id = str(uuid.uuid4())
                 session.run(
                     f"""
-                    CREATE (n:`{enum_class}`:owl__NamedIndividual {{
+                    CREATE (n:`{enum_class}` {{
                       id: $id,
                       rdfs__label: $label,
                       testRun: $run,

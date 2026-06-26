@@ -7,7 +7,9 @@ It bundles the source ontology together with the finalized staging artifacts use
 ## Contents
 
 - `ontology/Onto2AIEntitlement.rdf`
-  - source RDF ontology for the entitlement domain
+  - packaged copy of the source RDF ontology for the entitlement domain
+- `../resource/ontology/www_onto2ai-toolset_com/ontology/entitlement/Onto2AIEntitlement.rdf`
+  - URI-mirrored source RDF path used by repository-level ontology workflows
 - `staging/full_schema_model.json`
   - extracted materialized schema model from `stagingdb`
 - `staging/pydantic_schema_model.py`
@@ -48,7 +50,7 @@ Artifacts are written to `dist/`.
 
 The intended finalization flow for this package is:
 
-1. Validate the source ontology RDF.
+1. Update and validate the source ontology RDF.
 2. Regenerate the staging artifacts from `stagingdb`.
 3. Build the distribution.
 4. Run the smoke test as the last step.
@@ -89,6 +91,7 @@ The current entitlement package covers:
 - `user`
 - `policy group`
 - `policy`
+- `entitlement rule`
 - `row filter rule`
 - `column mask rule`
 - `relational database`
@@ -103,7 +106,7 @@ The current entitlement package covers:
 
 Before publishing, confirm:
 
-- ontology RDF is current
+- URI-mirrored ontology RDF and packaged ontology RDF are current and identical
 - staging artifacts are regenerated and in sync
 - build succeeds
 - smoke test passes on `testdb`

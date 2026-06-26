@@ -642,9 +642,6 @@ async function onNodeDoubleClick(node) {
 /**
  * Display node properties in the right panel
  */
-/**
- * Display node properties in the right panel
- */
 function showNodeProperties(data) {
     const container = document.getElementById('properties-content');
     const props = data.properties || {};
@@ -665,7 +662,7 @@ function showNodeProperties(data) {
         <div class="property-item">
             <div class="property-label">URI</div>
             <div class="property-value">
-                <a href="${escapeHtml(data.uri)}" target="_blank" class="text-blue-400 hover:underline break-all">${escapeHtml(data.uri)}</a>
+                ${escapeHtml(data.uri)}
             </div>
         </div>
     `;
@@ -732,7 +729,7 @@ function showLinkProperties(data) {
             <div class="property-item">
                 <div class="property-label">URI</div>
                 <div class="property-value">
-                    <a href="${escapeHtml(data.uri)}" target="_blank" class="text-blue-400 hover:underline break-all">${escapeHtml(data.uri)}</a>
+                    ${escapeHtml(data.uri)}
                 </div>
             </div>
         `;

@@ -398,6 +398,59 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"
     },
     {
+      "label": "entitlement rule",
+      "type": "owl__Class",
+      "properties": [
+        {
+          "name": "llmRewriteInstruction",
+          "type": "xsd:string",
+          "description": "A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/llmRewriteInstruction"
+        },
+        {
+          "name": "rewriteTemplate",
+          "type": "xsd:string",
+          "description": "A deterministic query or projection rewrite template with placeholders for runtime entitlement values.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rewriteTemplate"
+        },
+        {
+          "name": "ruleExpression",
+          "type": "xsd:string",
+          "description": "The executable or declarative expression associated with an entitlement rule.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ruleExpression"
+        },
+        {
+          "name": "valueSourceExpression",
+          "type": "xsd:string",
+          "description": "The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression"
+        },
+        {
+          "name": "valueSourceType",
+          "type": "xsd:string",
+          "description": "The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.",
+          "mandatory": false,
+          "cardinality": "0..1",
+          "unique": false,
+          "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceType"
+        }
+      ],
+      "description": "Abstract superclass for entitlement rules that constrain row visibility or column values.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"
+    },
+    {
       "label": "row filter rule",
       "type": "owl__Class",
       "properties": [
@@ -431,7 +484,7 @@
         {
           "name": "llmRewriteInstruction",
           "type": "xsd:string",
-          "description": "A canonical instruction telling an LLM how to rewrite a query for this row filter rule.",
+          "description": "A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -449,7 +502,7 @@
         {
           "name": "rewriteTemplate",
           "type": "xsd:string",
-          "description": "A deterministic query rewrite template with placeholders for runtime filter values.",
+          "description": "A deterministic query or projection rewrite template with placeholders for runtime entitlement values.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -467,7 +520,7 @@
         {
           "name": "ruleExpression",
           "type": "xsd:string",
-          "description": "The executable or declarative row-filter expression associated with a row filter rule.",
+          "description": "The executable or declarative expression associated with an entitlement rule.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -476,7 +529,7 @@
         {
           "name": "valueSourceExpression",
           "type": "xsd:string",
-          "description": "The expression, path, or lookup instruction used to resolve row filter values at runtime.",
+          "description": "The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -485,7 +538,7 @@
         {
           "name": "valueSourceType",
           "type": "xsd:string",
-          "description": "The source category used to resolve row filter values, such as static literal, subject attribute, session context, or derived query.",
+          "description": "The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -520,7 +573,7 @@
         {
           "name": "llmRewriteInstruction",
           "type": "xsd:string",
-          "description": "A canonical instruction telling an LLM how to rewrite a query projection for this column mask rule.",
+          "description": "A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -556,7 +609,7 @@
         {
           "name": "rewriteTemplate",
           "type": "xsd:string",
-          "description": "A deterministic projection rewrite template with placeholders for masked output values.",
+          "description": "A deterministic query or projection rewrite template with placeholders for runtime entitlement values.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -565,7 +618,7 @@
         {
           "name": "ruleExpression",
           "type": "xsd:string",
-          "description": "The executable or declarative masking expression associated with a column mask rule.",
+          "description": "The executable or declarative expression associated with an entitlement rule.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -574,7 +627,7 @@
         {
           "name": "valueSourceExpression",
           "type": "xsd:string",
-          "description": "The expression, path, or lookup instruction used to resolve masking inputs at runtime.",
+          "description": "The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -583,7 +636,7 @@
         {
           "name": "valueSourceType",
           "type": "xsd:string",
-          "description": "The source category used to resolve masking inputs, such as static literal, subject attribute, session context, or derived query.",
+          "description": "The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.",
           "mandatory": false,
           "cardinality": "0..1",
           "unique": false,
@@ -758,6 +811,28 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn"
     },
     {
+      "type": "rdfs__subClassOf",
+      "start_node_label": "row filter rule",
+      "end_node_label": "entitlement rule",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "row filter rule is a subclass of entitlement rule",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+    },
+    {
+      "type": "rdfs__subClassOf",
+      "start_node_label": "column mask rule",
+      "end_node_label": "entitlement rule",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "column mask rule is a subclass of entitlement rule",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+    },
+    {
       "type": "hasPriority",
       "start_node_label": "row filter rule",
       "end_node_label": "rule priority",
@@ -888,6 +963,7 @@
       "user type",
       "relational database",
       "table",
+      "entitlement rule",
       "row filter rule",
       "column mask rule",
       "policy group",

@@ -8,7 +8,7 @@
     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
     xmlns:onto2ai-ent="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/">
 
-  <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement">
+  <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/">
     <rdfs:label>onto2ai-entitlement</rdfs:label>
     <skos:definition xml:lang="en">Ontology for row-level and column-level entitlement enforcement across JDBC-accessible relational databases.</skos:definition>
     <owl:versionInfo>1.0.0</owl:versionInfo>
@@ -17,7 +17,7 @@
   <!-- Classes -->
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/User">
     <rdfs:label>user</rdfs:label>
-    <skos:definition xml:lang="en">User that invokes or is evaluated against entitlement policies, including a human actor or an automated process.</skos:definition>
+    <skos:definition xml:lang="en">Principal that invokes or is evaluated against entitlement policies, including a human actor or an automated process.</skos:definition>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/userId"/>
@@ -59,6 +59,7 @@
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule">
     <rdfs:label>row filter rule</rdfs:label>
     <skos:definition xml:lang="en">Rule that restricts row visibility using predicates.</skos:definition>
+    <rdfs:subClassOf rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rowFilterRuleId"/>
@@ -71,6 +72,7 @@
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule">
     <rdfs:label>column mask rule</rdfs:label>
     <skos:definition xml:lang="en">Rule that transforms or redacts sensitive column values.</skos:definition>
+    <rdfs:subClassOf rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnMaskRuleId"/>
@@ -82,7 +84,12 @@
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority">
     <rdfs:label>rule priority</rdfs:label>
-    <skos:definition xml:lang="en">Priority level used to order rule evaluation and conflict resolution.</skos:definition>
+    <skos:definition xml:lang="en">Enumeration of precedence levels used to order entitlement rules during evaluation.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule">
+    <rdfs:label>entitlement rule</rdfs:label>
+    <skos:definition xml:lang="en">Abstract superclass for entitlement rules that constrain row visibility or column values.</skos:definition>
   </owl:Class>
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema">
@@ -198,8 +205,7 @@
   <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority">
     <rdfs:label>has priority</rdfs:label>
     <skos:definition xml:lang="en">A row filter rule or column mask rule is assigned a priority level for evaluation order.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority"/>
   </owl:ObjectProperty>
 
@@ -332,9 +338,8 @@
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ruleExpression">
     <rdfs:label>rule expression</rdfs:label>
-    <skos:definition xml:lang="en">The executable or declarative row-filter expression associated with a row filter rule.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
+    <skos:definition xml:lang="en">The executable or declarative expression associated with an entitlement rule.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
@@ -361,15 +366,15 @@
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceType">
     <rdfs:label>value source type</rdfs:label>
-    <skos:definition xml:lang="en">The source category used to resolve row filter values, such as static literal, subject attribute, session context, or derived query.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <skos:definition xml:lang="en">The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression">
     <rdfs:label>value source expression</rdfs:label>
-    <skos:definition xml:lang="en">The expression, path, or lookup instruction used to resolve row filter values at runtime.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <skos:definition xml:lang="en">The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
@@ -382,15 +387,15 @@
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/llmRewriteInstruction">
     <rdfs:label>llm rewrite instruction</rdfs:label>
-    <skos:definition xml:lang="en">A canonical instruction telling an LLM how to rewrite a query for this row filter rule.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <skos:definition xml:lang="en">A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rewriteTemplate">
     <rdfs:label>rewrite template</rdfs:label>
-    <skos:definition xml:lang="en">A deterministic query rewrite template with placeholders for runtime filter values.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <skos:definition xml:lang="en">A deterministic query or projection rewrite template with placeholders for runtime entitlement values.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
@@ -642,7 +647,7 @@
   <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MediumPriority">
     <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority"/>
     <rdfs:label>medium priority</rdfs:label>
-    <skos:definition xml:lang="en">Priority level indicating a rule has normal evaluation precedence.</skos:definition>
+    <skos:definition xml:lang="en">Priority level indicating a rule should be evaluated with standard precedence.</skos:definition>
   </owl:NamedIndividual>
 
   <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HighPriority">

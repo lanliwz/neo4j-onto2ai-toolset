@@ -98,7 +98,19 @@ class Table(BaseModel):
     table_type: Optional[str] = Field(default=None, alias="tableType", description="The functional type of a relational table, such as base table or view-backed table.")
     belongs_to_schema: List[Schema] = Field(default_factory=list, alias="belongsToSchema", description="A table belongs to exactly one schema.")
 
-class RowFilterRule(BaseModel):
+class EntitlementRule(BaseModel):
+    """Abstract superclass for entitlement rules that constrain row visibility or column values."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    llm_rewrite_instruction: Optional[str] = Field(default=None, alias="llmRewriteInstruction", description="A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.")
+    rewrite_template: Optional[str] = Field(default=None, alias="rewriteTemplate", description="A deterministic query or projection rewrite template with placeholders for runtime entitlement values.")
+    rule_expression: Optional[str] = Field(default=None, alias="ruleExpression", description="The executable or declarative expression associated with an entitlement rule.")
+    value_source_expression: Optional[str] = Field(default=None, alias="valueSourceExpression", description="The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.")
+    value_source_type: Optional[str] = Field(default=None, alias="valueSourceType", description="The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.")
+    has_priority: Optional[RulePriority] = Field(default=None, alias="hasPriority", description="Associates an entitlement rule with its precedence level.")
+
+class RowFilterRule(EntitlementRule):
     """Rule that restricts row visibility using predicates."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
@@ -106,33 +118,21 @@ class RowFilterRule(BaseModel):
     comparison_operator: Optional[str] = Field(default=None, alias="comparisonOperator", description="The comparison operator a row filter rule applies when rewriting a query predicate.")
     deny_behavior: Optional[str] = Field(default=None, alias="denyBehavior", description="The enforcement behavior applied when a row filter rule denies access, such as return no rows or block query.")
     filter_action: Optional[str] = Field(default=None, alias="filterAction", description="The action a row filter rule applies when rewriting a query, such as allow or deny.")
-    llm_rewrite_instruction: Optional[str] = Field(default=None, alias="llmRewriteInstruction", description="A canonical instruction telling an LLM how to rewrite a query for this row filter rule.")
     match_mode: Optional[str] = Field(default=None, alias="matchMode", description="The value cardinality mode a row filter rule expects, such as single value, multiple values, or no value.")
-    rewrite_template: Optional[str] = Field(default=None, alias="rewriteTemplate", description="A deterministic query rewrite template with placeholders for runtime filter values.")
     row_filter_rule_id: str = Field(alias="rowFilterRuleId", description="The unique identifier assigned to a row filter rule.", json_schema_extra={"unique": True})
-    rule_expression: Optional[str] = Field(default=None, alias="ruleExpression", description="The executable or declarative row-filter expression associated with a row filter rule.")
-    value_source_expression: Optional[str] = Field(default=None, alias="valueSourceExpression", description="The expression, path, or lookup instruction used to resolve row filter values at runtime.")
-    value_source_type: Optional[str] = Field(default=None, alias="valueSourceType", description="The source category used to resolve row filter values, such as static literal, subject attribute, session context, or derived query.")
     targets_filtered_column: List[Column] = Field(default_factory=list, alias="targetsFilteredColumn", description="Row-filter rule targets a specific column context.")
-    has_priority: Optional[RulePriority] = Field(default=None, alias="hasPriority", description="Associates an entitlement rule with its precedence level.")
 
-class ColumnMaskRule(BaseModel):
+class ColumnMaskRule(EntitlementRule):
     """Rule that transforms or redacts sensitive column values."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     column_mask_rule_id: str = Field(alias="columnMaskRuleId", description="The unique identifier assigned to a column mask rule.", json_schema_extra={"unique": True})
     fallback_behavior: Optional[str] = Field(default=None, alias="fallbackBehavior", description="The fallback behavior applied when a column mask rule cannot resolve its masking inputs.")
-    llm_rewrite_instruction: Optional[str] = Field(default=None, alias="llmRewriteInstruction", description="A canonical instruction telling an LLM how to rewrite a query projection for this column mask rule.")
     mask_action: Optional[str] = Field(default=None, alias="maskAction", description="The masking action a column mask rule applies, such as reveal, redact, tokenize, or substitute.")
     mask_value_expression: Optional[str] = Field(default=None, alias="maskValueExpression", description="The expression used to compute the masked value emitted by a column mask rule.")
     masking_method: Optional[str] = Field(default=None, alias="maskingMethod", description="The masking method or transformation strategy used by a column mask rule.")
-    rewrite_template: Optional[str] = Field(default=None, alias="rewriteTemplate", description="A deterministic projection rewrite template with placeholders for masked output values.")
-    rule_expression: Optional[str] = Field(default=None, alias="ruleExpression", description="The executable or declarative masking expression associated with a column mask rule.")
-    value_source_expression: Optional[str] = Field(default=None, alias="valueSourceExpression", description="The expression, path, or lookup instruction used to resolve masking inputs at runtime.")
-    value_source_type: Optional[str] = Field(default=None, alias="valueSourceType", description="The source category used to resolve masking inputs, such as static literal, subject attribute, session context, or derived query.")
     targets_masked_column: List[Column] = Field(default_factory=list, alias="targetsMaskedColumn", description="Column-mask rule targets a specific column.")
-    has_priority: Optional[RulePriority] = Field(default=None, alias="hasPriority", description="Associates an entitlement rule with its precedence level.")
 
 class PolicyGroup(BaseModel):
     """Collection of policies mapped to a persona, role, or function."""
