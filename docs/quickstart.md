@@ -73,9 +73,12 @@ onto2ai-client --message "Extract the data model for the person class."
 
 ## 7. Start Modeller (Optional)
 ```bash
-onto2ai-modeller --model gemini --host 0.0.0.0 --port 8180
-# or
-python -m onto2ai_modeller.main --model gemini --host 0.0.0.0 --port 8180
+# Development mode with auto-reload for Python and UI asset changes
+uv run --with-requirements requirements.txt \
+  python -m onto2ai_modeller.main --reload --model gpt --host 0.0.0.0 --port 8180
+
+# Installed console script
+onto2ai-modeller --model gpt --host 0.0.0.0 --port 8180
 ```
 Open: `http://localhost:8180`
 

@@ -145,10 +145,14 @@ python scripts/harness_verify_release.py
 
 ### Modeller
 ```bash
-onto2ai-modeller --model gemini --host localhost --port 8180
-# or
-python -m onto2ai_modeller.main --model gemini --host localhost --port 8180
+# Development mode with auto-reload for Python and UI asset changes
+uv run --with-requirements requirements.txt \
+  python -m onto2ai_modeller.main --reload --model gpt --host localhost --port 8180
+
+# Installed console script
+onto2ai-modeller --model gpt --host localhost --port 8180
 ```
+Open: `http://localhost:8180`
 
 ### Demo Workflow
 See: [demo/README4DEMO](./demo/README4DEMO)

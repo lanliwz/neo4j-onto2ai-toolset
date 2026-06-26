@@ -5,8 +5,10 @@ import os
 import logging
 from typing import List, Optional, Dict, Any
 from functools import lru_cache
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from neo4j import GraphDatabase
+import yaml
 
 from .models import (
     ClassInfo, ClassSchema, RelationshipInfo,
@@ -18,6 +20,10 @@ from .models import (
 router = APIRouter(tags=["schemas"])
 logger = logging.getLogger("onto2ai-engineer")
 
+DEFAULT_MODELLER_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.yaml"
+MODELLER_CONFIG_PATH_ENV = "ONTO2AI_MODELLER_CONFIG"
+DEFAULT_LLM = "gpt-5.4-mini"
+
 # Onto2AI MCP Client (Lazy Initialization)
 from neo4j_onto2ai_toolset.onto2ai_client import Onto2AIClient
 _onto2ai_client = None
@@ -25,11 +31,7 @@ _onto2ai_client = None
 async def get_onto2ai_client():
     global _onto2ai_client, _current_llm
     if _current_llm is None:
-        _current_llm = (
-            os.getenv("LLM_MODEL_NAME")
-            or os.getenv("GPT_MODEL_NAME")
-            or "gemini-3-flash-preview-001"
-        )
+        _current_llm = _resolve_current_llm()
         
     if _onto2ai_client is None:
         _onto2ai_client = Onto2AIClient(model_name=_current_llm)
@@ -40,8 +42,118 @@ async def get_onto2ai_client():
 _db_connection = None
 
 # LLM State
-AVAILABLE_LLMS = ["gemini-3-flash-preview-001", "gpt-5.2"]
 _current_llm = None  # Lazy init in get_llm_status/get_onto2ai_client
+
+
+def _load_modeller_config() -> dict[str, Any]:
+    config_path = Path(os.getenv(MODELLER_CONFIG_PATH_ENV, DEFAULT_MODELLER_CONFIG_PATH))
+    if not config_path.exists():
+        logger.warning("Modeller config file not found: %s", config_path)
+        return {}
+
+    with config_path.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        logger.warning("Modeller config file must contain a mapping: %s", config_path)
+        return {}
+    return data
+
+
+def _get_llm_config() -> dict[str, Any]:
+    llm_config = _load_modeller_config().get("llm", {})
+    if not isinstance(llm_config, dict):
+        logger.warning("Modeller config 'llm' section must contain a mapping")
+        return {}
+    return llm_config
+
+
+def _configured_available_llms() -> list[str]:
+    available = _get_llm_config().get("available", [])
+    if isinstance(available, str):
+        available = [available]
+    if not isinstance(available, list):
+        logger.warning("Modeller config 'llm.available' must be a list")
+        available = []
+
+    seen = set()
+    models = []
+    for model in available:
+        model_name = str(model).strip()
+        if model_name and model_name not in seen:
+            seen.add(model_name)
+            models.append(model_name)
+    return models or [DEFAULT_LLM]
+
+
+def _configured_default_llm() -> str:
+    default_llm = _get_llm_config().get("default")
+    if default_llm:
+        return str(default_llm).strip()
+    available = _configured_available_llms()
+    return available[0] if available else DEFAULT_LLM
+
+
+def _resolve_current_llm() -> str:
+    return os.getenv("LLM_MODEL_NAME") or os.getenv("GPT_MODEL_NAME") or _configured_default_llm()
+
+
+def _available_llms_with_current(current_llm: str) -> list[str]:
+    available = _configured_available_llms()
+    if current_llm not in available:
+        available.append(current_llm)
+    return available
+
+
+def _llm_provider_for_model(model_name: str) -> str:
+    return "Gemini" if "gemini" in model_name.lower() else "OpenAI"
+
+
+def _api_key_name_for_model(model_name: str) -> str:
+    return "GOOGLE_API_KEY" if "gemini" in model_name.lower() else "OPENAI_API_KEY"
+
+
+def _format_llm_error_message(exc: Exception, model_name: str) -> str:
+    error_text = str(exc).strip()
+    normalized = error_text.lower()
+    provider = _llm_provider_for_model(model_name)
+    api_key = _api_key_name_for_model(model_name)
+
+    if any(token in normalized for token in ("api key", "apikey", "authentication", "unauthorized", "401", "invalid_api_key")):
+        return (
+            f"I could not connect to {provider} for model `{model_name}` because the API key is missing or invalid. "
+            f"Set `{api_key}` for this deployment, then retry. If you intended to use a different model, choose it from the model selector."
+        )
+
+    if any(token in normalized for token in ("model_not_found", "does not exist", "not found", "unsupported model", "unknown model")):
+        return (
+            f"The selected model `{model_name}` is not available to this deployment. "
+            "Pick another model from the selector or update `ONTO2AI_MODELLER_CONFIG` so the list only contains models enabled for your account."
+        )
+
+    if any(token in normalized for token in ("rate limit", "rate_limit", "429")):
+        return (
+            f"{provider} rejected the request for `{model_name}` because the deployment is rate limited. "
+            "Wait a moment and retry, or switch to another configured model."
+        )
+
+    if any(token in normalized for token in ("quota", "insufficient_quota", "billing", "payment")):
+        return (
+            f"{provider} rejected the request for `{model_name}` because the account quota or billing state needs attention. "
+            "Check the provider account, or switch to another configured model."
+        )
+
+    if any(token in normalized for token in ("timeout", "timed out", "connection", "connect", "dns", "network")):
+        return (
+            f"The request to {provider} for `{model_name}` did not complete because of a network or timeout problem. "
+            "Check connectivity from the deployment host and retry."
+        )
+
+    detail = f" Provider error: {error_text}" if error_text else ""
+    return (
+        f"The selected model `{model_name}` failed before returning an answer. "
+        "Check the deployment model configuration, provider credentials, and server logs before retrying."
+        f"{detail}"
+    )
 
 
 def _map_pydantic_attr_type(raw_type: Any) -> str:
@@ -884,10 +996,24 @@ async def chat(request: ChatRequest):
     Uses the Onto2AI MCP client to leverage ontology tools.
     """
     try:
-        client = await get_onto2ai_client()
-        
-        # Call the MCP-powered agent
-        client_res = await client.chat(request.message)
+        try:
+            client = await get_onto2ai_client()
+
+            # Call the MCP-powered agent
+            client_res = await client.chat(request.message)
+        except Exception as llm_error:
+            model_name = _current_llm or _resolve_current_llm()
+            logger.error("LLM chat failed for model %s: %s", model_name, llm_error)
+            return ChatResponse(
+                response=_format_llm_error_message(llm_error, model_name),
+                suggestions=[
+                    f"Verify `{_api_key_name_for_model(model_name)}` is set for the deployment.",
+                    "Check that the selected model is available for this account.",
+                    "Switch to another configured model and retry.",
+                ],
+                graph_data=None,
+            )
+
         response_text = client_res.get("response", "")
         extracted_dm = client_res.get("data_model")
         
@@ -903,64 +1029,68 @@ async def chat(request: ChatRequest):
             logger.info("Using explicitly extracted data model from tool results.")
             graph_data = data_model_to_graph_data(extracted_dm)
         
-        # 2. Fallback to Smart Visualization if no data model extracted
+        # 2. Fallback to Smart Visualization if no data model extracted.
+        # Visualization is helpful but secondary; never discard a successful LLM answer if it fails.
         if not graph_data:
-            # Extract potential class names (simple heuristic: common ontology terms or capitalized words)
-            # We'll check the stagingdb to see if any of these are actual classes
-            import re
-            # Look for quoted strings or capitalised words that might be class names
-            potential_classes = re.findall(r"['\"]([^'\"]+)['\"]", response_text)
-            
-            # Also check for common classes if they appear in the text
-            db = get_db()
-            # Get all classes currently in staging
-            class_query = "MATCH (c:owl__Class) RETURN c.rdfs__label as label"
-            staging_classes = {row["label"].lower() for row in db.execute_cypher(class_query) if row["label"]}
-            
-            detected_class = None
-            # Check if any identified potential classes are in staging
-            for p in potential_classes:
-                if p.lower() in staging_classes:
-                    detected_class = p
-                    break
-            
-            # If no quoted class found, look for any staging class mentioned in text
-            if not detected_class:
-                words = set(re.findall(r'\b\w+\b', response_text.lower()))
-                common_mentions = words.intersection(staging_classes)
-                if common_mentions:
-                    # Pick the most likely one (e.g. the one appearing first or just a stable pick)
-                    detected_class = list(common_mentions)[0]
+            try:
+                # Extract potential class names (simple heuristic: common ontology terms or capitalized words)
+                # We'll check the stagingdb to see if any of these are actual classes
+                import re
+                # Look for quoted strings or capitalised words that might be class names
+                potential_classes = re.findall(r"['\"]([^'\"]+)['\"]", response_text)
 
-            if detected_class:
-                logger.info(f"Smart visualization detected class: {detected_class}")
-                # Fetch graph data for the detected class using a more robust pattern
-                query = """
-                MATCH (c:owl__Class)
-                WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
-                
-                OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
-                WITH DISTINCT c, coalesce(parent, c) AS classNode
-                
-                // Materialized relationships (including inherited)
-                OPTIONAL MATCH (classNode)-[r]->(target)
-                WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
-                  AND (r.materialized = true OR r.materialized IS NULL)
-                  AND type(r) <> "rdfs__subClassOf"
-                
-                RETURN DISTINCT c, classNode, r, target
-                """
-                results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
-                graph_data = results_to_graph_data(results, query=query.replace("$label", f"'{detected_class}'").strip())
-                
-                # Mark original class as center
-                if graph_data and graph_data.nodes:
-                    for node in graph_data.nodes:
-                        # Case-insensitive comparison for stable labeling
-                        if node["label"].lower() == detected_class.lower():
-                            node["isCenter"] = True
-                        elif node["uri"] == detected_class:
-                            node["isCenter"] = True
+                # Also check for common classes if they appear in the text
+                db = get_db()
+                # Get all classes currently in staging
+                class_query = "MATCH (c:owl__Class) RETURN c.rdfs__label as label"
+                staging_classes = {row["label"].lower() for row in db.execute_cypher(class_query) if row["label"]}
+
+                detected_class = None
+                # Check if any identified potential classes are in staging
+                for p in potential_classes:
+                    if p.lower() in staging_classes:
+                        detected_class = p
+                        break
+
+                # If no quoted class found, look for any staging class mentioned in text
+                if not detected_class:
+                    words = set(re.findall(r'\b\w+\b', response_text.lower()))
+                    common_mentions = words.intersection(staging_classes)
+                    if common_mentions:
+                        # Pick the most likely one (e.g. the one appearing first or just a stable pick)
+                        detected_class = list(common_mentions)[0]
+
+                if detected_class:
+                    logger.info(f"Smart visualization detected class: {detected_class}")
+                    # Fetch graph data for the detected class using a more robust pattern
+                    query = """
+                    MATCH (c:owl__Class)
+                    WHERE toLower(toString(c.rdfs__label)) = toLower($label) OR c.uri = $label
+
+                    OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+                    WITH DISTINCT c, coalesce(parent, c) AS classNode
+
+                    // Materialized relationships (including inherited)
+                    OPTIONAL MATCH (classNode)-[r]->(target)
+                    WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+                      AND (r.materialized = true OR r.materialized IS NULL)
+                      AND type(r) <> "rdfs__subClassOf"
+
+                    RETURN DISTINCT c, classNode, r, target
+                    """
+                    results = db.execute_cypher(query, params={"label": detected_class}, name="smart_chat_viz")
+                    graph_data = results_to_graph_data(results, query=query.replace("$label", f"'{detected_class}'").strip())
+
+                    # Mark original class as center
+                    if graph_data and graph_data.nodes:
+                        for node in graph_data.nodes:
+                            # Case-insensitive comparison for stable labeling
+                            if node["label"].lower() == detected_class.lower():
+                                node["isCenter"] = True
+                            elif node["uri"] == detected_class:
+                                node["isCenter"] = True
+            except Exception as viz_error:
+                logger.warning("Smart chat visualization failed after LLM response: %s", viz_error)
 
         return ChatResponse(
             response=response_text,
@@ -1307,17 +1437,12 @@ async def get_llm_status():
     global _current_llm
     
     # Refresh from env if not manually set yet
-    env_model = os.getenv("LLM_MODEL_NAME")
     if _current_llm is None:
-        _current_llm = env_model or os.getenv("GPT_MODEL_NAME") or "gemini-3-flash-preview-001"
-        
-    # Ensure current model is in available list
-    if _current_llm not in AVAILABLE_LLMS:
-        AVAILABLE_LLMS.append(_current_llm)
+        _current_llm = _resolve_current_llm()
         
     return LLMStatus(
         current_llm=_current_llm,
-        available_llms=AVAILABLE_LLMS
+        available_llms=_available_llms_with_current(_current_llm)
     )
 
 
@@ -1328,8 +1453,6 @@ async def update_llm(request: LLMUpdateRequest):
     
     # Allow any model name to be set via API
     _current_llm = request.llm_name
-    if _current_llm not in AVAILABLE_LLMS:
-        AVAILABLE_LLMS.append(_current_llm)
     logger.info(f"Switched LLM to: {_current_llm}")
     
     # Reset onto2ai client to use the new LLM
@@ -1337,5 +1460,5 @@ async def update_llm(request: LLMUpdateRequest):
     
     return LLMStatus(
         current_llm=_current_llm,
-        available_llms=AVAILABLE_LLMS
+        available_llms=_available_llms_with_current(_current_llm)
     )

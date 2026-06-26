@@ -37,7 +37,7 @@ setup(
     ],
     include_package_data=True,
     package_data={
-        "onto2ai_modeller": ["static/*", "static/**/*"],
+        "onto2ai_modeller": ["config.yaml", "static/*", "static/**/*"],
     },
     entry_points={
         "console_scripts": [

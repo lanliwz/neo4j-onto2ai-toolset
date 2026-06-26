@@ -580,15 +580,24 @@ function setupChat() {
                 body: JSON.stringify({ message })
             });
 
-            if (!response.ok) throw new Error('Chat request failed');
+            const data = await response.json().catch(() => ({}));
 
-            const data = await response.json();
+            if (!response.ok) {
+                const detail = typeof data.detail === 'string'
+                    ? data.detail
+                    : data.detail?.message || 'Chat request failed';
+                throw new Error(detail);
+            }
 
             // Replace loading with response
             const loadingEl = document.getElementById(loadingId);
             if (loadingEl) {
                 const contentEl = loadingEl.querySelector('.message-content');
-                contentEl.innerHTML = formatMessageContent(data.response, 'assistant');
+                let responseContent = data.response || 'The model did not return a response.';
+                if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                    responseContent += '\n\nSuggested checks:\n' + data.suggestions.map(item => `- ${item}`).join('\n');
+                }
+                contentEl.innerHTML = formatMessageContent(responseContent, 'assistant');
 
                 // Re-apply syntax highlighting to any new code blocks
                 if (typeof hljs !== 'undefined') {
@@ -610,8 +619,7 @@ function setupChat() {
             console.error('Chat error:', error);
             const loadingEl = document.getElementById(loadingId);
             if (loadingEl) {
-                loadingEl.querySelector('.message-content').textContent =
-                    'Sorry, I encountered an error. Please try again.';
+                loadingEl.querySelector('.message-content').textContent = error.message;
             }
         }
     };

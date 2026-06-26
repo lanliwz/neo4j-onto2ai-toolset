@@ -7,6 +7,7 @@
 4. Start client/UI as needed:
    - CLI: `onto2ai-client`
    - UI: `onto2ai-modeller --port 8180`
+   - UI development with auto-reload: `uv run --with-requirements requirements.txt python -m onto2ai_modeller.main --reload --model gpt --port 8180`
 
 ## Core Operating Flows
 

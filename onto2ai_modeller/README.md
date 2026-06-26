@@ -29,8 +29,8 @@ A premium, interactive web application designed to review, visualize, and enhanc
 # Navigate to the engineer root
 cd onto2ai-engineer
 
-# Install dependencies
-pip install fastapi uvicorn neo4j openai
+# Install dependencies or let uv resolve them from the repository requirements
+uv run --with-requirements requirements.txt python -m onto2ai_modeller.main --help
 ```
 
 ### Environment Configuration
@@ -46,7 +46,7 @@ NEO4J_STAGING_DB_NAME=stagingdb
 
 # AI configuration
 OPENAI_API_KEY=your_api_key
-LLM_MODEL_NAME=gpt-5.2
+LLM_MODEL_NAME=gpt-5.4-mini
 ```
 
 ### Execution
@@ -54,14 +54,15 @@ LLM_MODEL_NAME=gpt-5.2
 Launch the backend server:
 
 ```bash
-# Start with Gemini
-onto2ai-modeller --model gemini
+# Development mode with auto-reload for Python and UI asset changes
+uv run --with-requirements requirements.txt \
+  python -m onto2ai_modeller.main --reload --model gpt --host localhost --port 8180
 
-# Or start with GPT
+# Installed console script
 onto2ai-modeller --model gpt --port 8081
 
-# Module form
-python -m onto2ai_modeller.main --model gemini --port 8180
+# Module form without reload
+python -m onto2ai_modeller.main --model gpt --port 8180
 ```
 
 Access the application at: **[http://localhost:8180](http://localhost:8180)**

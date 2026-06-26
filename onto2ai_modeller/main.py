@@ -83,6 +83,11 @@ def cli_main():
         default="dark",
         help="Default theme to start with (dark or light)"
     )
+    parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="Auto-reload the Modeller server when Python or static UI files change"
+    )
     
     args = parser.parse_args()
 
@@ -97,14 +102,15 @@ def cli_main():
         elif model_name.lower() == "gemini3":
             model_name = "gemini-3-flash-preview-001"
         elif model_name.lower() == "gpt":
-            model_name = "gpt-5.2"
+            model_name = "gpt-5.4-mini"
 
         print(f"🚀 Starting Modeller with model: {model_name}")
         os.environ["LLM_MODEL_NAME"] = model_name
     else:
         print(f"🚀 Starting Modeller with default model")
 
-    uvicorn.run(app, host=args.host, port=args.port)
+    target = "onto2ai_modeller.main:app" if args.reload else app
+    uvicorn.run(target, host=args.host, port=args.port, reload=args.reload)
 
 
 if __name__ == "__main__":
