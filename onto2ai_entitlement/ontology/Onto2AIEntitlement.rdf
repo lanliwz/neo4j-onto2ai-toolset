@@ -87,6 +87,46 @@
     <skos:definition xml:lang="en">Enumeration of precedence levels used to order entitlement rules during evaluation.</skos:definition>
   </owl:Class>
 
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction">
+    <rdfs:label>filter action</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of actions a row filter rule can apply during entitlement evaluation.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode">
+    <rdfs:label>match mode</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of value cardinality modes expected by a row filter rule.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator">
+    <rdfs:label>comparison operator</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of comparison operators available to row filter predicates.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType">
+    <rdfs:label>value source type</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of runtime source categories used to resolve entitlement rule values.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior">
+    <rdfs:label>deny behavior</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of enforcement behaviors applied when a row filter rule denies access.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction">
+    <rdfs:label>mask action</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of actions a column mask rule can apply to protected column values.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod">
+    <rdfs:label>masking method</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of masking or transformation strategies available to column mask rules.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior">
+    <rdfs:label>fallback behavior</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of fallback behaviors applied when a column mask rule cannot resolve masking inputs.</skos:definition>
+  </owl:Class>
+
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule">
     <rdfs:label>entitlement rule</rdfs:label>
     <skos:definition xml:lang="en">Abstract superclass for entitlement rules that constrain row visibility or column values.</skos:definition>
@@ -209,6 +249,62 @@
     <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority"/>
   </owl:ObjectProperty>
 
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType">
+    <rdfs:label>has value source type</rdfs:label>
+    <skos:definition xml:lang="en">Associates an entitlement rule with the runtime source category used to resolve rule values.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction">
+    <rdfs:label>has filter action</rdfs:label>
+    <skos:definition xml:lang="en">Associates a row filter rule with the action it applies when rewriting or evaluating a query.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode">
+    <rdfs:label>has match mode</rdfs:label>
+    <skos:definition xml:lang="en">Associates a row filter rule with the value cardinality mode it expects.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator">
+    <rdfs:label>has comparison operator</rdfs:label>
+    <skos:definition xml:lang="en">Associates a row filter rule with the comparison operator used in its predicate.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior">
+    <rdfs:label>has deny behavior</rdfs:label>
+    <skos:definition xml:lang="en">Associates a row filter rule with the enforcement behavior used when access is denied.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction">
+    <rdfs:label>has mask action</rdfs:label>
+    <skos:definition xml:lang="en">Associates a column mask rule with the masking action it applies.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod">
+    <rdfs:label>has masking method</rdfs:label>
+    <skos:definition xml:lang="en">Associates a column mask rule with the masking or transformation method it uses.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior">
+    <rdfs:label>has fallback behavior</rdfs:label>
+    <skos:definition xml:lang="en">Associates a column mask rule with the fallback behavior used when masking inputs cannot be resolved.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
+  </owl:ObjectProperty>
+
   <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable">
     <rdfs:label>belongs to table</rdfs:label>
     <skos:definition xml:lang="en">A column belongs to exactly one table.</skos:definition>
@@ -256,6 +352,7 @@
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyGroupName">
     <rdfs:label>policy group name</rdfs:label>
+    <skos:definition xml:lang="en">The human-readable name assigned to a policy group.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PolicyGroup"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
@@ -326,12 +423,14 @@
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyName">
     <rdfs:label>policy name</rdfs:label>
+    <skos:definition xml:lang="en">The human-readable name assigned to a policy.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Policy"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/definition">
-    <rdfs:label>definition</rdfs:label>
+  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyDescription">
+    <rdfs:label>policy description</rdfs:label>
+    <skos:definition xml:lang="en">A textual description of the purpose, scope, or semantics of a policy.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Policy"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
@@ -343,45 +442,10 @@
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/filterAction">
-    <rdfs:label>filter action</rdfs:label>
-    <skos:definition xml:lang="en">The action a row filter rule applies when rewriting a query, such as allow or deny.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/matchMode">
-    <rdfs:label>match mode</rdfs:label>
-    <skos:definition xml:lang="en">The value cardinality mode a row filter rule expects, such as single value, multiple values, or no value.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/comparisonOperator">
-    <rdfs:label>comparison operator</rdfs:label>
-    <skos:definition xml:lang="en">The comparison operator a row filter rule applies when rewriting a query predicate.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceType">
-    <rdfs:label>value source type</rdfs:label>
-    <skos:definition xml:lang="en">The source category used to resolve entitlement rule values, such as static literal, subject attribute, session context, or derived query.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression">
     <rdfs:label>value source expression</rdfs:label>
     <skos:definition xml:lang="en">The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/denyBehavior">
-    <rdfs:label>deny behavior</rdfs:label>
-    <skos:definition xml:lang="en">The enforcement behavior applied when a row filter rule denies access, such as return no rows or block query.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
@@ -399,30 +463,9 @@
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
 
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskAction">
-    <rdfs:label>mask action</rdfs:label>
-    <skos:definition xml:lang="en">The masking action a column mask rule applies, such as reveal, redact, tokenize, or substitute.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskingMethod">
-    <rdfs:label>masking method</rdfs:label>
-    <skos:definition xml:lang="en">The masking method or transformation strategy used by a column mask rule.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskValueExpression">
     <rdfs:label>mask value expression</rdfs:label>
     <skos:definition xml:lang="en">The expression used to compute the masked value emitted by a column mask rule.</skos:definition>
-    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-
-  <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/fallbackBehavior">
-    <rdfs:label>fallback behavior</rdfs:label>
-    <skos:definition xml:lang="en">The fallback behavior applied when a column mask rule cannot resolve its masking inputs.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
@@ -666,6 +709,186 @@
     <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType"/>
     <rdfs:label>process user</rdfs:label>
     <skos:definition xml:lang="en">User type representing an automated process, service account, or system integration actor.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/AllowFilterAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction"/>
+    <rdfs:label>allow</rdfs:label>
+    <skos:definition xml:lang="en">Filter action that permits access to rows matching the rule predicate.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyFilterAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction"/>
+    <rdfs:label>deny</rdfs:label>
+    <skos:definition xml:lang="en">Filter action that denies access to rows matching the rule predicate.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NoValueMatchMode">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode"/>
+    <rdfs:label>no value</rdfs:label>
+    <skos:definition xml:lang="en">Match mode indicating the rule does not require a comparison value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SingleValueMatchMode">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode"/>
+    <rdfs:label>single value</rdfs:label>
+    <skos:definition xml:lang="en">Match mode indicating the rule expects one comparison value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MultipleValuesMatchMode">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode"/>
+    <rdfs:label>multiple values</rdfs:label>
+    <skos:definition xml:lang="en">Match mode indicating the rule expects a collection of comparison values.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EqualsComparisonOperator">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+    <rdfs:label>equals</rdfs:label>
+    <skos:definition xml:lang="en">Comparison operator for equality predicates.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NotEqualsComparisonOperator">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+    <rdfs:label>not equals</rdfs:label>
+    <skos:definition xml:lang="en">Comparison operator for inequality predicates.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InListComparisonOperator">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+    <rdfs:label>in list</rdfs:label>
+    <skos:definition xml:lang="en">Comparison operator requiring a value to appear in an allowed set.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NotInListComparisonOperator">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+    <rdfs:label>not in list</rdfs:label>
+    <skos:definition xml:lang="en">Comparison operator requiring a value not to appear in a denied set.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BetweenComparisonOperator">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+    <rdfs:label>between</rdfs:label>
+    <skos:definition xml:lang="en">Comparison operator requiring a value to fall between two bounds.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/StaticLiteralValueSourceType">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+    <rdfs:label>static literal</rdfs:label>
+    <skos:definition xml:lang="en">Value source type where the rule stores a literal value directly.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SubjectAttributeValueSourceType">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+    <rdfs:label>subject attribute</rdfs:label>
+    <skos:definition xml:lang="en">Value source type resolved from an attribute of the evaluated user or principal.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SessionContextValueSourceType">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+    <rdfs:label>session context</rdfs:label>
+    <skos:definition xml:lang="en">Value source type resolved from the current authenticated session context.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RequestContextValueSourceType">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+    <rdfs:label>request context</rdfs:label>
+    <skos:definition xml:lang="en">Value source type resolved from the current data access request context.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DerivedQueryValueSourceType">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+    <rdfs:label>derived query</rdfs:label>
+    <skos:definition xml:lang="en">Value source type resolved by executing or evaluating a derived lookup query.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNoRowsDenyBehavior">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior"/>
+    <rdfs:label>return no rows</rdfs:label>
+    <skos:definition xml:lang="en">Deny behavior that rewrites access to produce an empty result set.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior"/>
+    <rdfs:label>block query</rdfs:label>
+    <skos:definition xml:lang="en">Deny behavior that blocks the data access request.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RevealMaskAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+    <rdfs:label>reveal</rdfs:label>
+    <skos:definition xml:lang="en">Mask action that reveals the original value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RedactMaskAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+    <rdfs:label>redact</rdfs:label>
+    <skos:definition xml:lang="en">Mask action that redacts the protected value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/TokenizeMaskAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+    <rdfs:label>tokenize</rdfs:label>
+    <skos:definition xml:lang="en">Mask action that replaces the original value with a token.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SubstituteMaskAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+    <rdfs:label>substitute</rdfs:label>
+    <skos:definition xml:lang="en">Mask action that substitutes the protected value with a configured replacement.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullifyMaskAction">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+    <rdfs:label>nullify</rdfs:label>
+    <skos:definition xml:lang="en">Mask action that replaces the protected value with null.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/StaticSubstitutionMaskingMethod">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+    <rdfs:label>static substitution</rdfs:label>
+    <skos:definition xml:lang="en">Masking method that emits a fixed replacement value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PatternMaskingMethod">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+    <rdfs:label>pattern masking</rdfs:label>
+    <skos:definition xml:lang="en">Masking method that preserves a configured pattern while hiding protected portions of a value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HashingMaskingMethod">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+    <rdfs:label>hashing</rdfs:label>
+    <skos:definition xml:lang="en">Masking method that emits a deterministic hash of the original value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/TokenizationMaskingMethod">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+    <rdfs:label>tokenization</rdfs:label>
+    <skos:definition xml:lang="en">Masking method that emits a reversible or managed token for the original value.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullReplacementMaskingMethod">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+    <rdfs:label>null replacement</rdfs:label>
+    <skos:definition xml:lang="en">Masking method that replaces the original value with null.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryFallbackBehavior">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
+    <rdfs:label>block query</rdfs:label>
+    <skos:definition xml:lang="en">Fallback behavior that blocks the query when masking inputs cannot be resolved.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNullFallbackBehavior">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
+    <rdfs:label>return null</rdfs:label>
+    <skos:definition xml:lang="en">Fallback behavior that returns null when masking inputs cannot be resolved.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UseDefaultMaskFallbackBehavior">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
+    <rdfs:label>use default mask</rdfs:label>
+    <skos:definition xml:lang="en">Fallback behavior that applies a configured default mask when rule-specific inputs cannot be resolved.</skos:definition>
   </owl:NamedIndividual>
 
 </rdf:RDF>

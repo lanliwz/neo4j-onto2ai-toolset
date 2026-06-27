@@ -274,12 +274,12 @@ def load_sample_data(
         )
         row_filter_rule = pydantic_schema_model.RowFilterRule(
             rowFilterRuleId="rfr-001",
-            filterAction="allow",
-            matchMode="multiple values",
-            comparisonOperator="in list",
-            valueSourceType="subject attribute",
+            hasFilterAction=pydantic_schema_model.FilterAction.ALLOW,
+            hasMatchMode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES,
+            hasComparisonOperator=pydantic_schema_model.ComparisonOperator.IN_LIST,
+            hasValueSourceType=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE,
             valueSourceExpression="user.allowed_regions",
-            denyBehavior="return no rows",
+            hasDenyBehavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS,
             llmRewriteInstruction="Rewrite the WHERE clause to restrict region_code to the allowed values.",
             rewriteTemplate="WHERE region_code IN ({values})",
             ruleExpression="region_code IN allowed_regions",
@@ -287,21 +287,21 @@ def load_sample_data(
         )
         column_mask_rule = pydantic_schema_model.ColumnMaskRule(
             columnMaskRuleId="cmr-001",
-            maskAction="redact",
-            maskingMethod="static substitution",
+            hasMaskAction=pydantic_schema_model.MaskAction.REDACT,
+            hasMaskingMethod=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION,
             maskValueExpression="'***'",
-            fallbackBehavior="block query",
+            hasFallbackBehavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY,
             llmRewriteInstruction="Rewrite the SELECT projection to mask region_code when access is denied.",
             rewriteTemplate="CASE WHEN {condition} THEN region_code ELSE '***' END",
             ruleExpression="mask region_code when unauthorized",
-            valueSourceType="session context",
+            hasValueSourceType=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT,
             valueSourceExpression="user.masking_scope",
             hasPriority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY,
         )
         policy = pydantic_schema_model.Policy(
             policyId="policy-001",
             policyName=["Regional access policy"],
-            definition=["Applies row filtering and masking to regional account data."],
+            policyDescription=["Applies row filtering and masking to regional account data."],
         )
         policy_group = pydantic_schema_model.PolicyGroup(
             policyGroupId="pg-001",
@@ -382,14 +382,32 @@ def load_sample_data(
                 MATCH (ut:UserType {rdfs__label: $user_type, testRun: $run})
                 MATCH (high:RulePriority {rdfs__label: $high_priority, testRun: $run})
                 MATCH (medium:RulePriority {rdfs__label: $medium_priority, testRun: $run})
+                MATCH (filter_action:FilterAction {rdfs__label: $filter_action, testRun: $run})
+                MATCH (match_mode:MatchMode {rdfs__label: $match_mode, testRun: $run})
+                MATCH (comparison_operator:ComparisonOperator {rdfs__label: $comparison_operator, testRun: $run})
+                MATCH (deny_behavior:DenyBehavior {rdfs__label: $deny_behavior, testRun: $run})
+                MATCH (rf_value_source_type:ValueSourceType {rdfs__label: $rf_value_source_type, testRun: $run})
+                MATCH (mask_action:MaskAction {rdfs__label: $mask_action, testRun: $run})
+                MATCH (masking_method:MaskingMethod {rdfs__label: $masking_method, testRun: $run})
+                MATCH (fallback_behavior:FallbackBehavior {rdfs__label: $fallback_behavior, testRun: $run})
+                MATCH (cm_value_source_type:ValueSourceType {rdfs__label: $cm_value_source_type, testRun: $run})
                 CREATE (j)-[:connectsTo]->(d)
                 CREATE (s)-[:belongsToDatabase]->(d)
                 CREATE (t)-[:belongsToSchema]->(s)
                 CREATE (c)-[:belongsToTable]->(t)
                 CREATE (rf)-[:targetsFilteredColumn]->(c)
                 CREATE (rf)-[:hasPriority]->(high)
+                CREATE (rf)-[:hasFilterAction]->(filter_action)
+                CREATE (rf)-[:hasMatchMode]->(match_mode)
+                CREATE (rf)-[:hasComparisonOperator]->(comparison_operator)
+                CREATE (rf)-[:hasDenyBehavior]->(deny_behavior)
+                CREATE (rf)-[:hasValueSourceType]->(rf_value_source_type)
                 CREATE (cm)-[:targetsMaskedColumn]->(c)
                 CREATE (cm)-[:hasPriority]->(medium)
+                CREATE (cm)-[:hasMaskAction]->(mask_action)
+                CREATE (cm)-[:hasMaskingMethod]->(masking_method)
+                CREATE (cm)-[:hasFallbackBehavior]->(fallback_behavior)
+                CREATE (cm)-[:hasValueSourceType]->(cm_value_source_type)
                 CREATE (p)-[:hasRowFilterRule]->(rf)
                 CREATE (p)-[:hasColumnMaskRule]->(cm)
                 CREATE (pg)-[:includesPolicy]->(p)
@@ -409,6 +427,15 @@ def load_sample_data(
                 user_type=pydantic_schema_model.UserType.HUMAN_USER.value,
                 high_priority=pydantic_schema_model.RulePriority.HIGH_PRIORITY.value,
                 medium_priority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY.value,
+                filter_action=pydantic_schema_model.FilterAction.ALLOW.value,
+                match_mode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES.value,
+                comparison_operator=pydantic_schema_model.ComparisonOperator.IN_LIST.value,
+                deny_behavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS.value,
+                rf_value_source_type=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE.value,
+                mask_action=pydantic_schema_model.MaskAction.REDACT.value,
+                masking_method=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION.value,
+                fallback_behavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY.value,
+                cm_value_source_type=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT.value,
                 run=test_run,
             )
 

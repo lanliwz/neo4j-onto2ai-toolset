@@ -3,6 +3,7 @@
  */
 
 let myDiagram = null;
+const GRAPH_SPACING_ZOOM_STEP = 1.15;
 
 function formatPydanticFieldType(attr) {
     const rawType = attr?.type || "str";
@@ -74,6 +75,10 @@ function initGraph() {
         "animationManager.isEnabled": true,
         "toolManager.hoverDelay": 100
     });
+    if (go.ToolManager.WheelNone !== undefined) {
+        myDiagram.toolManager.mouseWheelBehavior = go.ToolManager.WheelNone;
+    }
+    setupGraphSpacingWheelZoom();
 
     // Initial theme check
     const isLight = document.documentElement.classList.contains('light-mode');
@@ -552,6 +557,64 @@ function initGraph() {
     });
 }
 
+function setStableDiagramScale() {
+    if (myDiagram && myDiagram.scale !== 1) {
+        myDiagram.scale = 1;
+    }
+}
+
+function getViewportCenter() {
+    const bounds = myDiagram.viewportBounds;
+    return new go.Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+}
+
+function zoomGraphSpacing(factor) {
+    if (!myDiagram) return;
+
+    setStableDiagramScale();
+    const center = getViewportCenter();
+
+    myDiagram.commit(diagram => {
+        diagram.nodes.each(node => {
+            const location = node.location && node.location.isReal()
+                ? node.location.copy()
+                : node.actualBounds.center;
+            const nextLocation = new go.Point(
+                center.x + (location.x - center.x) * factor,
+                center.y + (location.y - center.y) * factor
+            );
+            node.move(nextLocation);
+        });
+    }, "zoom graph spacing");
+}
+
+function setupGraphSpacingWheelZoom() {
+    if (!myDiagram || !myDiagram.div) return;
+
+    myDiagram.div.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        const factor = event.deltaY < 0
+            ? GRAPH_SPACING_ZOOM_STEP
+            : 1 / GRAPH_SPACING_ZOOM_STEP;
+        zoomGraphSpacing(factor);
+    }, { passive: false, capture: true });
+}
+
+function centerDiagramContent() {
+    if (!myDiagram) return;
+
+    setStableDiagramScale();
+    const bounds = myDiagram.documentBounds;
+    if (!bounds || !bounds.isReal()) return;
+
+    const viewport = myDiagram.viewportBounds;
+    const nextPosition = new go.Point(
+        bounds.x + bounds.width / 2 - viewport.width / 2,
+        bounds.y + bounds.height / 2 - viewport.height / 2
+    );
+    myDiagram.position = nextPosition;
+}
+
 /**
  * Load graph data for a class
  */
@@ -581,7 +644,7 @@ async function loadGraphData(className) {
 
         // Fit to view after layout
         setTimeout(() => {
-            myDiagram.zoomToFit();
+            centerDiagramContent();
         }, 500);
 
     } catch (error) {
@@ -649,7 +712,7 @@ async function onNodeDoubleClick(node) {
 
         // Fit to view after layout
         setTimeout(() => {
-            myDiagram.zoomToFit();
+            centerDiagramContent();
         }, 500);
 
     } catch (error) {
@@ -792,20 +855,27 @@ function showLinkProperties(data) {
  * Zoom controls
  */
 function zoomIn() {
-    if (myDiagram) myDiagram.commandHandler.increaseZoom();
+    if (myDiagram) {
+        zoomGraphSpacing(GRAPH_SPACING_ZOOM_STEP);
+    }
 }
 
 function zoomOut() {
-    if (myDiagram) myDiagram.commandHandler.decreaseZoom();
+    if (myDiagram) {
+        zoomGraphSpacing(1 / GRAPH_SPACING_ZOOM_STEP);
+    }
 }
 
 function fitView() {
-    if (myDiagram) myDiagram.zoomToFit();
+    if (myDiagram) {
+        centerDiagramContent();
+    }
 }
 
 function refreshLayout() {
     if (myDiagram) {
         myDiagram.layoutDiagram(true);
+        setStableDiagramScale();
     }
 }
 
@@ -858,7 +928,7 @@ function loadGraphFromData(data) {
 
     // Fit to view after layout
     setTimeout(() => {
-        myDiagram.zoomToFit();
+        centerDiagramContent();
     }, 500);
 }
 
@@ -917,7 +987,7 @@ async function loadUmlData(className, mode) {
 
         // Fit to view after layout
         setTimeout(() => {
-            myDiagram.zoomToFit();
+            centerDiagramContent();
         }, 500);
 
     } catch (error) {
