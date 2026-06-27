@@ -1,6 +1,7 @@
 llm:
-  default: gpt-5.4-mini
+  default: gemini-3.5-flash
   available:
     - gpt-5.5
     - gpt-5.4-mini
-    - gemini-3-flash-preview-001
+    - gpt-5.4-nano
+    - gemini-3.5-flash

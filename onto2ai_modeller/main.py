@@ -62,7 +62,7 @@ def cli_main():
     parser.add_argument(
         "--model", "-m",
         type=str,
-        help="LLM model to use (gemini, gpt, or full model name)"
+        help="LLM model to use (gemini, gemini35, gpt, or full model name)"
     )
     parser.add_argument(
         "--host",
@@ -97,10 +97,8 @@ def cli_main():
     # Handle shorthand model names
     if args.model:
         model_name = args.model
-        if model_name.lower() == "gemini":
-            model_name = "gemini-3-flash-preview-001"
-        elif model_name.lower() == "gemini3":
-            model_name = "gemini-3-flash-preview-001"
+        if model_name.lower() in {"gemini", "gemini3", "gemini35"}:
+            model_name = "gemini-3.5-flash"
         elif model_name.lower() == "gpt":
             model_name = "gpt-5.4-mini"
 

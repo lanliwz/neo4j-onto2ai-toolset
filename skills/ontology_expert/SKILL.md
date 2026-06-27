@@ -40,7 +40,7 @@ When generating Pydantic classes using the `generate_schema_code` tool:
 
 ## Modeller Customization
 When extending the Modeller's model support:
-- **Backend Model Shorthand**: In `main.py`, update the `--model` flag's choices and add shorthands (e.g., `gemini3` for `gemini-3-flash-preview-001`).
+- **Backend Model Shorthand**: In `main.py`, update the `--model` flag's choices and add shorthands (e.g., `gemini35` for `gemini-3.5-flash`).
 - **Frontend Labeling**: Update `app.js` to provide pretty names in the LLM selector for new models.
 
 ## Best Practices

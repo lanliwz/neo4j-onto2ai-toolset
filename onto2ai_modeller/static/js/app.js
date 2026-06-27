@@ -68,7 +68,7 @@ async function setupLLM() {
                 // Prettify name if it's a common one, otherwise use as-is
                 let label = model;
                 if (model === 'gemini-2.0-flash-exp') label = 'Gemini 2.0 Flash';
-                if (model === 'gemini-3-flash-preview-001') label = 'Gemini 3 Flash Preview';
+                if (model === 'gemini-3.5-flash') label = 'Gemini 3.5 Flash';
                 if (model === 'gpt-4o-2024-05-13') label = 'GPT-4o';
 
                 return `<option value="${model}" ${model === data.current_llm ? 'selected' : ''}>${label}</option>`;

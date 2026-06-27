@@ -23,7 +23,7 @@ export NEO4J_STAGING_DB_NAME="stagingdb"
 # choose one default model
 export LLM_MODEL_NAME="gpt-5.2"
 # or
-# export LLM_MODEL_NAME="gemini-3-flash-preview-001"
+# export LLM_MODEL_NAME="gemini-3.5-flash"
 
 # provider keys
 export OPENAI_API_KEY="your_openai_key"

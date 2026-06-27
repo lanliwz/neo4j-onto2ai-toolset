@@ -114,7 +114,7 @@ Consolidate this repository into a single-purpose `onto2ai-engineer` project, wi
 - Phase 4 completed:
   - added canonical config contract: `docs/configuration.md`
   - unified model-manager defaults to `LLM_MODEL_NAME` with `GPT_MODEL_NAME` fallback
-  - aligned shorthand models in `onto2ai_modeller/main.py` to `gpt-5.2` and `gemini-3-flash-preview-001`
+  - aligned shorthand models in `onto2ai_modeller/main.py` to `gpt-5.2` and `gemini-3.5-flash`
   - updated core LLM resolution in `neo4j_onto2ai_toolset/onto2ai_tool_config.py` with compatibility handling
 - Phase 5 completed:
   - added stable interface specification: `docs/interface-contract.md`

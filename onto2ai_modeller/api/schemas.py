@@ -130,16 +130,16 @@ def _format_llm_error_message(exc: Exception, model_name: str) -> str:
             "Pick another model from the selector or update `ONTO2AI_MODELLER_CONFIG` so the list only contains models enabled for your account."
         )
 
-    if any(token in normalized for token in ("rate limit", "rate_limit", "429")):
-        return (
-            f"{provider} rejected the request for `{model_name}` because the deployment is rate limited. "
-            "Wait a moment and retry, or switch to another configured model."
-        )
-
     if any(token in normalized for token in ("quota", "insufficient_quota", "billing", "payment")):
         return (
             f"{provider} rejected the request for `{model_name}` because the account quota or billing state needs attention. "
             "Check the provider account, or switch to another configured model."
+        )
+
+    if any(token in normalized for token in ("rate limit", "rate_limit", "429")):
+        return (
+            f"{provider} rejected the request for `{model_name}` because the deployment is rate limited. "
+            "Wait a moment and retry, or switch to another configured model."
         )
 
     if any(token in normalized for token in ("timeout", "timed out", "connection", "connect", "dns", "network")):

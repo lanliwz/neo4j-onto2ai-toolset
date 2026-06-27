@@ -19,7 +19,7 @@ This is the canonical environment-variable contract for Onto2AI Engineer runtime
 - Recommended values:
   - `gpt-5.4-mini`
   - `gpt-5.5`
-  - `gemini-3-flash-preview-001`
+  - `gemini-3.5-flash`
 - `ONTO2AI_MODELLER_CONFIG` (optional)
   - Path to a deployment-specific Modeller YAML config file.
   - Defaults to the packaged `onto2ai_modeller/config.yaml`.
@@ -50,18 +50,18 @@ This is the canonical environment-variable contract for Onto2AI Engineer runtime
 ### Modeller
 - Uses the same `LLM_MODEL_NAME` contract and Neo4j variables.
 - CLI shorthand `--model gpt` maps to `gpt-5.4-mini`.
-- CLI shorthand `--model gemini` maps to `gemini-3-flash-preview-001`.
+- CLI shorthand `--model gemini` maps to `gemini-3.5-flash`.
 - Populates the UI model list from `llm.available` in `ONTO2AI_MODELLER_CONFIG`.
 
 Example Modeller config:
 
 ```yaml
 llm:
-  default: gpt-5.4-mini
+  default: gemini-3.5-flash
   available:
     - gpt-5.5
     - gpt-5.4-mini
-    - gemini-3-flash-preview-001
+    - gemini-3.5-flash
 ```
 
 ## Migration Guidance

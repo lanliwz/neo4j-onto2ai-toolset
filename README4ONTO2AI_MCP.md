@@ -14,7 +14,7 @@ The MCP workflow is meant to support a generic ontology-engineering process:
 - **Data Model Extraction**: High-fidelity structured JSON extraction (classes, attributes, relationships).
 - **Schema Artifact Generation**: Generate implementation artifacts from extracted ontology subsets.
 - **SHACL Generation**: Modeling-ready SHACL files for ontology-driven data validation.
-- **Multi-Model Support**: Seamlessly switch between **Gemini 2.0 Flash** and **GPT-5.2 (OpenAI)**.
+- **Multi-Model Support**: Seamlessly switch between **Gemini 3.5 Flash** and **GPT-5.2 (OpenAI)**.
 - **Clean Agentic Workflow**: Modern LangChain integration using the `create_agent` factory.
 - **Ontology Workbench for AI Engineers**: Lets AI engineers use Neo4j plus MCP as a workbench for exploring well-known ontologies and designing derived ontologies.
 
@@ -66,7 +66,7 @@ export GOOGLE_API_KEY="your_google_api_key"
 export OPENAI_API_KEY="your_openai_api_key"
 
 # Optional: Default LLM Model
-export LLM_MODEL_NAME="gemini-3-flash-preview" # or "gpt-5.2"
+export LLM_MODEL_NAME="gemini-3.5-flash" # or "gpt-5.2"
 ```
 
 ---
@@ -119,7 +119,7 @@ LLM_MODEL_NAME=gpt-5.2 python -m neo4j_onto2ai_toolset.onto2ai_client
 
 **Using Gemini (requires GOOGLE_API_KEY):**
 ```bash
-LLM_MODEL_NAME=gemini-3-flash-preview python -m neo4j_onto2ai_toolset.onto2ai_client
+LLM_MODEL_NAME=gemini-3.5-flash python -m neo4j_onto2ai_toolset.onto2ai_client
 ```
 
 ### Running as an HTTP Server (SSE)
@@ -219,7 +219,7 @@ Use this if the server is already running independently on port 8082.
 If the client exits unexpectedly with an `ImportError` or `Connection closed`, ensure your Neo4j instance is reachable and your credentials are correct in the environment. The client includes `atexit` handlers to ensure Neo4j connections are closed gracefully.
 
 ### 404 Model Not Found (Gemini)
-Gemini 3 models in AI Studio currently require the `-preview` suffix (e.g., `gemini-3-flash-preview`). The client defaults to this ID.
+If Gemini returns 404, confirm that `gemini-3.5-flash` is enabled for the configured `GOOGLE_API_KEY`.
 
 ## Example MCP Calls
 1. Explore: `get_ontological_schema(class_name='Person')`

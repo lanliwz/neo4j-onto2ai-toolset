@@ -24,7 +24,7 @@ class Onto2AIClient:
     """
     
     def __init__(self, model_name: str = None, *, log_tools: bool = True):
-        self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "gemini-3-flash-preview")
+        self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "gemini-3.5-flash")
         self.log_tools = log_tools
         self.llm = self._get_model()
         self.client = None
@@ -153,7 +153,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model",
-        help="LLM model to use. Defaults to LLM_MODEL_NAME or gemini-3-flash-preview.",
+        help="LLM model to use. Defaults to LLM_MODEL_NAME or gemini-3.5-flash.",
     )
     parser.add_argument(
         "--quiet-tools",
