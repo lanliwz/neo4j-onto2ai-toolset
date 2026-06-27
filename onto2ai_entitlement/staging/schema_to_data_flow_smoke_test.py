@@ -271,6 +271,7 @@ def load_sample_data(
             columnLength=20,
             isNullable=False,
             ordinalPosition=3,
+            hasSensitivityClassification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL,
         )
         row_filter_rule = pydantic_schema_model.RowFilterRule(
             rowFilterRuleId="rfr-001",
@@ -380,6 +381,7 @@ def load_sample_data(
                 MATCH (pg:PolicyGroup {id: $policy_group_id, testRun: $run})
                 MATCH (u:User {id: $user_id, testRun: $run})
                 MATCH (ut:UserType {rdfs__label: $user_type, testRun: $run})
+                MATCH (classification:SensitivityClassification {rdfs__label: $sensitivity_classification, testRun: $run})
                 MATCH (high:RulePriority {rdfs__label: $high_priority, testRun: $run})
                 MATCH (medium:RulePriority {rdfs__label: $medium_priority, testRun: $run})
                 MATCH (filter_action:FilterAction {rdfs__label: $filter_action, testRun: $run})
@@ -395,6 +397,7 @@ def load_sample_data(
                 CREATE (s)-[:belongsToDatabase]->(d)
                 CREATE (t)-[:belongsToSchema]->(s)
                 CREATE (c)-[:belongsToTable]->(t)
+                CREATE (c)-[:hasSensitivityClassification]->(classification)
                 CREATE (rf)-[:targetsFilteredColumn]->(c)
                 CREATE (rf)-[:hasPriority]->(high)
                 CREATE (rf)-[:hasFilterAction]->(filter_action)
@@ -425,6 +428,7 @@ def load_sample_data(
                 policy_group_id=model_node_ids["PolicyGroup"],
                 user_id=model_node_ids["User"],
                 user_type=pydantic_schema_model.UserType.HUMAN_USER.value,
+                sensitivity_classification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL.value,
                 high_priority=pydantic_schema_model.RulePriority.HIGH_PRIORITY.value,
                 medium_priority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY.value,
                 filter_action=pydantic_schema_model.FilterAction.ALLOW.value,

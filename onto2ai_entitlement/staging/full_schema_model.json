@@ -561,6 +561,13 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"
     },
     {
+      "label": "sensitivity classification",
+      "type": "owl__Class",
+      "properties": [],
+      "description": "Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"
+    },
+    {
       "label": "table",
       "type": "owl__Class",
       "properties": [
@@ -684,6 +691,13 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior"
     },
     {
+      "label": "confidential",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for data requiring restricted access because disclosure could create business or privacy risk.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ConfidentialSensitivityClassification"
+    },
+    {
       "label": "deny",
       "type": "owl__NamedIndividual",
       "properties": [],
@@ -731,6 +745,13 @@
       "properties": [],
       "description": "Comparison operator requiring a value to appear in an allowed set.",
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InListComparisonOperator"
+    },
+    {
+      "label": "internal",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for data intended for internal organizational use.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InternalSensitivityClassification"
     },
     {
       "label": "low priority",
@@ -796,11 +817,32 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PatternMaskingMethod"
     },
     {
+      "label": "phi",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for protected health information.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PHISensitivityClassification"
+    },
+    {
+      "label": "pii",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for personally identifiable information.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PIISensitivityClassification"
+    },
+    {
       "label": "process user",
       "type": "owl__NamedIndividual",
       "properties": [],
       "description": "User type representing an automated process, service account, or system integration actor.",
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ProcessUser"
+    },
+    {
+      "label": "public",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for data approved for public disclosure.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PublicSensitivityClassification"
     },
     {
       "label": "redact",
@@ -815,6 +857,13 @@
       "properties": [],
       "description": "Value source type resolved from the current data access request context.",
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RequestContextValueSourceType"
+    },
+    {
+      "label": "restricted",
+      "type": "owl__NamedIndividual",
+      "properties": [],
+      "description": "Sensitivity classification for highly controlled data requiring strict access and masking governance.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RestrictedSensitivityClassification"
     },
     {
       "label": "return no rows",
@@ -903,6 +952,226 @@
   ],
   "relationships": [
     {
+      "type": "belongsToDatabase",
+      "start_node_label": "schema",
+      "end_node_label": "relational database",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "Schema belongs to a relational database.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToDatabase"
+    },
+    {
+      "type": "belongsToSchema",
+      "start_node_label": "table",
+      "end_node_label": "schema",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "A table belongs to exactly one schema.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToSchema"
+    },
+    {
+      "type": "belongsToTable",
+      "start_node_label": "column",
+      "end_node_label": "table",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "A column belongs to exactly one table.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable"
+    },
+    {
+      "type": "connectsTo",
+      "start_node_label": "jdbc connection profile",
+      "end_node_label": "relational database",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "JDBC profile connects to a target relational database.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo"
+    },
+    {
+      "type": "hasColumnMaskRule",
+      "start_node_label": "policy",
+      "end_node_label": "column mask rule",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Policy contains column masking rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasColumnMaskRule"
+    },
+    {
+      "type": "hasComparisonOperator",
+      "start_node_label": "row filter rule",
+      "end_node_label": "comparison operator",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a row filter rule with the comparison operator used in its predicate.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator"
+    },
+    {
+      "type": "hasDenyBehavior",
+      "start_node_label": "row filter rule",
+      "end_node_label": "deny behavior",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a row filter rule with the enforcement behavior used when access is denied.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior"
+    },
+    {
+      "type": "hasFallbackBehavior",
+      "start_node_label": "column mask rule",
+      "end_node_label": "fallback behavior",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a column mask rule with the fallback behavior used when masking inputs cannot be resolved.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior"
+    },
+    {
+      "type": "hasFilterAction",
+      "start_node_label": "row filter rule",
+      "end_node_label": "filter action",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a row filter rule with the action it applies when rewriting or evaluating a query.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction"
+    },
+    {
+      "type": "hasMaskAction",
+      "start_node_label": "column mask rule",
+      "end_node_label": "mask action",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a column mask rule with the masking action it applies.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction"
+    },
+    {
+      "type": "hasMaskingMethod",
+      "start_node_label": "column mask rule",
+      "end_node_label": "masking method",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a column mask rule with the masking or transformation method it uses.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod"
+    },
+    {
+      "type": "hasMatchMode",
+      "start_node_label": "row filter rule",
+      "end_node_label": "match mode",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a row filter rule with the value cardinality mode it expects.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode"
+    },
+    {
+      "type": "hasPriority",
+      "start_node_label": "column mask rule",
+      "end_node_label": "rule priority",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "Associates an entitlement rule with its precedence level.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
+    },
+    {
+      "type": "hasPriority",
+      "start_node_label": "row filter rule",
+      "end_node_label": "rule priority",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "Associates an entitlement rule with its precedence level.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
+    },
+    {
+      "type": "hasRowFilterRule",
+      "start_node_label": "policy",
+      "end_node_label": "row filter rule",
+      "properties": [],
+      "cardinality": "0..*",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Policy contains row-level filtering rules.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasRowFilterRule"
+    },
+    {
+      "type": "hasSensitivityClassification",
+      "start_node_label": "column",
+      "end_node_label": "sensitivity classification",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates a relational column with a data sensitivity classification used by entitlement and masking controls.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasSensitivityClassification"
+    },
+    {
+      "type": "hasUserType",
+      "start_node_label": "user",
+      "end_node_label": "user type",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "A user is classified by a user type that identifies whether it is a human actor or an automated process.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasUserType"
+    },
+    {
+      "type": "hasValueSourceType",
+      "start_node_label": "entitlement rule",
+      "end_node_label": "value source type",
+      "properties": [],
+      "cardinality": "0..1",
+      "requirement": "Optional",
+      "unique": false,
+      "description": "Associates an entitlement rule with the runtime source category used to resolve rule values.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType"
+    },
+    {
+      "type": "includesPolicy",
+      "start_node_label": "policy group",
+      "end_node_label": "policy",
+      "properties": [],
+      "cardinality": "1..*",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "Policy group bundles one or more policies.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy"
+    },
+    {
+      "type": "isMemberOf",
+      "start_node_label": "user",
+      "end_node_label": "policy group",
+      "properties": [],
+      "cardinality": "1..*",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "User inherits policies via policy group membership.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf"
+    },
+    {
       "type": "rdf__type",
       "start_node_label": "allow",
       "end_node_label": "filter action",
@@ -947,81 +1216,15 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
-      "type": "belongsToTable",
-      "start_node_label": "column",
-      "end_node_label": "table",
+      "type": "rdf__type",
+      "start_node_label": "confidential",
+      "end_node_label": "sensitivity classification",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
       "unique": false,
-      "description": "A column belongs to exactly one table.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable"
-    },
-    {
-      "type": "hasFallbackBehavior",
-      "start_node_label": "column mask rule",
-      "end_node_label": "fallback behavior",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a column mask rule with the fallback behavior used when masking inputs cannot be resolved.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior"
-    },
-    {
-      "type": "hasMaskAction",
-      "start_node_label": "column mask rule",
-      "end_node_label": "mask action",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a column mask rule with the masking action it applies.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction"
-    },
-    {
-      "type": "hasMaskingMethod",
-      "start_node_label": "column mask rule",
-      "end_node_label": "masking method",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a column mask rule with the masking or transformation method it uses.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod"
-    },
-    {
-      "type": "hasPriority",
-      "start_node_label": "column mask rule",
-      "end_node_label": "rule priority",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "Associates an entitlement rule with its precedence level.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
-    },
-    {
-      "type": "rdfs__subClassOf",
-      "start_node_label": "column mask rule",
-      "end_node_label": "entitlement rule",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "column mask rule is a subclass of entitlement rule",
-      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
-    },
-    {
-      "type": "targetsMaskedColumn",
-      "start_node_label": "column mask rule",
-      "end_node_label": "column",
-      "properties": [],
-      "cardinality": "1..*",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "Column-mask rule targets a specific column.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn"
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
       "type": "rdf__type",
@@ -1044,17 +1247,6 @@
       "unique": false,
       "description": "instance-of relationship",
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
-    },
-    {
-      "type": "hasValueSourceType",
-      "start_node_label": "entitlement rule",
-      "end_node_label": "value source type",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates an entitlement rule with the runtime source category used to resolve rule values.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType"
     },
     {
       "type": "rdf__type",
@@ -1112,15 +1304,15 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
-      "type": "connectsTo",
-      "start_node_label": "jdbc connection profile",
-      "end_node_label": "relational database",
+      "type": "rdf__type",
+      "start_node_label": "internal",
+      "end_node_label": "sensitivity classification",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
       "unique": false,
-      "description": "JDBC profile connects to a target relational database.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo"
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
       "type": "rdf__type",
@@ -1222,37 +1414,26 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
-      "type": "hasColumnMaskRule",
-      "start_node_label": "policy",
-      "end_node_label": "column mask rule",
+      "type": "rdf__type",
+      "start_node_label": "phi",
+      "end_node_label": "sensitivity classification",
       "properties": [],
-      "cardinality": "0..*",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Policy contains column masking rules.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasColumnMaskRule"
-    },
-    {
-      "type": "hasRowFilterRule",
-      "start_node_label": "policy",
-      "end_node_label": "row filter rule",
-      "properties": [],
-      "cardinality": "0..*",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Policy contains row-level filtering rules.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasRowFilterRule"
-    },
-    {
-      "type": "includesPolicy",
-      "start_node_label": "policy group",
-      "end_node_label": "policy",
-      "properties": [],
-      "cardinality": "1..*",
+      "cardinality": "1",
       "requirement": "Mandatory",
       "unique": false,
-      "description": "Policy group bundles one or more policies.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy"
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "pii",
+      "end_node_label": "sensitivity classification",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
       "type": "rdf__type",
@@ -1264,6 +1445,17 @@
       "unique": false,
       "description": "instance-of relationship",
       "uri": null
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "public",
+      "end_node_label": "sensitivity classification",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
       "type": "rdf__type",
@@ -1280,6 +1472,17 @@
       "type": "rdf__type",
       "start_node_label": "request context",
       "end_node_label": "value source type",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "instance-of relationship",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
+    },
+    {
+      "type": "rdf__type",
+      "start_node_label": "restricted",
+      "end_node_label": "sensitivity classification",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
@@ -1319,94 +1522,6 @@
       "unique": false,
       "description": "instance-of relationship",
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
-    },
-    {
-      "type": "hasComparisonOperator",
-      "start_node_label": "row filter rule",
-      "end_node_label": "comparison operator",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a row filter rule with the comparison operator used in its predicate.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator"
-    },
-    {
-      "type": "hasDenyBehavior",
-      "start_node_label": "row filter rule",
-      "end_node_label": "deny behavior",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a row filter rule with the enforcement behavior used when access is denied.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior"
-    },
-    {
-      "type": "hasFilterAction",
-      "start_node_label": "row filter rule",
-      "end_node_label": "filter action",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a row filter rule with the action it applies when rewriting or evaluating a query.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction"
-    },
-    {
-      "type": "hasMatchMode",
-      "start_node_label": "row filter rule",
-      "end_node_label": "match mode",
-      "properties": [],
-      "cardinality": "0..1",
-      "requirement": "Optional",
-      "unique": false,
-      "description": "Associates a row filter rule with the value cardinality mode it expects.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode"
-    },
-    {
-      "type": "hasPriority",
-      "start_node_label": "row filter rule",
-      "end_node_label": "rule priority",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "Associates an entitlement rule with its precedence level.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"
-    },
-    {
-      "type": "rdfs__subClassOf",
-      "start_node_label": "row filter rule",
-      "end_node_label": "entitlement rule",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "row filter rule is a subclass of entitlement rule",
-      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
-    },
-    {
-      "type": "targetsFilteredColumn",
-      "start_node_label": "row filter rule",
-      "end_node_label": "column",
-      "properties": [],
-      "cardinality": "1..*",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "Row-filter rule targets a specific column context.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn"
-    },
-    {
-      "type": "belongsToDatabase",
-      "start_node_label": "schema",
-      "end_node_label": "relational database",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "Schema belongs to a relational database.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToDatabase"
     },
     {
       "type": "rdf__type",
@@ -1475,17 +1590,6 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
-      "type": "belongsToSchema",
-      "start_node_label": "table",
-      "end_node_label": "schema",
-      "properties": [],
-      "cardinality": "1",
-      "requirement": "Mandatory",
-      "unique": false,
-      "description": "A table belongs to exactly one schema.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToSchema"
-    },
-    {
       "type": "rdf__type",
       "start_node_label": "tokenization",
       "end_node_label": "masking method",
@@ -1519,26 +1623,48 @@
       "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type"
     },
     {
-      "type": "hasUserType",
-      "start_node_label": "user",
-      "end_node_label": "user type",
+      "type": "rdfs__subClassOf",
+      "start_node_label": "column mask rule",
+      "end_node_label": "entitlement rule",
       "properties": [],
       "cardinality": "1",
       "requirement": "Mandatory",
       "unique": false,
-      "description": "A user is classified by a user type that identifies whether it is a human actor or an automated process.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasUserType"
+      "description": "column mask rule is a subclass of entitlement rule",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
     },
     {
-      "type": "isMemberOf",
-      "start_node_label": "user",
-      "end_node_label": "policy group",
+      "type": "rdfs__subClassOf",
+      "start_node_label": "row filter rule",
+      "end_node_label": "entitlement rule",
+      "properties": [],
+      "cardinality": "1",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "row filter rule is a subclass of entitlement rule",
+      "uri": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+    },
+    {
+      "type": "targetsFilteredColumn",
+      "start_node_label": "row filter rule",
+      "end_node_label": "column",
       "properties": [],
       "cardinality": "1..*",
       "requirement": "Mandatory",
       "unique": false,
-      "description": "User inherits policies via policy group membership.",
-      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf"
+      "description": "Row-filter rule targets a specific column context.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn"
+    },
+    {
+      "type": "targetsMaskedColumn",
+      "start_node_label": "column mask rule",
+      "end_node_label": "column",
+      "properties": [],
+      "cardinality": "1..*",
+      "requirement": "Mandatory",
+      "unique": false,
+      "description": "Column-mask rule targets a specific column.",
+      "uri": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn"
     }
   ],
   "metadata": {
@@ -1560,6 +1686,7 @@
       "row filter rule",
       "rule priority",
       "schema",
+      "sensitivity classification",
       "table",
       "user",
       "user type",
@@ -1567,6 +1694,6 @@
     ],
     "engine": "Onto2AI-Materialized",
     "database": "stagingdb",
-    "named_individual_count": 34
+    "named_individual_count": 40
   }
 }

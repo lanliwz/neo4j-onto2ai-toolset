@@ -59,6 +59,15 @@ class RulePriority(Enum):
     LOW_PRIORITY = "low priority"
     MEDIUM_PRIORITY = "medium priority"
 
+class SensitivityClassification(Enum):
+    """Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions."""
+    CONFIDENTIAL = "confidential"
+    INTERNAL = "internal"
+    PHI = "phi"
+    PII = "pii"
+    PUBLIC = "public"
+    RESTRICTED = "restricted"
+
 class UserType(Enum):
     """Classification of a user by the kind of actor it represents for entitlement evaluation."""
     HUMAN_USER = "human user"
@@ -87,6 +96,7 @@ class Column(BaseModel):
     is_nullable: Optional[bool] = Field(default=None, alias="isNullable", description="Indicates whether a relational column permits null values.")
     ordinal_position: Optional[int] = Field(default=None, alias="ordinalPosition", description="The ordinal position of a relational column within its table.")
     belongs_to_table: List[Table] = Field(default_factory=list, alias="belongsToTable", description="A column belongs to exactly one table.")
+    has_sensitivity_classification: Optional[SensitivityClassification] = Field(default=None, alias="hasSensitivityClassification", description="Associates a relational column with a data sensitivity classification used by entitlement and masking controls.")
 
 class EntitlementRule(BaseModel):
     """Abstract superclass for entitlement rules that constrain row visibility or column values."""

@@ -101,6 +101,15 @@ The current entitlement package covers:
 - `column`
 - `user type`
 - `rule priority`
+- `filter action`
+- `match mode`
+- `comparison operator`
+- `value source type`
+- `deny behavior`
+- `mask action`
+- `masking method`
+- `fallback behavior`
+- `sensitivity classification`
 
 ## Release Expectation
 

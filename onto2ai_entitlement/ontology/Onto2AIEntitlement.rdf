@@ -127,6 +127,11 @@
     <skos:definition xml:lang="en">Enumeration of fallback behaviors applied when a column mask rule cannot resolve masking inputs.</skos:definition>
   </owl:Class>
 
+  <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification">
+    <rdfs:label>sensitivity classification</rdfs:label>
+    <skos:definition xml:lang="en">Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions.</skos:definition>
+  </owl:Class>
+
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule">
     <rdfs:label>entitlement rule</rdfs:label>
     <skos:definition xml:lang="en">Abstract superclass for entitlement rules that constrain row visibility or column values.</skos:definition>
@@ -240,6 +245,13 @@
     <skos:definition xml:lang="en">Column-mask rule targets a specific column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
     <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasSensitivityClassification">
+    <rdfs:label>has sensitivity classification</rdfs:label>
+    <skos:definition xml:lang="en">Associates a relational column with a data sensitivity classification used by entitlement and masking controls.</skos:definition>
+    <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
+    <rdfs:range rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
   </owl:ObjectProperty>
 
   <owl:ObjectProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority">
@@ -889,6 +901,42 @@
     <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
     <rdfs:label>use default mask</rdfs:label>
     <skos:definition xml:lang="en">Fallback behavior that applies a configured default mask when rule-specific inputs cannot be resolved.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PublicSensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>public</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for data approved for public disclosure.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InternalSensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>internal</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for data intended for internal organizational use.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ConfidentialSensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>confidential</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for data requiring restricted access because disclosure could create business or privacy risk.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RestrictedSensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>restricted</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for highly controlled data requiring strict access and masking governance.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PIISensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>pii</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for personally identifiable information.</skos:definition>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PHISensitivityClassification">
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
+    <rdfs:label>phi</rdfs:label>
+    <skos:definition xml:lang="en">Sensitivity classification for protected health information.</skos:definition>
   </owl:NamedIndividual>
 
 </rdf:RDF>

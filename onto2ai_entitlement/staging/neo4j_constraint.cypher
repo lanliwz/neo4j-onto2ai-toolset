@@ -112,6 +112,11 @@ CREATE CONSTRAINT Schema_schemaId_Required IF NOT EXISTS FOR (n:`Schema`) REQUIR
 // Unique property: schemaId
 CREATE CONSTRAINT Schema_schemaId_Unique IF NOT EXISTS FOR (n:`Schema`) REQUIRE n.`schemaId` IS UNIQUE;
 
+// Class: sensitivity classification
+// Definition: Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions.
+// URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification
+
+
 // Class: table
 // Definition: Relational table containing columns.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table

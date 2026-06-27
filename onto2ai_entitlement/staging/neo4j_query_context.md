@@ -21,6 +21,7 @@
 | RowFilterRule | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RowFilterRule | Rule that restricts row visibility using predicates. |
 | RulePriority | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority | Enumeration of precedence levels used to order entitlement rules during evaluation. |
 | Schema | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema | Relational schema/container for tables. |
+| SensitivityClassification | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification | Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions. |
 | Table | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table | Relational table containing columns. |
 | User | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/User | Principal that invokes or is evaluated against entitlement policies, including a human actor or an automated process. |
 | UserType | owl__Class | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType | Classification of a user by the kind of actor it represents for entitlement evaluation. |
@@ -28,6 +29,7 @@
 | AllowFilterAction | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/AllowFilterAction | Filter action that permits access to rows matching the rule predicate. |
 | BetweenComparisonOperator | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BetweenComparisonOperator | Comparison operator requiring a value to fall between two bounds. |
 | BlockQueryDenyBehavior | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior | Deny behavior that blocks the data access request. |
+| ConfidentialSensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ConfidentialSensitivityClassification | Sensitivity classification for data requiring restricted access because disclosure could create business or privacy risk. |
 | DenyFilterAction | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyFilterAction | Filter action that denies access to rows matching the rule predicate. |
 | DerivedQueryValueSourceType | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DerivedQueryValueSourceType | Value source type resolved by executing or evaluating a derived lookup query. |
 | EqualsComparisonOperator | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EqualsComparisonOperator | Comparison operator for equality predicates. |
@@ -35,6 +37,7 @@
 | HighPriority | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HighPriority | Priority level indicating a rule should be evaluated before lower-priority rules. |
 | HumanUser | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HumanUser | User type representing an individual human actor authenticated to access protected data. |
 | InListComparisonOperator | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InListComparisonOperator | Comparison operator requiring a value to appear in an allowed set. |
+| InternalSensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InternalSensitivityClassification | Sensitivity classification for data intended for internal organizational use. |
 | LowPriority | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/LowPriority | Priority level indicating a rule should be evaluated after higher-priority rules. |
 | MediumPriority | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MediumPriority | Priority level indicating a rule should be evaluated with standard precedence. |
 | MultipleValuesMatchMode | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MultipleValuesMatchMode | Match mode indicating the rule expects a collection of comparison values. |
@@ -44,9 +47,13 @@
 | NullReplacementMaskingMethod | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullReplacementMaskingMethod | Masking method that replaces the original value with null. |
 | NullifyMaskAction | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullifyMaskAction | Mask action that replaces the protected value with null. |
 | PatternMaskingMethod | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PatternMaskingMethod | Masking method that preserves a configured pattern while hiding protected portions of a value. |
+| PHISensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PHISensitivityClassification | Sensitivity classification for protected health information. |
+| PIISensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PIISensitivityClassification | Sensitivity classification for personally identifiable information. |
 | ProcessUser | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ProcessUser | User type representing an automated process, service account, or system integration actor. |
+| PublicSensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PublicSensitivityClassification | Sensitivity classification for data approved for public disclosure. |
 | RedactMaskAction | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RedactMaskAction | Mask action that redacts the protected value. |
 | RequestContextValueSourceType | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RequestContextValueSourceType | Value source type resolved from the current data access request context. |
+| RestrictedSensitivityClassification | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RestrictedSensitivityClassification | Sensitivity classification for highly controlled data requiring strict access and masking governance. |
 | ReturnNoRowsDenyBehavior | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNoRowsDenyBehavior | Deny behavior that rewrites access to produce an empty result set. |
 | ReturnNullFallbackBehavior | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNullFallbackBehavior | Fallback behavior that returns null when masking inputs cannot be resolved. |
 | RevealMaskAction | owl__NamedIndividual | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RevealMaskAction | Mask action that reveals the original value. |
@@ -64,29 +71,30 @@
 
 | Relationship | URI | Definition | Cardinality |
 | --- | --- | --- | --- |
-| rdf__type | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type | instance-of relationship | 1 |
-| belongsToTable | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable | A column belongs to exactly one table. | 1 |
-| hasFallbackBehavior | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior | Associates a column mask rule with the fallback behavior used when masking inputs cannot be resolved. | 0..1 |
-| hasMaskAction | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction | Associates a column mask rule with the masking action it applies. | 0..1 |
-| hasMaskingMethod | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod | Associates a column mask rule with the masking or transformation method it uses. | 0..1 |
-| hasPriority | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority | Associates an entitlement rule with its precedence level. | 1 |
-| rdfs__subClassOf | http://www.w3.org/2000/01/rdf-schema#subClassOf | column mask rule is a subclass of entitlement rule | 1 |
-| targetsMaskedColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn | Column-mask rule targets a specific column. | 1..* |
-| hasValueSourceType | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType | Associates an entitlement rule with the runtime source category used to resolve rule values. | 0..1 |
-| connectsTo | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo | JDBC profile connects to a target relational database. | 1 |
-| hasColumnMaskRule | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasColumnMaskRule | Policy contains column masking rules. | 0..* |
-| hasRowFilterRule | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasRowFilterRule | Policy contains row-level filtering rules. | 0..* |
-| includesPolicy | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy | Policy group bundles one or more policies. | 1..* |
-| hasComparisonOperator | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator | Associates a row filter rule with the comparison operator used in its predicate. | 0..1 |
-| hasDenyBehavior | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior | Associates a row filter rule with the enforcement behavior used when access is denied. | 0..1 |
-| hasFilterAction | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction | Associates a row filter rule with the action it applies when rewriting or evaluating a query. | 0..1 |
-| hasMatchMode | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode | Associates a row filter rule with the value cardinality mode it expects. | 0..1 |
-| rdfs__subClassOf | http://www.w3.org/2000/01/rdf-schema#subClassOf | row filter rule is a subclass of entitlement rule | 1 |
-| targetsFilteredColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn | Row-filter rule targets a specific column context. | 1..* |
 | belongsToDatabase | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToDatabase | Schema belongs to a relational database. | 1 |
 | belongsToSchema | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToSchema | A table belongs to exactly one schema. | 1 |
+| belongsToTable | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable | A column belongs to exactly one table. | 1 |
+| connectsTo | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo | JDBC profile connects to a target relational database. | 1 |
+| hasColumnMaskRule | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasColumnMaskRule | Policy contains column masking rules. | 0..* |
+| hasComparisonOperator | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator | Associates a row filter rule with the comparison operator used in its predicate. | 0..1 |
+| hasDenyBehavior | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior | Associates a row filter rule with the enforcement behavior used when access is denied. | 0..1 |
+| hasFallbackBehavior | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior | Associates a column mask rule with the fallback behavior used when masking inputs cannot be resolved. | 0..1 |
+| hasFilterAction | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction | Associates a row filter rule with the action it applies when rewriting or evaluating a query. | 0..1 |
+| hasMaskAction | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction | Associates a column mask rule with the masking action it applies. | 0..1 |
+| hasMaskingMethod | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod | Associates a column mask rule with the masking or transformation method it uses. | 0..1 |
+| hasMatchMode | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode | Associates a row filter rule with the value cardinality mode it expects. | 0..1 |
+| hasPriority | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority | Associates an entitlement rule with its precedence level. | 1 |
+| hasRowFilterRule | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasRowFilterRule | Policy contains row-level filtering rules. | 0..* |
+| hasSensitivityClassification | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasSensitivityClassification | Associates a relational column with a data sensitivity classification used by entitlement and masking controls. | 0..1 |
 | hasUserType | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasUserType | A user is classified by a user type that identifies whether it is a human actor or an automated process. | 1 |
+| hasValueSourceType | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType | Associates an entitlement rule with the runtime source category used to resolve rule values. | 0..1 |
+| includesPolicy | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy | Policy group bundles one or more policies. | 1..* |
 | isMemberOf | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf | User inherits policies via policy group membership. | 1..* |
+| rdf__type | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rdf__type | instance-of relationship | 1 |
+| rdfs__subClassOf | http://www.w3.org/2000/01/rdf-schema#subClassOf | column mask rule is a subclass of entitlement rule | 1 |
+| rdfs__subClassOf | http://www.w3.org/2000/01/rdf-schema#subClassOf | row filter rule is a subclass of entitlement rule | 1 |
+| targetsFilteredColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn | Row-filter rule targets a specific column context. | 1..* |
+| targetsMaskedColumn | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn | Column-mask rule targets a specific column. | 1..* |
 
 ## Section 3: Node Properties
 
@@ -151,26 +159,39 @@
 
 ## Section 4: Graph Topology
 
+- `(:Schema)-[:belongsToDatabase]->(:RelationalDatabase)`
+- `(:Table)-[:belongsToSchema]->(:Schema)`
+- `(:Column)-[:belongsToTable]->(:Table)`
+- `(:JdbcConnectionProfile)-[:connectsTo]->(:RelationalDatabase)`
+- `(:Policy)-[:hasColumnMaskRule]->(:ColumnMaskRule)`
+- `(:RowFilterRule)-[:hasComparisonOperator]->(:ComparisonOperator)`
+- `(:RowFilterRule)-[:hasDenyBehavior]->(:DenyBehavior)`
+- `(:ColumnMaskRule)-[:hasFallbackBehavior]->(:FallbackBehavior)`
+- `(:RowFilterRule)-[:hasFilterAction]->(:FilterAction)`
+- `(:ColumnMaskRule)-[:hasMaskAction]->(:MaskAction)`
+- `(:ColumnMaskRule)-[:hasMaskingMethod]->(:MaskingMethod)`
+- `(:RowFilterRule)-[:hasMatchMode]->(:MatchMode)`
+- `(:ColumnMaskRule)-[:hasPriority]->(:RulePriority)`
+- `(:RowFilterRule)-[:hasPriority]->(:RulePriority)`
+- `(:Policy)-[:hasRowFilterRule]->(:RowFilterRule)`
+- `(:Column)-[:hasSensitivityClassification]->(:SensitivityClassification)`
+- `(:User)-[:hasUserType]->(:UserType)`
+- `(:EntitlementRule)-[:hasValueSourceType]->(:ValueSourceType)`
+- `(:PolicyGroup)-[:includesPolicy]->(:Policy)`
+- `(:User)-[:isMemberOf]->(:PolicyGroup)`
 - `(:AllowFilterAction)-[:rdf__type]->(:FilterAction)`
 - `(:BetweenComparisonOperator)-[:rdf__type]->(:ComparisonOperator)`
 - `(:BlockQueryDenyBehavior)-[:rdf__type]->(:DenyBehavior)`
 - `(:BlockQueryDenyBehavior)-[:rdf__type]->(:FallbackBehavior)`
-- `(:Column)-[:belongsToTable]->(:Table)`
-- `(:ColumnMaskRule)-[:hasFallbackBehavior]->(:FallbackBehavior)`
-- `(:ColumnMaskRule)-[:hasMaskAction]->(:MaskAction)`
-- `(:ColumnMaskRule)-[:hasMaskingMethod]->(:MaskingMethod)`
-- `(:ColumnMaskRule)-[:hasPriority]->(:RulePriority)`
-- `(:ColumnMaskRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
-- `(:ColumnMaskRule)-[:targetsMaskedColumn]->(:Column)`
+- `(:ConfidentialSensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
 - `(:DenyFilterAction)-[:rdf__type]->(:FilterAction)`
 - `(:DerivedQueryValueSourceType)-[:rdf__type]->(:ValueSourceType)`
-- `(:EntitlementRule)-[:hasValueSourceType]->(:ValueSourceType)`
 - `(:EqualsComparisonOperator)-[:rdf__type]->(:ComparisonOperator)`
 - `(:HashingMaskingMethod)-[:rdf__type]->(:MaskingMethod)`
 - `(:HighPriority)-[:rdf__type]->(:RulePriority)`
 - `(:HumanUser)-[:rdf__type]->(:UserType)`
 - `(:InListComparisonOperator)-[:rdf__type]->(:ComparisonOperator)`
-- `(:JdbcConnectionProfile)-[:connectsTo]->(:RelationalDatabase)`
+- `(:InternalSensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
 - `(:LowPriority)-[:rdf__type]->(:RulePriority)`
 - `(:MediumPriority)-[:rdf__type]->(:RulePriority)`
 - `(:MultipleValuesMatchMode)-[:rdf__type]->(:MatchMode)`
@@ -180,35 +201,29 @@
 - `(:NullReplacementMaskingMethod)-[:rdf__type]->(:MaskingMethod)`
 - `(:NullifyMaskAction)-[:rdf__type]->(:MaskAction)`
 - `(:PatternMaskingMethod)-[:rdf__type]->(:MaskingMethod)`
-- `(:Policy)-[:hasColumnMaskRule]->(:ColumnMaskRule)`
-- `(:Policy)-[:hasRowFilterRule]->(:RowFilterRule)`
-- `(:PolicyGroup)-[:includesPolicy]->(:Policy)`
+- `(:PHISensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
+- `(:PIISensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
 - `(:ProcessUser)-[:rdf__type]->(:UserType)`
+- `(:PublicSensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
 - `(:RedactMaskAction)-[:rdf__type]->(:MaskAction)`
 - `(:RequestContextValueSourceType)-[:rdf__type]->(:ValueSourceType)`
+- `(:RestrictedSensitivityClassification)-[:rdf__type]->(:SensitivityClassification)`
 - `(:ReturnNoRowsDenyBehavior)-[:rdf__type]->(:DenyBehavior)`
 - `(:ReturnNullFallbackBehavior)-[:rdf__type]->(:FallbackBehavior)`
 - `(:RevealMaskAction)-[:rdf__type]->(:MaskAction)`
-- `(:RowFilterRule)-[:hasComparisonOperator]->(:ComparisonOperator)`
-- `(:RowFilterRule)-[:hasDenyBehavior]->(:DenyBehavior)`
-- `(:RowFilterRule)-[:hasFilterAction]->(:FilterAction)`
-- `(:RowFilterRule)-[:hasMatchMode]->(:MatchMode)`
-- `(:RowFilterRule)-[:hasPriority]->(:RulePriority)`
-- `(:RowFilterRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
-- `(:RowFilterRule)-[:targetsFilteredColumn]->(:Column)`
-- `(:Schema)-[:belongsToDatabase]->(:RelationalDatabase)`
 - `(:SessionContextValueSourceType)-[:rdf__type]->(:ValueSourceType)`
 - `(:SingleValueMatchMode)-[:rdf__type]->(:MatchMode)`
 - `(:StaticLiteralValueSourceType)-[:rdf__type]->(:ValueSourceType)`
 - `(:StaticSubstitutionMaskingMethod)-[:rdf__type]->(:MaskingMethod)`
 - `(:SubjectAttributeValueSourceType)-[:rdf__type]->(:ValueSourceType)`
 - `(:SubstituteMaskAction)-[:rdf__type]->(:MaskAction)`
-- `(:Table)-[:belongsToSchema]->(:Schema)`
 - `(:TokenizationMaskingMethod)-[:rdf__type]->(:MaskingMethod)`
 - `(:TokenizeMaskAction)-[:rdf__type]->(:MaskAction)`
 - `(:UseDefaultMaskFallbackBehavior)-[:rdf__type]->(:FallbackBehavior)`
-- `(:User)-[:hasUserType]->(:UserType)`
-- `(:User)-[:isMemberOf]->(:PolicyGroup)`
+- `(:ColumnMaskRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
+- `(:RowFilterRule)-[:rdfs__subClassOf]->(:EntitlementRule)`
+- `(:RowFilterRule)-[:targetsFilteredColumn]->(:Column)`
+- `(:ColumnMaskRule)-[:targetsMaskedColumn]->(:Column)`
 
 ## Section 5: Enumeration Members
 
@@ -218,6 +233,7 @@
 | ComparisonOperator | between | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BetweenComparisonOperator |
 | DenyBehavior | block query | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior |
 | FallbackBehavior | block query | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior |
+| SensitivityClassification | confidential | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ConfidentialSensitivityClassification |
 | FilterAction | deny | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyFilterAction |
 | ValueSourceType | derived query | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DerivedQueryValueSourceType |
 | ComparisonOperator | equals | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EqualsComparisonOperator |
@@ -225,6 +241,7 @@
 | RulePriority | high priority | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HighPriority |
 | UserType | human user | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/HumanUser |
 | ComparisonOperator | in list | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InListComparisonOperator |
+| SensitivityClassification | internal | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/InternalSensitivityClassification |
 | RulePriority | low priority | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/LowPriority |
 | RulePriority | medium priority | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MediumPriority |
 | MatchMode | multiple values | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MultipleValuesMatchMode |
@@ -234,9 +251,13 @@
 | MaskingMethod | null replacement | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullReplacementMaskingMethod |
 | MaskAction | nullify | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/NullifyMaskAction |
 | MaskingMethod | pattern masking | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PatternMaskingMethod |
+| SensitivityClassification | phi | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PHISensitivityClassification |
+| SensitivityClassification | pii | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PIISensitivityClassification |
 | UserType | process user | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ProcessUser |
+| SensitivityClassification | public | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PublicSensitivityClassification |
 | MaskAction | redact | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RedactMaskAction |
 | ValueSourceType | request context | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RequestContextValueSourceType |
+| SensitivityClassification | restricted | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RestrictedSensitivityClassification |
 | DenyBehavior | return no rows | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNoRowsDenyBehavior |
 | FallbackBehavior | return null | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNullFallbackBehavior |
 | MaskAction | reveal | http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RevealMaskAction |
