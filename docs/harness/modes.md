@@ -68,7 +68,7 @@ Typical work:
 - update Neo4j ontology Cypher
 - generate or update Neo4j query context
 - generate or update Neo4j constraints
-- generate or update Pydantic models
+- generate or update application code models, such as Pydantic models
 - validate schema coverage and topology
 
 Primary database:
@@ -86,7 +86,7 @@ Exit criteria:
 
 - schema artifacts reflect the current ontology
 - schema validation passes in `stagingdb`
-- artifact drift between Cypher, query context, and Pydantic is resolved
+- artifact drift between Cypher, query context, and generated application code models is resolved
 
 ## Dataset Mode
 

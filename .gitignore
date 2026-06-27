@@ -1,6 +1,11 @@
 /resource/ontology/
 /dist/
 /build/
+dist/
+build/
+*.egg-info/
+/onto2ai_entitlement/uv.lock
+/onto2ai_parcel/uv.lock
 /demo/audio/
 /demo/video/review/
 /log/ontology_load_history.json

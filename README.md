@@ -2,19 +2,37 @@
 
 ![Onto2AI Engineer Frontpage](./docs/assets/frontpage.svg)
 
-Onto2AI Toolset is a generic toolkit for loading, exploring, extracting, shaping, and packaging ontologies with Neo4j and AI-assisted workflows.
+Onto2AI Toolset is a generic toolkit for turning ontology knowledge into validated, implementation-ready application code models. It uses Neo4j, MCP, and AI-assisted workflows as supporting technologies for loading, exploring, extracting, shaping, and packaging ontology-driven schemas.
 
 Current release: `v1.0.0`, the first harness-compatible release of the toolset.
 
 This repository is the toolset itself. Field-specific ontologies and models such as entitlement or parcel are examples of outputs that can be produced with the toolset, not the core product definition.
 
+## Who This Toolset Is For
+Onto2AI Toolset is for teams that need to turn ontology knowledge into usable application code models. It is useful when your source of truth is RDF/OWL, a public ontology such as FIBO, or a domain ontology you are designing, but your downstream users need concrete constraints, query context, generated code artifacts, smoke tests, and reviewable schema packages.
+
+The main users are:
+- ontology engineers who need to load, inspect, validate, and curate RDF/OWL content
+- data modelers who need to convert ontology meaning into domain schema and application code contracts
+- AI engineers who want an MCP-enabled ontology workbench for model extraction and schema assistance
+- platform or application teams that want application code models packaged separately from the generic tooling
+
+## How Users Can Use It
+Users can work with Onto2AI Toolset in three complementary ways:
+
+- **Workbench for ontology exploration**: load ontology files or known ontology presets into a graph-backed workbench, inspect classes and relationships, and use MCP tools or the client CLI to ask schema-oriented questions.
+- **Modeller UI for review and refinement**: open the web UI to browse staged models, inspect schema graphs, run Cypher, and use the configured LLM provider to help refine model structure.
+- **Packaging pipeline for application code models**: generate and validate RDF, Cypher constraints, query context, code-model artifacts, and smoke tests, then publish the resulting domain package independently from the core toolset.
+
+A typical path is: install the toolset, configure the graph store and LLM credentials, load or stage an ontology, review it in the CLI/MCP server or Modeller UI, validate the generated artifacts, and package the finalized application code model for downstream use.
+
 ## Value Proposition
 Onto2AI Toolset helps ontology engineers, data modelers, and AI engineers:
-- load well-known ontologies into a Neo4j ontology database for inspection and reuse
-- explore concepts, relationships, restrictions, rules, and axioms through graph and MCP tooling
+- load well-known ontologies into a graph-backed ontology workbench for inspection and reuse
+- explore concepts, relationships, restrictions, rules, and axioms through MCP and graph tooling
 - extract a focused subset of concepts from large ontologies such as FIBO and other standards
 - use those subsets as building blocks for domain-specific or application-specific ontologies
-- generate implementation artifacts such as Neo4j constraints, query context, and Pydantic models
+- generate implementation artifacts such as database constraints, query context, and application code models
 - keep ontology, schema, API, and runtime data aligned to a single semantic foundation
 
 ## Scope
@@ -31,7 +49,7 @@ The toolset now starts from an explicit harness boundary so agentic work stays r
 
 The four operating modes are:
 - `ontology mode`: RDF-first ontology authoring with URI rules and `xmllint` validation
-- `schema mode`: generate and validate Cypher, query context, and Pydantic artifacts from ontology intent
+- `schema mode`: generate and validate Cypher, query context, and application code artifacts from ontology intent
 - `dataset mode`: dataset-only smoke tests in `testdb` with no `owl__Class`, `rdf__type`, or `rdfs__subClassOf`
 - `release mode`: package checks, versioning, milestone notes, and release discipline
 
@@ -45,27 +63,27 @@ This toolset is especially useful when you want to:
 - extract a domain-relevant subset of concepts, properties, restrictions, and axioms
 - build your own ontology on top of a trusted well-known ontology instead of starting from scratch
 - generate implementation-ready schema artifacts from ontology-driven design
-- let an AI engineer use Neo4j and MCP tools as an ontology workbench rather than treating an ontology as static RDF files
+- let an AI engineer use MCP tools and graph-backed storage as an ontology workbench rather than treating an ontology as static RDF files
 
 ## Onto2AI Modeller
 Onto2AI Modeller is an AI-assisted model-enrichment UI and a core part of Onto2AI Toolset. It helps users review ontology-derived models, refine subsets, and shape implementation-ready schemas without losing semantic grounding.
 
 In the staging area, users can review and evolve models in ontology, UML, or object-oriented (class model) formats. You can inspect and refine classes, relationships, properties, and hierarchies, and use AI assistance to add or modify model elements.
 
-Before publishing, users can generate sample data, run end-to-end application data flow tests, and validate model quality so the resulting model is ready for downstream distribution and implementation.
+Before publishing, users can generate sample data, run end-to-end application data flow tests, and validate model quality so the resulting application code model is ready for downstream distribution and implementation.
 
 ## Primary Workflow
-1. Configure environment variables (Neo4j + model/API keys).
-2. Load a well-known ontology or your own ontology data into Neo4j.
-3. Explore concepts, rules, and axioms through MCP and graph queries.
+1. Configure environment variables for the graph store, staging database, and model/API keys.
+2. Load a well-known ontology or your own ontology data into the ontology workbench.
+3. Explore concepts, rules, and axioms through MCP tools and graph queries.
 4. Extract or refine a subset of the ontology for your target use case.
 5. Stage and consolidate the resulting schema for implementation.
 6. Finalize schema design and review in Modeller UI.
 7. Validate the implementation workflow with smoke tests and schema checks when applicable.
-8. Publish the resulting ontology package and implementation artifacts.
+8. Publish the resulting ontology package and application code artifacts.
 
 Example outcome:
-- use the toolset to derive a field-specific package such as an entitlement ontology package or a parcel ontology package
+- use the toolset to derive a field-specific package such as an entitlement application model package or a parcel application model package
 - validate that package with domain-specific constraints, query context, and smoke tests
 - distribute that package separately from the generic toolset
 
@@ -104,26 +122,37 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
 python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
 ```
 
-The loader requires an explicit ontology URI or preset. You can use it to bring well-known ontologies into Neo4j, inspect them, and prepare them for subset extraction and downstream ontology design.
+The loader requires an explicit ontology URI or preset. You can use it to bring well-known ontologies into the graph-backed workbench, inspect them, and prepare them for subset extraction and downstream ontology design.
 
 ### Packaging
+Build the core toolset from the repository root:
+
 ```bash
-# build source + wheel artifacts
 python -m build
 
-# artifacts output
 ls -la dist/
 
-# optional: install built wheel locally
 python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-1.0.0-py3-none-any.whl
 ```
+
+Build domain packages independently from their package directories:
+
+```bash
+cd onto2ai_entitlement
+python -m build
+
+cd ../onto2ai_parcel
+python -m build
+```
+
+The root build publishes only `onto2ai-engineer`. Domain builds publish their own wheels, such as `onto2ai-entitlement` and `onto2ai-parcel`, without bundling the core toolset or other domain packages.
 
 ### Example Outputs
 Using the toolset, you can produce field-specific deliverables such as:
 - a customized ontology RDF
-- a generated Neo4j constraint script
-- a generated Neo4j query context
-- a generated Pydantic model
+- a generated database constraint script
+- a generated query context
+- a generated application code model, such as a Pydantic model
 - a domain-specific smoke test
 
 Examples created with this toolset have included entitlement-oriented and parcel-oriented ontology packages. Those are domain outputs built by using the toolset, not the generic definition of the toolset itself, and they are not part of the generic install surface.

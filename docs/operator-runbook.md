@@ -75,7 +75,7 @@ Use this gate before publishing a schema for downstream API/UI/data usage:
 - At least one class query returns schema data.
 - Staging tools execute against `NEO4J_STAGING_DB_NAME`.
 - Enum members appear in schema description Section 5.
-- Pydantic output includes `Enum` classes when `owl__NamedIndividual` members exist.
+- Generated application code model output includes enumeration classes when `owl__NamedIndividual` members exist. The current generated Python format uses Pydantic.
 
 ## Common Failures
 

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onto2ai-entitlement"
+version = "1.0.0"
+description = "Onto2AI entitlement domain ontology and generated schema artifacts"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Wei Zhang", email = "zhang.wei.ny@gmail.com" }
+]
+dependencies = [
+  "pydantic>=2"
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+
+[project.optional-dependencies]
+smoke-test = [
+  "neo4j==5.28.1",
+  "python-dotenv"
+]
+
+[tool.setuptools]
+package-dir = { "onto2ai_entitlement" = "." }
+packages = [
+  "onto2ai_entitlement",
+  "onto2ai_entitlement.ontology",
+  "onto2ai_entitlement.staging"
+]
+
+[tool.setuptools.package-data]
+onto2ai_entitlement = [
+  "ontology/*.rdf",
+  "staging/*.cypher",
+  "staging/*.json",
+  "staging/*.md"
+]

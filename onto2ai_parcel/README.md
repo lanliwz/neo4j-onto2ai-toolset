@@ -2,14 +2,14 @@
 
 This package is the publishable parcel deliverable from Onto2AI Engineer.
 
-It bundles the finalized parcel ontology together with the generated implementation artifacts used for Neo4j validation, query context, application modeling, and smoke testing.
+It bundles the finalized parcel ontology together with the generated implementation artifacts used for validation, query context, application code modeling, and smoke testing.
 
 ## Contents
 
 - `ontology/Parcel.rdf`
   - source RDF ontology for the finalized parcel domain
 - `staging/pydantic_parcel_model.py`
-  - generated Pydantic model aligned to the finalized parcel schema
+  - generated application code model aligned to the finalized parcel schema; this package currently uses Pydantic as the generated model format
 - `staging/neo4j_query_context.md`
   - generated parcel schema description for query/context use
 - `staging/neo4j_constraint.cypher`
@@ -33,13 +33,17 @@ from onto2ai_parcel import (
 
 ## Build
 
-Build the package from the repository root:
+Build this domain package independently from its package directory:
 
 ```bash
-python setup.py sdist bdist_wheel
+cd onto2ai_parcel
+python -m build
 ```
 
 Artifacts are written to `dist/`.
+
+This build publishes only the parcel domain package (`onto2ai-parcel`).
+It does not package the core Onto2AI toolset or other domain application models.
 
 ## Validation Flow
 

@@ -13,7 +13,7 @@ It bundles the source ontology together with the finalized staging artifacts use
 - `staging/full_schema_model.json`
   - extracted materialized schema model from `stagingdb`
 - `staging/pydantic_schema_model.py`
-  - generated Pydantic model view of the staging schema
+  - generated application code model view of the staging schema; this package currently uses Pydantic as the generated model format
 - `staging/neo4j_query_context.md`
   - generated schema description for review and LLM/query context
 - `staging/neo4j_constraint.cypher`
@@ -38,13 +38,17 @@ from onto2ai_entitlement import (
 
 ## Build
 
-Build the package from the repository root:
+Build this domain package independently from its package directory:
 
 ```bash
-python -m build --no-isolation
+cd onto2ai_entitlement
+python -m build
 ```
 
 Artifacts are written to `dist/`.
+
+This build publishes only the entitlement domain package (`onto2ai-entitlement`).
+It does not package the core Onto2AI toolset or other domain application models.
 
 ## Validation Flow
 

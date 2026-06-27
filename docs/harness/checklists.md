@@ -83,7 +83,7 @@ Use schema mode when converting ontology intent into implementation artifacts.
   - Neo4j Cypher
   - query context
   - constraints
-  - Pydantic models
+  - application code models, such as Pydantic models
   - schema validation scripts
 - identify the canonical schema package or workspace location
 - confirm `stagingdb` is the target database for validation
@@ -93,7 +93,7 @@ Use schema mode when converting ontology intent into implementation artifacts.
 - ontology-aligned Cypher files
 - `neo4j_query_context.md`
 - `neo4j_constraint.cypher`
-- Pydantic model files
+- application code model files
 - schema validation scripts
 - package-local staging artifacts such as `onto2ai_<domain>/staging/...`
 - transient `staging/` files only when they are explicitly workspace-local and not release sources
@@ -105,7 +105,7 @@ Use schema mode when converting ontology intent into implementation artifacts.
 ### Required Validators
 
 - schema validation against `stagingdb`
-- cross-check query context, constraints, and Pydantic models for drift
+- cross-check query context, constraints, and application code models for drift
 - verify schema artifacts still reflect ontology intent and naming
 
 ### Exit Criteria
@@ -130,7 +130,7 @@ Use dataset mode for smoke tests, sample data, runtime behavior, and instance-or
 
 - smoke test scripts
 - sample data loaders
-- dataset-oriented Pydantic usage
+- dataset-oriented application code model usage
 - package-local staging test artifacts
 - runtime validation helpers
 
@@ -195,7 +195,7 @@ Use release mode for packaging, version updates, milestone notes, and distributi
 Use this quick guide when a task is ambiguous:
 
 - if the change alters ontology meaning, start in ontology mode
-- if the change alters constraints, query context, Cypher, or Pydantic artifacts, use schema mode
+- if the change alters constraints, query context, Cypher, or application code model artifacts, use schema mode
 - if the change creates or validates sample/runtime data, use dataset mode
 - if the change bumps versions, updates milestones, or builds artifacts, use release mode
 
