@@ -104,9 +104,6 @@ def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
 
     db.execute_cypher(domain_range_query, name=f"materialize_{prop_label}_domain_range")
     db.execute_cypher(restriction_query, name=f"materialize_{prop_label}_restrictions")
-
-    db.execute_cypher(domain_range_query, name=f"materialize_{prop_label}_domain_range")
-    db.execute_cypher(restriction_query, name=f"materialize_{prop_label}_restrictions")
     normalize_xsd_primitive_datatypes(db)
 
 def cleanup_duplicate_relationships(db: Neo4jDatabase):

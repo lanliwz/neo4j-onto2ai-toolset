@@ -129,18 +129,20 @@ def load_ontology_with_imports(
     *,
     format: str | None = None,
     imported_set: set[str] | None = None,
+    processed_set: set[str] | None = None,
     failed_uris: list[dict[str, str]] | None = None,
     local_files_only: bool = False,
 ) -> None:
     """Load an ontology and recursively load owl:imports."""
-    target_imports = imported_set if imported_set is not None else imported_onto_set
+    loaded_imports = imported_set if imported_set is not None else imported_onto_set
+    processed_imports = processed_set if processed_set is not None else loaded_imports
     uri_str = str(uri)
 
-    if uri_str in target_imports:
+    if uri_str in processed_imports:
         return
 
     logger.info("Loading ontology %s", uri_str)
-    target_imports.add(uri_str)
+    processed_imports.add(uri_str)
 
     try:
         rdf_data = get_rdf_data(uri_str, local_only=local_files_only)
@@ -173,12 +175,15 @@ def load_ontology_with_imports(
             failed_uris.append({"uri": uri_str, "stage": "parse", "error": str(parse_error)})
         return
 
+    loaded_imports.add(uri_str)
+
     for _, _, imported_uri in graph.triples((None, OWL.imports, None)):
         load_ontology_with_imports(
             graph,
             str(imported_uri),
             format=format,
-            imported_set=target_imports,
+            imported_set=loaded_imports,
+            processed_set=processed_imports,
             failed_uris=failed_uris,
             local_files_only=local_files_only,
         )
@@ -190,18 +195,21 @@ def discover_and_load_parts(
     *,
     format: str | None = None,
     imported_set: set[str] | None = None,
+    processed_set: set[str] | None = None,
     failed_uris: list[dict[str, str]] | None = None,
     local_files_only: bool = False,
 ) -> None:
     """Load ontology and recursively discover all dcterms:hasPart ontologies."""
-    target_imports = imported_set if imported_set is not None else imported_onto_set
+    loaded_imports = imported_set if imported_set is not None else imported_onto_set
+    processed_imports = processed_set if processed_set is not None else loaded_imports
 
     logger.info("Starting part discovery from %s", root_uri)
     load_ontology_with_imports(
         graph,
         root_uri,
         format=format,
-        imported_set=target_imports,
+        imported_set=loaded_imports,
+        processed_set=processed_imports,
         failed_uris=failed_uris,
         local_files_only=local_files_only,
     )
@@ -213,7 +221,7 @@ def discover_and_load_parts(
 
         for _, _, part in graph.triples((None, DCTERMS.hasPart, None)):
             part_uri = str(part)
-            if part_uri not in target_imports:
+            if part_uri not in processed_imports:
                 parts_to_load.add(part_uri)
 
         if parts_to_load:
@@ -224,7 +232,8 @@ def discover_and_load_parts(
                     graph,
                     part_uri,
                     format=format,
-                    imported_set=target_imports,
+                    imported_set=loaded_imports,
+                    processed_set=processed_imports,
                     failed_uris=failed_uris,
                     local_files_only=local_files_only,
                 )
@@ -236,6 +245,7 @@ def load_neo4j_db(
     *,
     discover: bool = False,
     imported_set: set[str] | None = None,
+    processed_set: set[str] | None = None,
     failed_uris: list[dict[str, str]] | None = None,
     local_files_only: bool = False,
 ) -> None:
@@ -247,6 +257,7 @@ def load_neo4j_db(
             onto_uri,
             format=format,
             imported_set=imported_set,
+            processed_set=processed_set,
             failed_uris=failed_uris,
             local_files_only=local_files_only,
         )
@@ -256,9 +267,18 @@ def load_neo4j_db(
             onto_uri,
             format=format,
             imported_set=imported_set,
+            processed_set=processed_set,
             failed_uris=failed_uris,
             local_files_only=local_files_only,
         )
+
+    if failed_uris and any(failed_uri.get("uri") == onto_uri for failed_uri in failed_uris):
+        logger.warning("Skipping Neo4j write because root ontology failed: %s", onto_uri)
+        return
+
+    if len(discovery_graph) == 0:
+        logger.warning("Skipping Neo4j write because no triples were loaded for: %s", onto_uri)
+        return
 
     neo4j_rdf_graph = Graph(store=Neo4jStore(config=_build_store_config()))
     for triple in discovery_graph:
@@ -304,6 +324,7 @@ def execute_loader_run(
     neo4j_model = get_neo4j_model_config()
     imported_onto_set.clear()
     loaded_uris: set[str] = set()
+    processed_uris: set[str] = set()
     failed_uris: list[dict[str, str]] = []
 
     run_id = uuid4().hex[:12]
@@ -354,10 +375,23 @@ def execute_loader_run(
                 rdf_format,
                 discover=discover_mode,
                 imported_set=loaded_uris,
+                processed_set=processed_uris,
                 failed_uris=failed_uris,
                 local_files_only=local_files_only,
             )
         phase_timings["load_seconds"] = round(time.perf_counter() - t1, 3)
+
+        failed_root_iris = sorted(
+            {
+                failed_uri["uri"]
+                for failed_uri in failed_uris
+                if failed_uri.get("uri") in selection
+            }
+        )
+        if failed_root_iris:
+            raise RuntimeError(
+                "Failed to load root ontology IRI(s): " + ", ".join(failed_root_iris)
+            )
 
         t2 = time.perf_counter()
         if do_materialize:
@@ -367,7 +401,7 @@ def execute_loader_run(
             cleanup_duplicate_relationships(semanticdb)
         phase_timings["post_load_seconds"] = round(time.perf_counter() - t2, 3)
 
-        run_record["status"] = "success"
+        run_record["status"] = "partial_success" if failed_uris else "success"
     except Exception as exc:  # noqa: BLE001
         run_record["status"] = "failed"
         run_record["error"] = str(exc)
@@ -382,6 +416,8 @@ def execute_loader_run(
         run_record["phase_timings"] = phase_timings
         run_record["loaded_ontology_iris"] = sorted(loaded_uris)
         run_record["loaded_ontology_count"] = len(loaded_uris)
+        run_record["processed_ontology_iris"] = sorted(processed_uris)
+        run_record["processed_ontology_count"] = len(processed_uris)
         run_record["failed_ontology_uris"] = failed_uris
         run_record["failed_ontology_count"] = len(failed_uris)
 
@@ -585,6 +621,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print all loaded ontology IRIs after the run.",
     )
+    load_parser.add_argument(
+        "--local-files-only",
+        action="store_true",
+        help="Load using local ontology files only (never fetch from the internet).",
+    )
 
     history_parser = subparsers.add_parser("history", help="Show load history and loaded ontology IRIs")
     history_parser.add_argument("--history-path", default=None, help="Path to history JSON")
@@ -655,6 +696,7 @@ def main(argv: list[str] | None = None) -> int:
     do_materialize = getattr(args, "materialize", True)
     do_cleanup = getattr(args, "cleanup", True)
     print_loaded_iris = getattr(args, "print_loaded_iris", False)
+    local_files_only = getattr(args, "local_files_only", False)
 
     selection = _resolve_selection(preset, uris)
 
@@ -666,7 +708,7 @@ def main(argv: list[str] | None = None) -> int:
         do_materialize=do_materialize,
         do_cleanup=do_cleanup,
         history_path=history_path,
-        local_files_only=False,
+        local_files_only=local_files_only,
     )
     _print_load_summary(run, history_path)
 

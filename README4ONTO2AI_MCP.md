@@ -203,13 +203,27 @@ Use this if the server is already running independently on port 8082.
 
 | Tool Name | Description |
 |-----------|-------------|
+| `list_model_classes` | Lists classes from the Modeller staging database. |
+| `list_model_relationships` | Lists non-inheritance relationships from the Modeller staging database. |
+| `list_model_individuals` | Lists named individuals grouped by their `rdf:type` class. |
+| `list_model_datatypes` | Lists datatype nodes from the Modeller staging database. |
+| `list_model_class_hierarchy` | Returns the `rdfs__subClassOf` hierarchy as a tree. |
+| `get_model_focus_graph` | Returns focused graph rows for one class and its direct in/out relationships. |
 | `get_materialized_schema` | Returns classes and relationships as Markdown tables. |
 | `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels) that is useful for subset extraction and custom ontology design. |
 | `get_ontological_schema` | Returns the raw meta-model view of an ontology class. |
 | `generate_shacl_for_modelling` | Generates official SHACL files for class-based validation. |
 | `generate_schema_code` | Generates SQL, Pydantic, or Neo4j code for ontology classes. |
 | `staging_materialized_schema` | Copies materialized schema components to a staging database. |
+| `consolidate_inheritance` | Copies inherited relationships directly to staged classes. |
 | `consolidate_staging_db` | Consolidates classes in stagingdb by converting them to datatypes. |
+| `generate_neo4j_schema_description` | Generates a Markdown graph schema description from extracted model data. |
+| `generate_neo4j_schema_constraint` | Generates deterministic Cypher constraints and relationship notes. |
+
+Experimental tools currently registered but not part of the stable contract:
+
+- `apply_data_model`
+- `merge_semantic_individuals`
 
 ---
 

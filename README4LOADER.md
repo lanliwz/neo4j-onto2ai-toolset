@@ -17,6 +17,8 @@ Although it has strong support for FIBO and related standards, the loader is des
 - **Post-Load Materialization**: Includes functions to materialize object and datatype properties from OWL restrictions into Neo4j relationships and properties.
 - **Load History Tracking**: Persists each run with:
   - loaded ontology IRI list,
+  - processed ontology IRI list,
+  - failed ontology IRI list and failure stage,
   - destination Neo4j database/URI/user,
   - start/end timestamps and duration,
   - phase timings (reset/load/post-load),
@@ -41,6 +43,10 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset fnd
 # Load specific ontology IRI(s)
 python -m neo4j_onto2ai_toolset.onto2ai_loader load \
   --uri https://spec.edmcouncil.org/fibo/ontology/FND/MetadataFND/FNDDomain
+
+# Load only from local ontology files (offline, no internet fetch)
+python -m neo4j_onto2ai_toolset.onto2ai_loader load \
+  --uri <ontology_iri> --local-files-only
 
 # List recent load history
 python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10
@@ -91,4 +97,12 @@ For AI engineers and ontology engineers, the loader turns a large ontology into 
 - `discover_and_load_parts(graph, root_uri)`: Recursively traverses `dcterms:hasPart`.
 - `load_neo4j_db(onto_uri, format, discover=True)`: Loads the discovered or specified ontology into Neo4j.
 - `execute_loader_run(...)`: Runs load/reset/materialization and records history.
-- `reset_neo4j_db()`: Clears the Neo4j database and recreates the URI uniqueness constraint.
+- `reset_neo4j_db()`: Clears relationships and nodes from the configured Neo4j model database before a fresh ontology load.
+
+## Load Status
+
+The loader records explicit run status values:
+
+- `success`: every processed ontology IRI loaded and parsed successfully.
+- `partial_success`: root ontology IRIs loaded, but one or more imported or discovered ontology IRIs failed.
+- `failed`: a root ontology IRI failed, reset/materialization failed, or another run-level exception occurred.

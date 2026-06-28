@@ -26,11 +26,9 @@ def get_rdf_data(url, ext=".rdf", local_only=False):
             content = file.read()
         return content
     except FileNotFoundError:
-        logger.error(f"The file '{file_path}' was not found.")
-        return ""
-    except IOError:
-        logger.exception(f"An error occurred while reading the file '{file_path}'.")
-        return ""
+        raise FileNotFoundError(f"The file '{file_path}' was not found.")
+    except IOError as exc:
+        raise OSError(f"An error occurred while reading the file '{file_path}'.") from exc
 
 def url_to_filepath(url, ext=".rdf"):
     parsed_url = urlparse(url)
@@ -61,14 +59,11 @@ def download_as_rdf(url):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     # Fetch and save the content
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()  # Ensure we got a successful response
-        with open(save_path, 'wb') as file:
-            file.write(response.content)
-        logger.info(f"Content saved to {save_path}")
-    except requests.RequestException as e:
-        logger.error(f"Failed to retrieve the URL: {e}")
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()  # Ensure we got a successful response
+    with open(save_path, 'wb') as file:
+        file.write(response.content)
+    logger.info(f"Content saved to {save_path}")
 
 
 # print(get_rdf_data('https://spec.edmcouncil.org/fibo/ontology/master/latest/FND/AgentsAndPeople/Agents/'))

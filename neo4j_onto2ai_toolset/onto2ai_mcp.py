@@ -24,6 +24,11 @@ from neo4j_onto2ai_toolset.onto2ai_utility import get_full_schema, get_schema
 mcp = FastMCP("Onto2AI")
 
 # --- UTILITIES ---
+def _open_staging_reader(database: Optional[str] = None):
+    """Open the database used by Modeller-style browse tools."""
+    return get_staging_db(database or NEO4J_STAGING_DB_NAME)
+
+
 def to_camel_case(text):
     if not text: return text
     import re
@@ -559,6 +564,264 @@ MATERIALIZED_SCHEMA_QUERY = """
     
     ORDER BY SourceClassLabel, RelType
 """
+
+@mcp.tool()
+async def list_model_classes(database: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    List owl:Class nodes from the Modeller staging database.
+
+    Args:
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (c:owl__Class)
+        WHERE c.rdfs__label IS NOT NULL
+          AND NOT toString(c.rdfs__label) =~ '^N[0-9a-f]{32}$'
+          AND NOT toString(c.rdfs__label) =~ '^[0-9a-f]{8}-[0-9a-f]{4}-.*'
+          AND size(toString(c.rdfs__label)) > 1
+        RETURN DISTINCT
+            c.rdfs__label AS label,
+            c.uri AS uri,
+            c.skos__definition AS definition,
+            labels(c) AS node_labels
+        ORDER BY c.rdfs__label
+        """
+        return db.execute_cypher(query, name="mcp_list_model_classes")
+    except Exception as e:
+        logger.error(f"Error listing model classes: {e}")
+        return [{"error": str(e)}]
+    finally:
+        db.close()
+
+
+@mcp.tool()
+async def list_model_relationships(database: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    List distinct non-inheritance relationships from the Modeller staging database.
+
+    Args:
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (source:owl__Class)-[r]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND type(r) <> 'rdfs__subClassOf'
+          AND source.rdfs__label IS NOT NULL
+          AND NOT toString(source.rdfs__label) =~ '^N[0-9a-f]{32}$'
+        RETURN DISTINCT
+            source.rdfs__label AS source_class,
+            source.uri AS source_uri,
+            type(r) AS relationship_type,
+            coalesce(r.rdfs__label, type(r)) AS relationship_label,
+            r.uri AS uri,
+            coalesce(r.cardinality, '0..1') AS cardinality,
+            r.requirement AS requirement,
+            coalesce(target.rdfs__label, target.uri, 'Resource') AS target_class,
+            target.uri AS target_uri
+        ORDER BY source_class, relationship_type
+        """
+        return db.execute_cypher(query, name="mcp_list_model_relationships")
+    except Exception as e:
+        logger.error(f"Error listing model relationships: {e}")
+        return [{"error": str(e)}]
+    finally:
+        db.close()
+
+
+@mcp.tool()
+async def list_model_individuals(database: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    List owl:NamedIndividual nodes grouped by rdf:type class.
+
+    Args:
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (n:owl__NamedIndividual)
+        WHERE n.rdfs__label IS NOT NULL
+          AND NOT toString(n.rdfs__label) =~ '^N[0-9a-f]{32}$'
+        OPTIONAL MATCH (n)-[:rdf__type]->(c:owl__Class)
+        WITH coalesce(c.rdfs__label, 'Untyped') AS type_label,
+             c.uri AS type_uri,
+             n.rdfs__label AS member_label,
+             n.uri AS member_uri,
+             n.skos__definition AS member_def
+        ORDER BY type_label, member_label
+        RETURN type_label, type_uri,
+               collect({label: member_label, uri: member_uri, definition: member_def}) AS members,
+               count(member_label) AS count
+        ORDER BY type_label
+        """
+        return db.execute_cypher(query, name="mcp_list_model_individuals")
+    except Exception as e:
+        logger.error(f"Error listing model individuals: {e}")
+        return [{"error": str(e)}]
+    finally:
+        db.close()
+
+
+@mcp.tool()
+async def list_model_datatypes(database: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    List rdfs:Datatype nodes from the Modeller staging database.
+
+    Args:
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (n:rdfs__Datatype)
+        WHERE n.rdfs__label IS NOT NULL
+        RETURN n.rdfs__label AS label,
+               n.uri AS uri,
+               n.skos__definition AS definition
+        ORDER BY n.rdfs__label
+        """
+        return db.execute_cypher(query, name="mcp_list_model_datatypes")
+    except Exception as e:
+        logger.error(f"Error listing model datatypes: {e}")
+        return [{"error": str(e)}]
+    finally:
+        db.close()
+
+
+@mcp.tool()
+async def list_model_class_hierarchy(database: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Return the rdfs:subClassOf hierarchy as a tree, aligned with the Modeller API.
+
+    Args:
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (child:owl__Class)-[:rdfs__subClassOf]->(parent:owl__Class)
+        WHERE child.rdfs__label IS NOT NULL AND parent.rdfs__label IS NOT NULL
+        RETURN child.rdfs__label AS child_label,
+               child.uri AS child_uri,
+               child.skos__definition AS child_definition,
+               parent.rdfs__label AS parent_label,
+               parent.uri AS parent_uri,
+               parent.skos__definition AS parent_definition
+        ORDER BY parent_label, child_label
+        """
+        rows = db.execute_cypher(query, name="mcp_list_model_class_hierarchy")
+
+        children_map: Dict[str, List[Dict[str, Any]]] = {}
+        all_children = set()
+        all_classes: Dict[str, Dict[str, Any]] = {}
+
+        for row in rows:
+            parent = row["parent_label"]
+            child = row["child_label"]
+            all_classes[parent] = {
+                "uri": row.get("parent_uri"),
+                "definition": row.get("parent_definition"),
+            }
+            all_classes[child] = {
+                "uri": row.get("child_uri"),
+                "definition": row.get("child_definition"),
+            }
+            children_map.setdefault(parent, []).append(
+                {
+                    "label": child,
+                    "uri": row.get("child_uri"),
+                    "definition": row.get("child_definition"),
+                }
+            )
+            all_children.add(child)
+
+        def build_tree(label: str) -> Dict[str, Any]:
+            return {
+                "label": label,
+                "uri": all_classes.get(label, {}).get("uri"),
+                "definition": all_classes.get(label, {}).get("definition"),
+                "children": [build_tree(child["label"]) for child in children_map.get(label, [])],
+            }
+
+        roots = sorted(label for label in children_map if label not in all_children)
+        total_edges = sum(len(children) for children in children_map.values())
+        return {
+            "database": database or NEO4J_STAGING_DB_NAME,
+            "tree": [build_tree(root) for root in roots],
+            "total_edges": total_edges,
+            "root_count": len(roots),
+        }
+    except Exception as e:
+        logger.error(f"Error listing model class hierarchy: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        db.close()
+
+
+@mcp.tool()
+async def get_model_focus_graph(
+    node_label: str,
+    database: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Get a Modeller-style focused graph for one class and its direct in/out relationships.
+
+    Args:
+        node_label: Class label or URI to focus.
+        database: Optional staging database name. Defaults to NEO4J_STAGING_DB_NAME.
+    """
+    db = _open_staging_reader(database)
+    try:
+        query = """
+        MATCH (center:owl__Class)
+        WHERE toLower(toString(center.rdfs__label)) = toLower($label) OR center.uri = $label
+
+        OPTIONAL MATCH (center)-[:rdfs__subClassOf*0..]->(parent:owl__Class)
+        WITH center, coalesce(parent, center) AS classNode
+
+        OPTIONAL MATCH (classNode)-[r_out]->(target)
+        WHERE (target:owl__Class OR target:owl__NamedIndividual OR target:rdfs__Datatype)
+          AND (r_out.materialized = true OR r_out.materialized IS NULL)
+          AND type(r_out) <> "rdfs__subClassOf"
+
+        OPTIONAL MATCH (source)-[r_in]->(center)
+        WHERE (source:owl__Class OR source:owl__NamedIndividual)
+          AND (r_in.materialized = true OR r_in.materialized IS NULL)
+          AND type(r_in) <> "rdfs__subClassOf"
+
+        RETURN center.rdfs__label AS center_label,
+               center.uri AS center_uri,
+               classNode.rdfs__label AS source_class,
+               classNode.uri AS source_uri,
+               type(r_out) AS outgoing_relationship,
+               r_out.uri AS outgoing_relationship_uri,
+               coalesce(target.rdfs__label, target.uri) AS outgoing_target,
+               target.uri AS outgoing_target_uri,
+               coalesce(source.rdfs__label, source.uri) AS incoming_source,
+               source.uri AS incoming_source_uri,
+               type(r_in) AS incoming_relationship,
+               r_in.uri AS incoming_relationship_uri
+        """
+        rows = db.execute_cypher(
+            query,
+            params={"label": node_label},
+            name="mcp_get_model_focus_graph",
+        )
+        return {
+            "database": database or NEO4J_STAGING_DB_NAME,
+            "node_label": node_label,
+            "rows": rows,
+        }
+    except Exception as e:
+        logger.error(f"Error getting model focus graph: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        db.close()
+
 
 @mcp.tool()
 async def get_materialized_schema(

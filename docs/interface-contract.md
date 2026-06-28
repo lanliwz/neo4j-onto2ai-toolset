@@ -18,6 +18,12 @@ This document defines stable runtime interfaces for the `onto2ai-engineer` miles
 
 ## Stable MCP Tool Surface
 The following tools are part of the stabilized Onto2AI MCP surface:
+- `list_model_classes`
+- `list_model_relationships`
+- `list_model_individuals`
+- `list_model_datatypes`
+- `list_model_class_hierarchy`
+- `get_model_focus_graph`
 - `get_materialized_schema`
 - `get_ontological_schema`
 - `extract_data_model`
@@ -28,6 +34,11 @@ The following tools are part of the stabilized Onto2AI MCP surface:
 - `consolidate_staging_db`
 - `generate_neo4j_schema_description`
 - `generate_neo4j_schema_constraint`
+
+## Experimental MCP Tool Surface
+The following tools are currently registered but not part of the stable contract:
+- `apply_data_model`
+- `merge_semantic_individuals`
 
 ## Deprecated Interfaces and Migration
 

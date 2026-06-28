@@ -51,6 +51,9 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source
 
 # offline/local-only reload (no internet fetch)
 python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded --local-files-only
+
+# first-time local-only load (no internet fetch)
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri> --local-files-only
 ```
 
 ## 5. Start MCP Server
