@@ -507,7 +507,7 @@ def _format_schema_prompt_markdown(data_model: DataModel) -> str:
 
 # --- MCP TOOLS ---
 
-MATERIALIZED_SCHEMA_QUERY = """
+MATERIALIZED_SCHEMA_OUTGOING_QUERY = """
     // Match the requested class
     MATCH (c:owl__Class)
     WHERE c.rdfs__label IN $labels OR c.uri IN $labels
@@ -561,9 +561,41 @@ MATERIALIZED_SCHEMA_QUERY = """
       coalesce(target.xsd__type, target.rdfs__label, target.uri, "Resource") AS TargetClassLabel,
       target.uri AS TargetClassURI,
       target.skos__definition AS TargetClassDef
-    
+
     ORDER BY SourceClassLabel, RelType
 """
+
+MATERIALIZED_SCHEMA_INCOMING_UNION = """
+    UNION
+
+    // Path 3: Incoming relationships from other classes to the requested class.
+    // This keeps MCP get_materialized_schema aligned with Modeller /api/class/{class_name}.
+    MATCH (c:owl__Class)
+    WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+
+    MATCH (source:owl__Class)-[r]->(c)
+    WHERE (r.materialized = true OR r.materialized IS NULL) // Relaxed for stagingdb
+      AND type(r) <> "rdfs__subClassOf"
+    RETURN DISTINCT
+      source.rdfs__label AS SourceClassLabel,
+      source.uri AS SourceClassURI,
+      source.skos__definition AS SourceClassDef,
+      type(r) AS RelType,
+      r.uri AS RelURI,
+      r.skos__definition AS RelDef,
+      coalesce(r.cardinality, "0..1") AS Cardinality,
+      r.requirement AS Requirement,
+      coalesce(r.unique, false) AS Unique,
+      coalesce(r.property_type, "owl__ObjectProperty") AS PropMetaType,
+      c.rdfs__label AS TargetClassLabel,
+      c.uri AS TargetClassURI,
+      c.skos__definition AS TargetClassDef
+"""
+
+MATERIALIZED_SCHEMA_QUERY = MATERIALIZED_SCHEMA_OUTGOING_QUERY.replace(
+    "\n    ORDER BY SourceClassLabel, RelType\n",
+    f"{MATERIALIZED_SCHEMA_INCOMING_UNION}\n    ORDER BY SourceClassLabel, RelType\n",
+)
 
 @mcp.tool()
 async def list_model_classes(database: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -1120,7 +1152,7 @@ async def extract_data_model(
             name="internal_extract_data_model_seed_classes",
         )
 
-        results = db.execute_cypher(MATERIALIZED_SCHEMA_QUERY, params={"labels": labels}, name="internal_extract_data_model")
+        results = db.execute_cypher(MATERIALIZED_SCHEMA_OUTGOING_QUERY, params={"labels": labels}, name="internal_extract_data_model")
         
         nodes_dict = {}
         individual_nodes = {}
