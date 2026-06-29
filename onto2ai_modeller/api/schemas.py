@@ -630,6 +630,21 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
     return GraphData(nodes=final_nodes, links=links, query=query)
 
 
+def _display_label(value: Any, fallback: str = "Class") -> str:
+    """Return a non-empty display label for graph/UML data."""
+    if isinstance(value, list):
+        value = next((item for item in value if item), None)
+    if value is None:
+        return fallback
+    text = str(value).strip()
+    return text or fallback
+
+
+def _label_key(value: Any, fallback: Optional[str] = None) -> str:
+    """Return a normalized lookup key without assuming labels are present."""
+    return _display_label(value, fallback or "Class").lower()
+
+
 @router.get("/source/search")
 async def search_source_ontology(
     q: str,
@@ -1363,7 +1378,7 @@ async def get_graph_data(class_name: str):
         
         # Mark center node
         for node in graph.nodes:
-            if node["label"].lower() == class_name.lower():
+            if _label_key(node.get("label"), node.get("uri") or node.get("key")) == class_name.lower():
                 node["isCenter"] = True
         
         return graph
@@ -1410,9 +1425,9 @@ async def get_node_focus_data(node_label: str):
         # Mark center node
         if graph and graph.nodes:
             for node in graph.nodes:
-                if node["label"].lower() == node_label.lower():
+                if _label_key(node.get("label"), node.get("uri") or node.get("key")) == node_label.lower():
                     node["isCenter"] = True
-                elif node["uri"] == node_label:
+                elif node.get("uri") == node_label:
                     node["isCenter"] = True
         
         return graph
@@ -1463,7 +1478,11 @@ async def get_uml_data(class_name: str):
         uml_graph = results_to_uml_data(results, query=query.replace("$label", f"'{class_name}'").strip())
         
         # Now fetch class hierarchy (rdfs__subClassOf) for all classes in the graph
-        class_labels = [node["label"] for node in uml_graph.nodes]
+        class_labels = [
+            _display_label(node.get("label"), "")
+            for node in uml_graph.nodes
+            if _display_label(node.get("label"), "")
+        ]
         if class_labels:
             hierarchy_query = """
             MATCH (child:owl__Class)-[:rdfs__subClassOf]->(parent:owl__Class)
@@ -1480,18 +1499,23 @@ async def get_uml_data(class_name: str):
             )
             
             # Build a label-to-key map for existing nodes
-            label_to_key = {node["label"].lower(): node["key"] for node in uml_graph.nodes}
+            label_to_key = {
+                _label_key(node.get("label"), node.get("uri") or node.get("key")): node["key"]
+                for node in uml_graph.nodes
+            }
             existing_keys = set(label_to_key.values())
             
             for row in hierarchy_results:
-                child_label = row["child_label"]
-                parent_label = row["parent_label"]
-                child_key = label_to_key.get(child_label.lower())
-                parent_key = label_to_key.get(parent_label.lower())
+                child_label = _display_label(row.get("child_label"), row.get("child_uri") or "Class")
+                parent_label = _display_label(row.get("parent_label"), row.get("parent_uri") or "Class")
+                child_lookup_key = _label_key(child_label, row.get("child_uri"))
+                parent_lookup_key = _label_key(parent_label, row.get("parent_uri"))
+                child_key = label_to_key.get(child_lookup_key)
+                parent_key = label_to_key.get(parent_lookup_key)
                 
                 # Add parent node if not already present
                 if not parent_key:
-                    parent_key = f"hierarchy_{parent_label}"
+                    parent_key = f"hierarchy_{row.get('parent_uri') or parent_label}"
                     if parent_key not in existing_keys:
                         uml_graph.nodes.append({
                             "key": parent_key,
@@ -1501,12 +1525,12 @@ async def get_uml_data(class_name: str):
                             "category": "class",
                             "attributes": []
                         })
-                        label_to_key[parent_label.lower()] = parent_key
+                        label_to_key[parent_lookup_key] = parent_key
                         existing_keys.add(parent_key)
                 
                 # Add child node if not already present
                 if not child_key:
-                    child_key = f"hierarchy_{child_label}"
+                    child_key = f"hierarchy_{row.get('child_uri') or child_label}"
                     if child_key not in existing_keys:
                         uml_graph.nodes.append({
                             "key": child_key,
@@ -1516,7 +1540,7 @@ async def get_uml_data(class_name: str):
                             "category": "class",
                             "attributes": []
                         })
-                        label_to_key[child_label.lower()] = child_key
+                        label_to_key[child_lookup_key] = child_key
                         existing_keys.add(child_key)
                 
                 # Add inheritance link (child -> parent, UML generalization)
@@ -1529,7 +1553,7 @@ async def get_uml_data(class_name: str):
         
         # Mark center node
         for node in uml_graph.nodes:
-            if node["label"].lower() == class_name.lower():
+            if _label_key(node.get("label"), node.get("uri") or node.get("key")) == class_name.lower():
                 node["isCenter"] = True
                 
         return uml_graph

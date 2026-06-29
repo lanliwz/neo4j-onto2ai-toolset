@@ -31,7 +31,6 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from onto2ai_parcel.staging.pydantic_parcel_model import (
-    Address,
     BoundaryVertex,
     CountryEnum,
     GeoJSONFeature,
@@ -46,10 +45,9 @@ from onto2ai_parcel.staging.pydantic_parcel_model import (
 TEST_DB_NAME = "testdb"
 STAGING_DB_NAME = os.getenv("NEO4J_STAGING_DB_NAME", "stagingdb")
 US_POSTAL_ADDRESS_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#USPostalAddress"
-ADDRESS_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Address"
 PARCEL_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Parcel"
-COUNTRY_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Country"
-COUNTRY_SUBDIVISION_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#CountrySubdivision"
+COUNTRY_URI = "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/Country"
+COUNTRY_SUBDIVISION_URI = "https://www.omg.org/spec/LCC/Countries/CountryRepresentation/CountrySubdivision"
 GPS_COORDINATE_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#GPSCoordinate"
 BOUNDARY_VERTEX_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#BoundaryVertex"
 GEOMETRY_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Geometry"
@@ -202,9 +200,9 @@ def build_sample_address() -> USPostalAddress:
         streetAddressLine1="1 Main St",
         addressLine2="Unit 2A",
         cityName="Jersey City",
-        subdivision=USStateEnum.NJ,
+        hasSubdivision=USStateEnum.NJ,
         postalCode="07302",
-        country=CountryEnum.UNITED_STATES_OF_AMERICA,
+        hasCountry=CountryEnum.UNITED_STATES_OF_AMERICA,
     )
 
 
@@ -237,7 +235,21 @@ def build_sample_parcel(address: USPostalAddress, geometry: PolygonGeometry) -> 
     return Parcel(
         parcelId="parcel-1",
         parcelIdentifier="P-0001",
+        districtCode="01",
+        sectionCode="S-01",
+        blockCode="B-10",
+        lotCode="L-20",
+        municipalityName="Jersey City",
+        parcelPostalCode="07302",
         fullAddressText="1 Main St, Unit 2A, Jersey City, NJ 07302",
+        parcelAreaAcres=Decimal("0.15"),
+        landUseText="Residential",
+        lastUpdateText="2026-06-01",
+        createDateText="2025-01-15",
+        titleFlagText="N",
+        parcelStatusText="Active",
+        overlapFlagText="N",
+        recordedDeedAcres=Decimal("0.15"),
         hasParcelAddress=[address],
         hasParcelGeometry=[geometry],
     )
@@ -304,7 +316,9 @@ def load_sample_instance_data(driver) -> None:
     feature = build_sample_feature(parcel)
     collection = build_sample_feature_collection(feature)
 
-    address_props = neo4j_compatible(address.model_dump(by_alias=True))
+    address_props = neo4j_compatible(
+        address.model_dump(by_alias=True, exclude={"has_country", "has_subdivision"})
+    )
     geometry_props = neo4j_compatible(
         geometry.model_dump(by_alias=True, exclude={"has_boundary_vertex"})
     )
@@ -323,7 +337,7 @@ def load_sample_instance_data(driver) -> None:
             MERGE (parcel:Parcel:Resource {uri: $parcel_instance_uri})
             SET parcel += $parcel_props,
                 parcel.rdfs__label = 'sample parcel'
-            MERGE (address:USPostalAddress:Address:Resource {uri: $address_instance_uri})
+            MERGE (address:USPostalAddress:Resource {uri: $address_instance_uri})
             SET address += $address_props,
                 address.rdfs__label = 'sample US postal address'
             MERGE (geometry:PolygonGeometry:Geometry:Resource {uri: $geometry_instance_uri})
@@ -411,7 +425,6 @@ def load_sample_instance_data(driver) -> None:
 
 def assert_constraints_enforced(driver, required_by_label: dict[str, set[str]]) -> None:
     valid_props = {
-        "Address": neo4j_compatible(Address(addressId="addr-invalid-base").model_dump(by_alias=True)),
         "USPostalAddress": neo4j_compatible(build_sample_address().model_dump(by_alias=True)),
         "GPSCoordinate": neo4j_compatible(GPSCoordinate(
             gpsCoordinateId="gps-invalid-base",
@@ -439,8 +452,7 @@ def assert_constraints_enforced(driver, required_by_label: dict[str, set[str]]) 
         ).model_dump(by_alias=True, exclude={"has_feature"})),
     }
     label_aliases = {
-        "Address": "Address:Resource",
-        "USPostalAddress": "USPostalAddress:Address:Resource",
+        "USPostalAddress": "USPostalAddress:Resource",
         "GPSCoordinate": "GPSCoordinate:Resource",
         "Geometry": "Geometry:Resource",
         "Parcel": "Parcel:Resource",
@@ -481,7 +493,7 @@ def validate_testdb(driver) -> dict[str, object]:
     sample_model = build_sample_address()
     model_fields = set(sample_model.model_dump(by_alias=True).keys())
     expected_required = query_context["mandatory_properties"].get(
-        "USPostalAddress:Address",
+        "USPostalAddress",
         set(),
     )
     require(
@@ -494,8 +506,7 @@ def validate_testdb(driver) -> dict[str, object]:
         "Constraint file must match mandatory US postal address properties in query context",
     )
     expected_constraint_map = {
-        "Address": query_context["mandatory_properties"].get("Address", set()),
-        "USPostalAddress": query_context["mandatory_properties"].get("USPostalAddress:Address", set()),
+        "USPostalAddress": query_context["mandatory_properties"].get("USPostalAddress", set()),
         "GPSCoordinate": query_context["mandatory_properties"].get("GPSCoordinate", set()),
         "Geometry": query_context["mandatory_properties"].get("Geometry", set()),
         "Parcel": query_context["mandatory_properties"].get("Parcel", set()),
@@ -515,7 +526,7 @@ def validate_testdb(driver) -> dict[str, object]:
         USPostalAddress(
             streetAddressLine1="1 Main St",
             cityName="Jersey City",
-            subdivision=USStateEnum.NJ,
+            hasSubdivision=USStateEnum.NJ,
             postalCode="invalid-zip",
         )
     except ValidationError:

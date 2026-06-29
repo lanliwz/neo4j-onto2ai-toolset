@@ -4,12 +4,16 @@ This package is the publishable parcel deliverable from Onto2AI Engineer.
 
 It bundles the finalized parcel ontology together with the generated implementation artifacts used for validation, query context, application code modeling, and smoke testing.
 
+The RDF ontology is the source of truth for the package. It includes the parcel application profile, required-field/cardinality restrictions, direct reuse of FIBO real-property/address concepts, and direct reuse of LCC country and U.S. subdivision reference data.
+
+High-confidence duplicate imported classes are canonicalized to OMG Commons concepts in the parcel profile through `owl:equivalentClass` bridges. This includes the LCC/FIBO location overlaps plus exact or near-exact FIBO/Commons and LCC/Commons duplicates such as business center, county, municipality, membership, organization identification scheme, code set, and country subdivision. Downstream review can reason from one canonical foundation while still preserving source ontology provenance.
+
 ## Contents
 
 - `ontology/Parcel.rdf`
   - source RDF ontology for the finalized parcel domain
 - `staging/pydantic_parcel_model.py`
-  - generated application code model aligned to the finalized parcel schema; this package currently uses Pydantic as the generated model format
+  - generated application code model aligned to the finalized parcel schema; this package currently uses Pydantic as the generated model format and includes the full parcel attribute surface from the RDF
 - `staging/neo4j_query_context.md`
   - generated parcel schema description for query/context use
 - `staging/neo4j_constraint.cypher`
@@ -73,9 +77,11 @@ Dataset rule:
 The current parcel package covers:
 
 - parcel
-- address
+- source parcel identifiers, district/section/block/lot fields, municipality, postal, land-use, status, date, and acreage attributes
 - U.S. postal address
-- country and country subdivision reference data
+- FIBO physical address alignment without a duplicate local address wrapper
+- Commons alignment with equivalent-class bridges for high-confidence imported LCC/FIBO duplicates
+- LCC country and country subdivision reference data, represented as `hasCountry` and `hasSubdivision` relationships in the graph contract
 - geometry and polygon geometry
 - GPS coordinates and boundary vertices
 - GeoJSON features and feature collections

@@ -97,20 +97,15 @@ class BoundaryVertex(GPSCoordinate):
     )
 
 
-class Address(BaseModel):
-    """Base address resource used by the parcel slice."""
+class USPostalAddress(BaseModel):
+    """Cleaned staged US postal address schema."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     address_id: str = Field(
         alias="addressId",
-        description="Stable identifier for an address resource.",
+        description="Stable identifier for a parcel postal address resource.",
     )
-
-
-class USPostalAddress(Address):
-    """Cleaned staged US postal address schema."""
-
     street_address_line1: str = Field(
         alias="streetAddressLine1",
         description="Primary street address line associated with the parcel or mailing address.",
@@ -124,8 +119,8 @@ class USPostalAddress(Address):
         alias="cityName",
         description="City, town, or municipality name captured for the address.",
     )
-    subdivision: USStateEnum = Field(
-        alias="subdivision",
+    has_subdivision: USStateEnum = Field(
+        alias="hasSubdivision",
         description="U.S. state selected from the staged country subdivision enum.",
     )
     postal_code: str = Field(
@@ -133,9 +128,9 @@ class USPostalAddress(Address):
         pattern=r"^\d{5}(?:-\d{4})?$",
         description="US ZIP code in five-digit or ZIP+4 format.",
     )
-    country: CountryEnum = Field(
+    has_country: CountryEnum = Field(
         default=CountryEnum.UNITED_STATES_OF_AMERICA,
-        alias="country",
+        alias="hasCountry",
         description="Country selected from the staged country enum. Defaults to United States.",
     )
 
@@ -180,10 +175,80 @@ class Parcel(BaseModel):
         alias="parcelIdentifier",
         description="Human-readable parcel identifier or external parcel code.",
     )
+    district_code: Optional[str] = Field(
+        default=None,
+        alias="districtCode",
+        description="District code assigned to the parcel in the source parcel dataset.",
+    )
+    section_code: Optional[str] = Field(
+        default=None,
+        alias="sectionCode",
+        description="Section code assigned to the parcel in the source parcel dataset.",
+    )
+    block_code: Optional[str] = Field(
+        default=None,
+        alias="blockCode",
+        description="Block code assigned to the parcel in the source parcel dataset.",
+    )
+    lot_code: Optional[str] = Field(
+        default=None,
+        alias="lotCode",
+        description="Lot code assigned to the parcel in the source parcel dataset.",
+    )
+    municipality_name: Optional[str] = Field(
+        default=None,
+        alias="municipalityName",
+        description="Municipality or locality name associated with the parcel in the source dataset.",
+    )
+    parcel_postal_code: Optional[str] = Field(
+        default=None,
+        alias="parcelPostalCode",
+        description="Postal ZIP code carried directly on the parcel record by the source dataset.",
+    )
     full_address_text: Optional[str] = Field(
         default=None,
         alias="fullAddressText",
         description="Source-system full parcel address text.",
+    )
+    parcel_area_acres: Optional[Decimal] = Field(
+        default=None,
+        alias="parcelAreaAcres",
+        description="Parcel area expressed in acres as reported by the source parcel dataset.",
+    )
+    land_use_text: Optional[str] = Field(
+        default=None,
+        alias="landUseText",
+        description="Land-use code and description string assigned to the parcel in the source dataset.",
+    )
+    last_update_text: Optional[str] = Field(
+        default=None,
+        alias="lastUpdateText",
+        description="Last-update text value carried by the source parcel dataset.",
+    )
+    create_date_text: Optional[str] = Field(
+        default=None,
+        alias="createDateText",
+        description="Source create-date text value associated with the parcel record.",
+    )
+    title_flag_text: Optional[str] = Field(
+        default=None,
+        alias="titleFlagText",
+        description="Source text flag indicating whether the parcel record is title-related.",
+    )
+    parcel_status_text: Optional[str] = Field(
+        default=None,
+        alias="parcelStatusText",
+        description="Status string assigned to the parcel in the source dataset.",
+    )
+    overlap_flag_text: Optional[str] = Field(
+        default=None,
+        alias="overlapFlagText",
+        description="Source text flag indicating whether the parcel overlaps another mapped area.",
+    )
+    recorded_deed_acres: Optional[Decimal] = Field(
+        default=None,
+        alias="recordedDeedAcres",
+        description="Recorded deed area of the parcel expressed in acres.",
     )
     has_parcel_address: List[USPostalAddress] = Field(
         default_factory=list,

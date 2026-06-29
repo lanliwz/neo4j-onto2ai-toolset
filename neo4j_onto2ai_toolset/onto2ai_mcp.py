@@ -17,6 +17,7 @@ from neo4j_onto2ai_toolset.onto2ai_tool_config import (
     get_staging_db,
     NEO4J_STAGING_DB_NAME,
 )
+from neo4j_onto2ai_toolset.onto2ai_core.prefixes import PREFIXES_CANON
 from neo4j_onto2ai_toolset.onto2ai_logger_config import logger
 from neo4j_onto2ai_toolset.onto2ai_core.schema_types import DataModel, Node, Relationship, Property
 from neo4j_onto2ai_toolset.onto2ai_utility import get_full_schema, get_schema
@@ -89,6 +90,43 @@ def _to_enum_member_name(name: str) -> str:
     if keyword.iskeyword(s.lower()):
         s = f"{s}_"
     return s
+
+def _neo4j_label_key_for_uri(uri: Optional[str]) -> Optional[str]:
+    """Return the rdflib-neo4j label key used for resources typed by ``uri``."""
+    if not uri:
+        return None
+
+    uri_str = str(uri)
+    best_prefix: Optional[tuple[str, str]] = None
+    for prefix, base in PREFIXES_CANON.items():
+        if uri_str.startswith(base):
+            if best_prefix is None or len(base) > len(best_prefix[1]):
+                best_prefix = (prefix, base)
+
+    if not best_prefix:
+        return None
+
+    prefix, base = best_prefix
+    local = uri_str[len(base):].strip("#/")
+    if not local:
+        return None
+    return f"{prefix}__{local}"
+
+def _class_key_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    """Build Cypher parameter rows mapping class URIs to rdflib-neo4j type labels."""
+    seen = set()
+    keys: List[Dict[str, str]] = []
+    for row in rows:
+        uri = row.get("ClassURI") or row.get("SourceClassURI") or row.get("uri")
+        label_key = _neo4j_label_key_for_uri(uri)
+        if not uri or not label_key:
+            continue
+        item = (str(uri), label_key)
+        if item in seen:
+            continue
+        seen.add(item)
+        keys.append({"uri": str(uri), "label_key": label_key})
+    return keys
 
 def _map_type(type_name: str, class_by_norm: Dict[str, str]) -> str:
     """Map ontology/graph types to Python type names."""
@@ -1377,6 +1415,28 @@ async def extract_data_model(
                 nodes_dict[cls_name].properties.append(prop_obj)
 
         # Include named individuals that belong to in-scope classes.
+        #
+        # rdflib-neo4j may represent rdf:type either as an explicit
+        # (:owl__NamedIndividual)-[:rdf__type]->(:owl__Class) relationship
+        # or as an additional shortened class label on the individual node,
+        # e.g. :l_cr__Country. Support both forms so enum generation works
+        # after direct RDF loads as well as staged subset extraction.
+        enum_scope_rows = db.execute_cypher(
+            """
+            MATCH (c:owl__Class)
+            WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+            OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(ancestor:owl__Class)
+            WITH collect(DISTINCT c) + collect(DISTINCT ancestor) AS classes
+            UNWIND classes AS cls
+            WITH DISTINCT cls
+            WHERE cls.uri IS NOT NULL
+            RETURN cls.uri AS ClassURI
+            """,
+            params={"labels": labels},
+            name="internal_extract_data_model_enum_scope_classes",
+        )
+        enum_class_keys = _class_key_rows(enum_scope_rows)
+
         named_individual_rows = db.execute_cypher(
             """
             MATCH (i:owl__NamedIndividual)-[t:rdf__type]->(c:owl__Class)
@@ -1388,9 +1448,26 @@ async def extract_data_model(
               c.rdfs__label AS ClassLabel,
               c.uri AS ClassURI,
               t.uri AS TypeRelURI
+            UNION
+            MATCH (c:owl__Class)
+            WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+            OPTIONAL MATCH (c)-[:rdfs__subClassOf*0..]->(enumClass:owl__Class)
+            WITH c, collect(DISTINCT c) + collect(DISTINCT enumClass) AS enumClasses
+            UNWIND enumClasses AS enumClass
+            WITH c, enumClass, [row IN $class_keys WHERE row.uri = enumClass.uri | row.label_key][0] AS enumLabel
+            WHERE enumLabel IS NOT NULL
+            MATCH (i:owl__NamedIndividual)
+            WHERE enumLabel IN labels(i)
+            RETURN DISTINCT
+              i.rdfs__label AS IndividualLabel,
+              i.uri AS IndividualURI,
+              i.skos__definition AS IndividualDef,
+              c.rdfs__label AS ClassLabel,
+              c.uri AS ClassURI,
+              'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS TypeRelURI
             ORDER BY ClassLabel, IndividualLabel
             """,
-            params={"labels": labels},
+            params={"labels": labels, "class_keys": enum_class_keys},
             name="internal_extract_data_model_named_individuals",
         )
 
@@ -1617,16 +1694,41 @@ async def generate_neo4j_schema_constraint(
         """
         results = db.execute_cypher(query, name="generate_neo4j_schema_constraint")
 
+        enum_scope_rows = db.execute_cypher(
+            """
+            MATCH (c:owl__Class)
+            WHERE c.uri IS NOT NULL
+            RETURN c.uri AS ClassURI
+            """,
+            name="generate_neo4j_schema_constraint_enum_scope_classes",
+        )
+        enum_class_keys = _class_key_rows(enum_scope_rows)
+
         enum_query = """
         MATCH (i:owl__NamedIndividual)-[:rdf__type]->(c:owl__Class)
         RETURN c.rdfs__label AS class_label, collect(DISTINCT i.rdfs__label) AS members
+        UNION
+        MATCH (c:owl__Class)
+        WHERE c.uri IS NOT NULL
+        WITH c, [row IN $class_keys WHERE row.uri = c.uri | row.label_key][0] AS enumLabel
+        WHERE enumLabel IS NOT NULL
+        MATCH (i:owl__NamedIndividual)
+        WHERE enumLabel IN labels(i)
+        RETURN c.rdfs__label AS class_label, collect(DISTINCT i.rdfs__label) AS members
         """
-        enum_rows = db.execute_cypher(enum_query, name="generate_neo4j_schema_constraint_enum_members")
-        enum_members_map = {
-            row.get("class_label"): sorted([m for m in (row.get("members") or []) if m])
-            for row in enum_rows
-            if row.get("class_label")
-        }
+        enum_rows = db.execute_cypher(
+            enum_query,
+            params={"class_keys": enum_class_keys},
+            name="generate_neo4j_schema_constraint_enum_members",
+        )
+        enum_members_map: Dict[str, List[str]] = {}
+        for row in enum_rows:
+            class_label = row.get("class_label")
+            if not class_label:
+                continue
+            merged_members = set(enum_members_map.get(class_label, []))
+            merged_members.update(m for m in (row.get("members") or []) if m)
+            enum_members_map[class_label] = sorted(merged_members)
         
         # Group by class
         schema_data = {}

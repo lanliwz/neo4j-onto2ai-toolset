@@ -5,16 +5,15 @@
 | Label | Type | URI | Definition |
 | --- | --- | --- | --- |
 | Parcel | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Parcel | Parcel core record linked to address and geometry. |
-| Address | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Address | A general address resource associated with a parcel. |
-| USPostalAddress:Address | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#USPostalAddress | A United States civic mailing or site address associated with a parcel record, including street, city, postal code, subdivision, and country information. |
+| USPostalAddress | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#USPostalAddress | A United States civic mailing or site address associated with a parcel record, including street, city, postal code, subdivision, and country information. |
 | Geometry | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Geometry | Base geometry resource in the parcel slice. |
 | PolygonGeometry:Geometry | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#PolygonGeometry | Polygon geometry describing the parcel boundary. |
 | GPSCoordinate | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#GPSCoordinate | Base geospatial coordinate used for parcel geometry and boundary vertices. |
 | BoundaryVertex:GPSCoordinate | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#BoundaryVertex | Ordered boundary point belonging to a polygon geometry. |
 | GeoJSONFeature | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#GeoJSONFeature | GeoJSON feature that represents a parcel. |
 | GeoJSONFeatureCollection | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#GeoJSONFeatureCollection | GeoJSON feature collection grouping parcel features. |
-| Country | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Country | A sovereign country used as an enumerated reference value for parcel addresses. |
-| CountrySubdivision | owl__Class | http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#CountrySubdivision | A state, province, territory, or similar first-level administrative subdivision used as an enumerated reference value for parcel addresses. |
+| Country | owl__Class | https://www.omg.org/spec/LCC/Countries/CountryRepresentation/Country | A sovereign country used as an enumerated reference value for parcel addresses. |
+| CountrySubdivision | owl__Class | https://www.omg.org/spec/LCC/Countries/CountryRepresentation/CountrySubdivision | A state, province, territory, or similar first-level administrative subdivision used as an enumerated reference value for parcel addresses. |
 | UnitedStatesOfAmerica | owl__NamedIndividual | https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedStatesOfAmerica | The sovereign country commonly referred to as the United States. |
 | Canada | owl__NamedIndividual | https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/Canada | The sovereign country commonly referred to as Canada. |
 | USState | owl__NamedIndividual | https://www.omg.org/spec/LCC/Countries/Regions/ISO3166-2-SubdivisionCodes-US/US-XX | A U.S. state enumerated as a country subdivision using an ISO 3166-2 code. |
@@ -35,13 +34,11 @@
 
 | Node Label | Property | Data Type | Mandatory |
 | --- | --- | --- | --- |
-| Address | addressId | string | Yes |
-| USPostalAddress:Address | streetAddressLine1 | xsd:string | Yes |
-| USPostalAddress:Address | addressLine2 | xsd:string | No |
-| USPostalAddress:Address | cityName | xsd:string | Yes |
-| USPostalAddress:Address | subdivision | string | Yes |
-| USPostalAddress:Address | postalCode | xsd:string | Yes |
-| USPostalAddress:Address | country | string | Yes |
+| USPostalAddress | addressId | string | Yes |
+| USPostalAddress | streetAddressLine1 | xsd:string | Yes |
+| USPostalAddress | addressLine2 | xsd:string | No |
+| USPostalAddress | cityName | xsd:string | Yes |
+| USPostalAddress | postalCode | xsd:string | Yes |
 | Geometry | geometryId | string | Yes |
 | PolygonGeometry:Geometry | coordinateSequenceText | xsd:string | No |
 | GPSCoordinate | gpsCoordinateId | string | Yes |
@@ -50,7 +47,21 @@
 | BoundaryVertex:GPSCoordinate | vertexSequenceNumber | xsd:integer | No |
 | Parcel | parcelId | string | Yes |
 | Parcel | parcelIdentifier | xsd:string | No |
+| Parcel | districtCode | xsd:string | No |
+| Parcel | sectionCode | xsd:string | No |
+| Parcel | blockCode | xsd:string | No |
+| Parcel | lotCode | xsd:string | No |
+| Parcel | municipalityName | xsd:string | No |
+| Parcel | parcelPostalCode | xsd:string | No |
 | Parcel | fullAddressText | xsd:string | No |
+| Parcel | parcelAreaAcres | xsd:decimal | No |
+| Parcel | landUseText | xsd:string | No |
+| Parcel | lastUpdateText | xsd:string | No |
+| Parcel | createDateText | xsd:string | No |
+| Parcel | titleFlagText | xsd:string | No |
+| Parcel | parcelStatusText | xsd:string | No |
+| Parcel | overlapFlagText | xsd:string | No |
+| Parcel | recordedDeedAcres | xsd:decimal | No |
 | GeoJSONFeature | featureId | string | Yes |
 | GeoJSONFeature | geometryTypeName | xsd:string | No |
 | GeoJSONFeature | sourceObjectId | xsd:string | No |
@@ -58,10 +69,10 @@
 
 ## Section 4: Graph Topology
 
-- `(:Parcel)-[:hasParcelAddress]->(:USPostalAddress:Address)`
+- `(:Parcel)-[:hasParcelAddress]->(:USPostalAddress)`
 - `(:Parcel)-[:hasParcelGeometry]->(:PolygonGeometry:Geometry)`
-- `(:USPostalAddress:Address)-[:hasSubdivision]->(:CountrySubdivision)`
-- `(:USPostalAddress:Address)-[:hasCountry]->(:Country)`
+- `(:USPostalAddress)-[:hasSubdivision]->(:CountrySubdivision)`
+- `(:USPostalAddress)-[:hasCountry]->(:Country)`
 - `(:PolygonGeometry:Geometry)-[:hasBoundaryVertex]->(:BoundaryVertex:GPSCoordinate)`
 - `(:GeoJSONFeature)-[:representsParcel]->(:Parcel)`
 - `(:GeoJSONFeatureCollection)-[:hasFeature]->(:GeoJSONFeature)`
