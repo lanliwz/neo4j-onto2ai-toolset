@@ -66,21 +66,34 @@ This toolset is especially useful when you want to:
 - let an AI engineer use MCP tools and graph-backed storage as an ontology workbench rather than treating an ontology as static RDF files
 
 ## Onto2AI Modeller
-Onto2AI Modeller is an AI-assisted model-enrichment UI and a core part of Onto2AI Toolset. It helps users review ontology-derived models, refine subsets, and shape implementation-ready schemas without losing semantic grounding.
+Onto2AI Modeller is the branded web studio for adapting industry ontologies into enterprise-ready target ontologies and application code models. It is a core part of Onto2AI Toolset and is designed for the workflow where a data or AI engineer starts from a trusted source ontology such as FIBO, extracts a focused subset, tunes it for an enterprise domain, validates it, prototypes generated artifacts, and prepares it for publication.
 
-In the staging area, users can review and evolve models in ontology, UML, or object-oriented (class model) formats. You can inspect and refine classes, relationships, properties, and hierarchies, and use AI assistance to add or modify model elements.
+The Modeller UI is organized around four working surfaces:
+- **Source Ontology**: search source ontologies such as FIBO, preview concept neighborhoods, collect extraction seeds, and stage selected domain subsets into the workspace. This surface is backed by the shared Onto2AI MCP server.
+- **Target Ontology**: review the staged working copy as the ontology you are adapting and governing for your use case.
+- **Semantic Interaction**: use the configured LLM provider to ask modelling questions, inspect schema decisions, and refine ontology structure with semantic context.
+- **Native Query**: run direct Cypher queries for graph-native inspection and troubleshooting.
 
-Before publishing, users can generate sample data, run end-to-end application data flow tests, and validate model quality so the resulting application code model is ready for downstream distribution and implementation.
+The center workspace uses **Ontology View** for source and target ontology graphs. UML Diagram and Pydantic Models are available for target ontology review and prototyping, but are disabled while working in Source Ontology because source discovery should stay focused on ontology graph context.
+
+The Source Ontology workflow calls Onto2AI MCP over Server-Sent Events. By default the UI calls `http://127.0.0.1:8082/sse`; set `ONTO2AI_MCP_URL` when the MCP server runs elsewhere. Start the MCP server before using source search, preview, or extraction:
+
+```bash
+python -m neo4j_onto2ai_toolset.onto2ai_mcp http 8082
+```
+
+Before publishing, users can generate sample data, run end-to-end application data flow tests, and validate model quality so the resulting ontology package and application code model are ready for downstream distribution and implementation.
 
 ## Primary Workflow
 1. Configure environment variables for the graph store, staging database, and model/API keys.
 2. Load a well-known ontology or your own ontology data into the ontology workbench.
-3. Explore concepts, rules, and axioms through MCP tools and graph queries.
-4. Extract or refine a subset of the ontology for your target use case.
-5. Stage and consolidate the resulting schema for implementation.
-6. Finalize schema design and review in Modeller UI.
-7. Validate the implementation workflow with smoke tests and schema checks when applicable.
-8. Publish the resulting ontology package and application code artifacts.
+3. Start Onto2AI MCP in HTTP mode so Modeller can reuse the same ontology tools as agents and CLI workflows.
+4. Use Modeller Source Ontology to search source concepts, preview neighborhoods, and collect extraction seeds.
+5. Extract a source subset into the Target Ontology workspace.
+6. Review, rename, simplify, and extend the target ontology for your enterprise or application domain.
+7. Prototype implementation artifacts such as graph schema, Pydantic models, SHACL, and Cypher constraints.
+8. Validate the implementation workflow with smoke tests and schema checks when applicable.
+9. Publish the resulting ontology package and application code artifacts.
 
 Example outcome:
 - use the toolset to derive a field-specific package such as an entitlement application model package or a parcel application model package
@@ -174,6 +187,9 @@ python scripts/harness_verify_release.py
 
 ### Modeller
 ```bash
+# Start the shared MCP server used by Source Ontology search and extraction
+python -m neo4j_onto2ai_toolset.onto2ai_mcp http 8082
+
 # Development mode with auto-reload for Python and UI asset changes
 uv run --with-requirements requirements.txt \
   python -m onto2ai_modeller.main --reload --model gpt --host localhost --port 8180

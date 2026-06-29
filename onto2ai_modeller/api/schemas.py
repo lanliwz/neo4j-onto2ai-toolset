@@ -3,6 +3,7 @@ Schema API endpoints for the Onto2AI Modeller.
 """
 import os
 import logging
+import json
 from typing import List, Optional, Dict, Any
 from functools import lru_cache
 from pathlib import Path
@@ -14,7 +15,8 @@ from .models import (
     ClassInfo, ClassSchema, RelationshipInfo,
     ChatRequest, ChatResponse, GraphData,
     CypherRequest, CypherResponse,
-    ClassUpdateRequest, LLMStatus, LLMUpdateRequest
+    ClassUpdateRequest, LLMStatus, LLMUpdateRequest,
+    SourceExtractRequest
 )
 
 router = APIRouter(tags=["schemas"])
@@ -23,6 +25,7 @@ logger = logging.getLogger("onto2ai-engineer")
 DEFAULT_MODELLER_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.yaml"
 MODELLER_CONFIG_PATH_ENV = "ONTO2AI_MODELLER_CONFIG"
 DEFAULT_LLM = "gpt-5.4-mini"
+DEFAULT_ONTO2AI_MCP_URL = "http://127.0.0.1:8082/sse"
 
 # Onto2AI MCP Client (Lazy Initialization)
 from neo4j_onto2ai_toolset.onto2ai_client import Onto2AIClient
@@ -37,6 +40,52 @@ async def get_onto2ai_client():
         _onto2ai_client = Onto2AIClient(model_name=_current_llm)
         await _onto2ai_client.connect()
     return _onto2ai_client
+
+
+def _decode_mcp_content_items(content_items: list[Any]) -> Any:
+    chunks = []
+    for item in content_items:
+        text = getattr(item, "text", None)
+        chunks.append(text if text is not None else str(item))
+
+    parsed = []
+    for chunk in chunks:
+        value = chunk.strip()
+        if not value:
+            continue
+        try:
+            parsed.append(json.loads(value))
+        except json.JSONDecodeError:
+            parsed.append(value)
+
+    if len(parsed) == 1:
+        return parsed[0]
+    if parsed and all(isinstance(item, dict) for item in parsed):
+        return parsed
+    return "\n".join(str(item) for item in parsed)
+
+
+async def call_onto2ai_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Any:
+    """Call the shared Onto2AI MCP server used by agents, CLI, and Modeller."""
+    from mcp import ClientSession
+    from mcp.client.sse import sse_client
+
+    mcp_url = os.getenv("ONTO2AI_MCP_URL", DEFAULT_ONTO2AI_MCP_URL)
+    try:
+        async with sse_client(mcp_url, timeout=5, sse_read_timeout=30) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.call_tool(tool_name, arguments)
+                return _decode_mcp_content_items(result.content)
+    except Exception as exc:
+        logger.error("Onto2AI MCP call failed for %s: %s", tool_name, exc)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                f"Onto2AI MCP tool `{tool_name}` is unavailable. "
+                f"Start the MCP server or set ONTO2AI_MCP_URL. Detail: {exc}"
+            ),
+        ) from exc
 
 # Lazy database connection
 _db_connection = None
@@ -579,6 +628,64 @@ def results_to_uml_data(results: List[Dict[str, Any]], query: Optional[str] = No
         final_nodes.append(cdata)
 
     return GraphData(nodes=final_nodes, links=links, query=query)
+
+
+@router.get("/source/search")
+async def search_source_ontology(
+    q: str,
+    database: Optional[str] = None,
+    limit: int = 20,
+):
+    """
+    Search source ontology concepts through the shared Onto2AI MCP server.
+    """
+    query = q.strip()
+    if not query:
+        return []
+    return await call_onto2ai_mcp_tool(
+        "search_ontology_concepts",
+        {"query": query, "database": database, "limit": limit},
+    )
+
+
+@router.get("/source/preview")
+async def preview_source_concept(
+    class_name: str,
+    database: Optional[str] = None,
+    include_incoming: bool = True,
+):
+    """
+    Preview a source ontology class neighborhood through Onto2AI MCP.
+    """
+    label = class_name.strip()
+    if not label:
+        raise HTTPException(status_code=400, detail="class_name is required")
+    return await call_onto2ai_mcp_tool(
+        "preview_concept_neighborhood",
+        {
+            "class_name": label,
+            "database": database,
+            "include_incoming": include_incoming,
+        },
+    )
+
+
+@router.post("/source/extract")
+async def extract_source_subset(request: SourceExtractRequest):
+    """
+    Extract source ontology concepts into the Modeller staging workspace via MCP.
+    """
+    class_names = [name.strip() for name in request.class_names if name.strip()]
+    if not class_names:
+        raise HTTPException(status_code=400, detail="At least one class name is required")
+    return await call_onto2ai_mcp_tool(
+        "extract_domain_subset",
+        {
+            "class_names": class_names,
+            "staging_db_name": request.staging_db_name,
+            "flatten_inheritance": request.flatten_inheritance,
+        },
+    )
 
 
 @router.get("/classes", response_model=List[ClassInfo])

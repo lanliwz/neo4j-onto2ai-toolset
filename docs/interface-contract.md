@@ -24,6 +24,9 @@ The following tools are part of the stabilized Onto2AI MCP surface:
 - `list_model_datatypes`
 - `list_model_class_hierarchy`
 - `get_model_focus_graph`
+- `search_ontology_concepts`
+- `preview_concept_neighborhood`
+- `extract_domain_subset`
 - `get_materialized_schema`
 - `get_ontological_schema`
 - `extract_data_model`

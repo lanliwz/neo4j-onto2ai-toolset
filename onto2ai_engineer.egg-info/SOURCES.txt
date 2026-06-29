@@ -37,11 +37,16 @@ onto2ai_engineer.egg-info/entry_points.txt
 onto2ai_engineer.egg-info/requires.txt
 onto2ai_engineer.egg-info/top_level.txt
 onto2ai_modeller/__init__.py
+onto2ai_modeller/config.yaml
 onto2ai_modeller/main.py
 onto2ai_modeller/api/__init__.py
 onto2ai_modeller/api/models.py
 onto2ai_modeller/api/schemas.py
 onto2ai_modeller/static/index.html
+onto2ai_modeller/static/assets/onto2ai-modeller-logo-transparent.png
+onto2ai_modeller/static/assets/onto2ai-modeller-logo.png
 onto2ai_modeller/static/css/styles.css
 onto2ai_modeller/static/js/app.js
 onto2ai_modeller/static/js/graph.js
+tests/test_onto2ai_loader.py
+tests/test_onto2ai_mcp.py

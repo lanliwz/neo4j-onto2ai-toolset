@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onto2AI Modeller</title>
-    <link rel="stylesheet" href="/static/css/styles.css?v=15">
+    <link rel="stylesheet" href="/static/css/styles.css?v=17">
     <script src="https://unpkg.com/gojs/release/go.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
@@ -27,8 +27,8 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-left">
-                <div class="logo">🔷</div>
-                <h1>Onto2AI Modeller</h1>
+                <img class="brand-logo" src="/static/assets/onto2ai-modeller-logo-transparent.png" alt="Onto2AI Modeller">
+                <h1 class="sr-only">Onto2AI Modeller</h1>
             </div>
             <div class="header-right">
                 <div class="llm-selector-container">
@@ -50,13 +50,65 @@
             <!-- Left Panel: Search/Chat/Query -->
             <aside class="left-panel" id="left-panel">
                 <div class="panel-tabs">
-                    <button class="tab-btn active" data-tab="search">Ontology</button>
-                    <button class="tab-btn" data-tab="chat">Chat</button>
-                    <button class="tab-btn" data-tab="query">Query</button>
+                    <button class="tab-btn active" data-tab="source">Source Ontology</button>
+                    <button class="tab-btn" data-tab="search">Target Ontology</button>
+                    <button class="tab-btn" data-tab="chat">Semantic Interaction</button>
+                    <button class="tab-btn" data-tab="query">Native Query</button>
+                </div>
+
+                <!-- Source Ontology Tab -->
+                <div class="tab-content active" id="source-tab">
+                    <div class="source-search-panel">
+                        <div class="field-label">Source Ontology</div>
+                        <select id="source-ontology-select" class="source-select">
+                            <option value="">FIBO / Model DB</option>
+                        </select>
+                        <div class="source-search-row">
+                            <input type="text" id="source-search-input" placeholder="Search source ontology...">
+                            <button id="source-search-btn" class="icon-action-btn" title="Search source ontology">⌕</button>
+                        </div>
+                        <div class="source-options">
+                            <label><input type="checkbox" checked disabled> labels</label>
+                            <label><input type="checkbox" checked disabled> definitions</label>
+                            <label><input type="checkbox" checked disabled> synonyms</label>
+                            <label><input type="checkbox" checked disabled> notes</label>
+                        </div>
+                    </div>
+
+                    <div class="staging-section source-results-section">
+                        <div class="staging-section-header">
+                            <span class="section-toggle">▼</span>
+                            <span class="section-title">Source Matches</span>
+                            <span class="section-count" id="source-results-count">0</span>
+                        </div>
+                        <div class="staging-section-body" id="source-results-body">
+                            <div class="source-results" id="source-results">
+                                <div class="placeholder">Search an industry concept such as bank account</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="staging-section">
+                        <div class="staging-section-header">
+                            <span class="section-toggle">▼</span>
+                            <span class="section-title">Extraction Seeds</span>
+                            <span class="section-count" id="source-seeds-count">0</span>
+                        </div>
+                        <div class="staging-section-body" id="source-seeds-body">
+                            <div class="source-seeds" id="source-seeds">
+                                <div class="placeholder">Preview or add source classes to build a workspace subset</div>
+                            </div>
+                            <div class="extract-options">
+                                <label><input type="checkbox" id="source-flatten-inheritance" checked> flatten inheritance</label>
+                            </div>
+                            <button id="source-extract-btn" class="run-btn source-extract-btn">Extract to Workspace</button>
+                            <div class="source-status" id="source-status"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Ontology Tab -->
-                <div class="tab-content active" id="search-tab">
+                <div class="tab-content" id="search-tab">
                     <!-- Classes Section -->
                     <div class="staging-section">
                         <div class="staging-section-header" id="classes-header">
@@ -169,9 +221,9 @@
             <!-- Middle Panel: Graph Visualization -->
             <section class="graph-panel" id="graph-panel">
                 <div class="panel-viz-tabs" id="viz-tabs">
-                    <button class="viz-tab-btn active" data-viz="graph">Schema Graph</button>
-                    <button class="viz-tab-btn" data-viz="uml">UML Diagram</button>
-                    <button class="viz-tab-btn" data-viz="pydantic">Pydantic Models</button>
+                    <button class="viz-tab-btn active" data-viz="graph">Ontology View</button>
+                    <button class="viz-tab-btn disabled" data-viz="uml" disabled title="Source Ontology uses Ontology View only">UML Diagram</button>
+                    <button class="viz-tab-btn disabled" data-viz="pydantic" disabled title="Source Ontology uses Ontology View only">Pydantic Models</button>
                 </div>
                 <div class="graph-toolbar">
                     <button id="zoom-in" class="toolbar-btn" title="Zoom In">+</button>
@@ -205,8 +257,8 @@
         </main>
     </div>
 
-    <script src="/static/js/graph.js?v=15"></script>
-    <script src="/static/js/app.js?v=15"></script>
+    <script src="/static/js/graph.js?v=17"></script>
+    <script src="/static/js/app.js?v=17"></script>
 </body>
 
 </html>

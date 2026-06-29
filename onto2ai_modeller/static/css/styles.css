@@ -103,17 +103,25 @@ body {
     gap: var(--spacing-md);
 }
 
-.logo {
-    font-size: 1.5rem;
+.brand-logo {
+    display: block;
+    width: 260px;
+    max-width: 38vw;
+    height: 48px;
+    object-fit: contain;
+    object-position: left center;
 }
 
-.app-header h1 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .status-indicator {
@@ -301,6 +309,19 @@ body.resizing * {
     background: rgba(255, 255, 255, 0.05);
 }
 
+.viz-tab-btn.disabled,
+.viz-tab-btn:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.viz-tab-btn.disabled:hover,
+.viz-tab-btn:disabled:hover {
+    background: transparent;
+    color: var(--text-muted);
+}
+
 .tab-btn.active,
 .viz-tab-btn.active {
     color: var(--accent-primary);
@@ -350,6 +371,225 @@ body.resizing * {
 .search-box input:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px var(--border-glow);
+}
+
+/* Source Ontology Workflow */
+.source-search-panel {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.field-label {
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.source-select,
+.source-search-row input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.source-select {
+    margin-bottom: var(--spacing-sm);
+}
+
+.source-search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 38px;
+    gap: var(--spacing-sm);
+}
+
+.source-search-row input:focus,
+.source-select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--border-glow);
+}
+
+.icon-action-btn,
+.mini-btn,
+.source-seed-remove {
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.icon-action-btn {
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.icon-action-btn:hover,
+.mini-btn:hover,
+.source-seed-remove:hover {
+    border-color: var(--accent-primary);
+    background: rgba(79, 70, 229, 0.16);
+}
+
+.source-options,
+.extract-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: var(--spacing-sm);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
+.source-results,
+.source-seeds {
+    max-height: 360px;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+}
+
+.source-result-item {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.source-result-main {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: 4px;
+}
+
+.source-kind {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(16, 185, 129, 0.14);
+    color: var(--success);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.source-label {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-weight: 650;
+}
+
+.source-definition {
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    line-height: 1.35;
+}
+
+.source-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.source-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.mini-btn {
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    font-weight: 650;
+}
+
+.source-seed {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(79, 70, 229, 0.08);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+.source-seed-remove {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    line-height: 18px;
+}
+
+.source-extract-btn {
+    width: calc(100% - 2 * var(--spacing-md));
+    margin: var(--spacing-sm) var(--spacing-md);
+}
+
+.source-status {
+    min-height: 22px;
+    padding: 0 var(--spacing-md) var(--spacing-sm);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.source-preview h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.source-preview-row,
+.source-preview-rel {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.78rem;
+}
+
+.source-preview-row span,
+.source-preview-rel span {
+    color: var(--text-secondary);
+}
+
+.source-preview-rel code {
+    align-self: flex-start;
+    padding: 1px 5px;
+    border-radius: 5px;
+    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+    font-size: 0.72rem;
+}
+
+.success-text {
+    color: var(--success) !important;
+}
+
+.warning-text {
+    color: var(--warning) !important;
+}
+
+.danger-text {
+    color: var(--danger) !important;
 }
 
 /* StagingDB Sections */

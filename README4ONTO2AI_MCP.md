@@ -209,6 +209,9 @@ Use this if the server is already running independently on port 8082.
 | `list_model_datatypes` | Lists datatype nodes from the Modeller staging database. |
 | `list_model_class_hierarchy` | Returns the `rdfs__subClassOf` hierarchy as a tree. |
 | `get_model_focus_graph` | Returns focused graph rows for one class and its direct in/out relationships. |
+| `search_ontology_concepts` | Searches source ontology labels, URIs, definitions, synonyms, examples, and notes for a business phrase. |
+| `preview_concept_neighborhood` | Previews a source ontology class neighborhood before extracting it into a workspace. |
+| `extract_domain_subset` | Extracts one or more source ontology classes into the Modeller staging workspace. |
 | `get_materialized_schema` | Returns classes and relationships as Markdown tables. |
 | `extract_data_model` | Returns high-fidelity structured JSON (Nodes/Properties/Rels) that is useful for subset extraction and custom ontology design. |
 | `get_ontological_schema` | Returns the raw meta-model view of an ontology class. |

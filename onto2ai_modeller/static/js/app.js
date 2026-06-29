@@ -4,6 +4,7 @@
 
 let currentClassName = null;
 let currentVizMode = 'graph';
+let sourceExtractionSeeds = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     setupVizTabs();
     setupSearch();
+    setupSourceOntology();
     setupChat();
     setupQuery();
     setupToolbar();
@@ -188,8 +190,266 @@ function setupTabs() {
                     content.classList.add('active');
                 }
             });
+
+            syncVizAvailability(tabId);
         });
     });
+
+    const activeTab = document.querySelector('.tab-btn.active');
+    syncVizAvailability(activeTab ? activeTab.dataset.tab : 'source');
+}
+
+function syncVizAvailability(activeTabId) {
+    const sourceOntologyActive = activeTabId === 'source';
+    const tabBtns = document.querySelectorAll('.viz-tab-btn');
+
+    tabBtns.forEach(btn => {
+        const disabled = sourceOntologyActive && btn.dataset.viz !== 'graph';
+        btn.disabled = disabled;
+        btn.classList.toggle('disabled', disabled);
+        btn.title = disabled
+            ? 'Source Ontology uses Ontology View only'
+            : btn.dataset.viz === 'graph'
+                ? 'Ontology View'
+                : '';
+    });
+
+    if (sourceOntologyActive) {
+        currentVizMode = 'graph';
+        tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.viz === 'graph'));
+        if (currentClassName) {
+            loadGraphData(currentClassName);
+        }
+    }
+}
+
+/**
+ * Source ontology discovery and extraction powered by Onto2AI MCP.
+ */
+function setupSourceOntology() {
+    const searchInput = document.getElementById('source-search-input');
+    const searchBtn = document.getElementById('source-search-btn');
+    const extractBtn = document.getElementById('source-extract-btn');
+
+    if (!searchInput || !searchBtn || !extractBtn) return;
+
+    const runSearch = async () => {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        const resultsContainer = document.getElementById('source-results');
+        const countBadge = document.getElementById('source-results-count');
+        const status = document.getElementById('source-status');
+        resultsContainer.innerHTML = '<div class="loading">Searching source ontology...</div>';
+        if (status) status.textContent = '';
+
+        try {
+            const params = new URLSearchParams({ q: query, limit: '25' });
+            const response = await fetch(`/api/source/search?${params.toString()}`);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(typeof data.detail === 'string' ? data.detail : 'Source search failed');
+            }
+
+            const rows = Array.isArray(data) ? data : [];
+            if (countBadge) countBadge.textContent = rows.length;
+            if (rows.length === 0) {
+                resultsContainer.innerHTML = '<div class="placeholder">No source ontology concepts matched</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = rows.map((item, index) => `
+                <div class="source-result-item" data-label="${escapeHtml(item.label)}" data-uri="${escapeHtml(item.uri || '')}" style="animation-delay: ${index * 20}ms">
+                    <div class="source-result-main">
+                        <span class="source-kind">${escapeHtml(item.kind || 'resource')}</span>
+                        <span class="source-label">${escapeHtml(item.label)}</span>
+                    </div>
+                    <div class="source-definition">${escapeHtml(item.definition || 'No definition available')}</div>
+                    <div class="source-meta">
+                        <span>${escapeHtml(item.match_reason || 'matched source ontology')}</span>
+                        <span>score ${escapeHtml(item.score)}</span>
+                    </div>
+                    <div class="source-actions">
+                        <button class="mini-btn source-preview-btn" data-label="${escapeHtml(item.label)}">Preview</button>
+                        <button class="mini-btn source-add-btn" data-label="${escapeHtml(item.label)}">Add</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Source search error:', error);
+            resultsContainer.innerHTML = `<div class="placeholder danger-text">${escapeHtml(error.message)}</div>`;
+        }
+    };
+
+    searchBtn.addEventListener('click', runSearch);
+    searchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') runSearch();
+    });
+
+    document.getElementById('source-results').addEventListener('click', async (event) => {
+        const previewBtn = event.target.closest('.source-preview-btn');
+        const addBtn = event.target.closest('.source-add-btn');
+        if (previewBtn) {
+            await previewSourceConcept(previewBtn.dataset.label);
+        }
+        if (addBtn) {
+            addSourceSeed(addBtn.dataset.label);
+        }
+    });
+
+    document.getElementById('source-seeds').addEventListener('click', (event) => {
+        const removeBtn = event.target.closest('.source-seed-remove');
+        if (!removeBtn) return;
+        sourceExtractionSeeds = sourceExtractionSeeds.filter(label => label !== removeBtn.dataset.label);
+        renderSourceSeeds();
+    });
+
+    extractBtn.addEventListener('click', extractSourceSeeds);
+}
+
+function addSourceSeed(label) {
+    if (!label || sourceExtractionSeeds.includes(label)) return;
+    sourceExtractionSeeds.push(label);
+    renderSourceSeeds();
+}
+
+function renderSourceSeeds() {
+    const seedsContainer = document.getElementById('source-seeds');
+    const countBadge = document.getElementById('source-seeds-count');
+    if (countBadge) countBadge.textContent = sourceExtractionSeeds.length;
+
+    if (sourceExtractionSeeds.length === 0) {
+        seedsContainer.innerHTML = '<div class="placeholder">Preview or add source classes to build a workspace subset</div>';
+        return;
+    }
+
+    seedsContainer.innerHTML = sourceExtractionSeeds.map(label => `
+        <div class="source-seed">
+            <span>${escapeHtml(label)}</span>
+            <button class="source-seed-remove" data-label="${escapeHtml(label)}" title="Remove seed">×</button>
+        </div>
+    `).join('');
+}
+
+async function previewSourceConcept(label) {
+    const propertiesContent = document.getElementById('properties-content');
+    propertiesContent.innerHTML = '<div class="loading">Previewing source concept...</div>';
+    addSourceSeed(label);
+
+    try {
+        const params = new URLSearchParams({ class_name: label, include_incoming: 'true' });
+        const response = await fetch(`/api/source/preview?${params.toString()}`);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(typeof data.detail === 'string' ? data.detail : 'Preview failed');
+        }
+
+        renderSourcePreview(data, propertiesContent);
+        renderSourcePreviewGraph(data);
+    } catch (error) {
+        console.error('Source preview error:', error);
+        propertiesContent.innerHTML = `<div class="placeholder danger-text">${escapeHtml(error.message)}</div>`;
+    }
+}
+
+function renderSourcePreview(data, container) {
+    const classes = Array.isArray(data.classes) ? data.classes : [];
+    const relationships = Array.isArray(data.relationships) ? data.relationships : [];
+    container.innerHTML = `
+        <div class="source-preview">
+            <h3>${escapeHtml(data.class_name || 'Source Concept')}</h3>
+            <div class="property-section">
+                <h4>Classes</h4>
+                ${classes.slice(0, 12).map(cls => `
+                    <div class="source-preview-row">
+                        <strong>${escapeHtml(cls.label)}</strong>
+                        <span>${escapeHtml(cls.definition || '')}</span>
+                    </div>
+                `).join('') || '<div class="placeholder">No related classes found</div>'}
+            </div>
+            <div class="property-section">
+                <h4>Relationships</h4>
+                ${relationships.slice(0, 20).map(rel => `
+                    <div class="source-preview-rel">
+                        <span>${escapeHtml(rel.source_class)}</span>
+                        <code>${escapeHtml(rel.relationship_type)}</code>
+                        <span>${escapeHtml(rel.target_class)}</span>
+                    </div>
+                `).join('') || '<div class="placeholder">No relationships found</div>'}
+            </div>
+        </div>
+    `;
+}
+
+function renderSourcePreviewGraph(data) {
+    const relationships = Array.isArray(data.relationships) ? data.relationships : [];
+    const nodeMap = new Map();
+    relationships.forEach(rel => {
+        if (rel.source_class) {
+            nodeMap.set(rel.source_class, { key: rel.source_class, label: rel.source_class, category: 'class' });
+        }
+        if (rel.target_class) {
+            nodeMap.set(rel.target_class, { key: rel.target_class, label: rel.target_class, category: 'class' });
+        }
+    });
+
+    const graphData = {
+        nodes: Array.from(nodeMap.values()),
+        links: relationships
+            .filter(rel => rel.source_class && rel.target_class && rel.relationship_type)
+            .map(rel => ({
+                from: rel.source_class,
+                to: rel.target_class,
+                relationship: rel.relationship_type,
+                definition: rel.definition || ''
+            })),
+        query: 'Onto2AI MCP preview_concept_neighborhood'
+    };
+
+    if (graphData.nodes.length > 0 && typeof loadGraphFromData === 'function') {
+        loadGraphFromData(graphData);
+    }
+}
+
+async function extractSourceSeeds() {
+    const status = document.getElementById('source-status');
+    if (sourceExtractionSeeds.length === 0) {
+        status.textContent = 'Add at least one source class before extracting.';
+        status.className = 'source-status warning-text';
+        return;
+    }
+
+    status.textContent = 'Extracting source subset into workspace...';
+    status.className = 'source-status';
+
+    try {
+        const response = await fetch('/api/source/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                class_names: sourceExtractionSeeds,
+                flatten_inheritance: document.getElementById('source-flatten-inheritance').checked
+            })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(typeof data.detail === 'string' ? data.detail : 'Extraction failed');
+        }
+
+        status.textContent = `Extracted ${escapeHtml(data.class_count || sourceExtractionSeeds.length)} class(es) into workspace.`;
+        status.className = 'source-status success-text';
+        await Promise.all([
+            loadClasses(),
+            loadRelationships(),
+            loadIndividuals(),
+            loadDatatypes(),
+            loadClassHierarchy()
+        ]);
+    } catch (error) {
+        console.error('Source extraction error:', error);
+        status.textContent = error.message;
+        status.className = 'source-status danger-text';
+    }
 }
 
 /**
@@ -501,6 +761,8 @@ function setupVizTabs() {
 
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+
             const mode = btn.dataset.viz;
             if (mode === currentVizMode) return;
 

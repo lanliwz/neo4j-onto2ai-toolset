@@ -960,6 +960,175 @@ async def get_materialized_schema(
         logger.error(f"Error fetching enhanced materialized schema: {e}")
         return {"error": str(e)}
 
+
+@mcp.tool()
+async def search_ontology_concepts(
+    query: str,
+    database: Optional[str] = None,
+    limit: int = 20,
+) -> List[Dict[str, Any]]:
+    """
+    Search source ontology concepts across labels, URI fragments, definitions,
+    synonyms, examples, notes, and other string properties.
+
+    Args:
+        query: Business phrase to search for, such as "bank account".
+        database: Optional source ontology database. Defaults to the model DB.
+        limit: Maximum number of results to return.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+
+    search_text = str(query or "").strip()
+    if not search_text:
+        return []
+
+    db = get_staging_db(database) if database else semanticdb
+    normalized_limit = max(1, min(int(limit or 20), 100))
+    try:
+        cypher = """
+        MATCH (n)
+        WHERE n:owl__Class OR n:owl__NamedIndividual OR n:rdfs__Datatype
+        WITH n, labels(n) AS node_labels, keys(n) AS props, toLower($query) AS q
+        WITH n, node_labels, props, q,
+             toLower(toString(coalesce(n.rdfs__label, ""))) AS label,
+             toLower(toString(coalesce(n.uri, ""))) AS uri,
+             toLower(toString(coalesce(n.skos__definition, ""))) AS definition,
+             [k IN props WHERE toLower(toString(n[k])) CONTAINS q] AS matched_props
+        WHERE label CONTAINS q
+           OR uri CONTAINS replace(q, " ", "")
+           OR uri CONTAINS replace(q, " ", "-")
+           OR definition CONTAINS q
+           OR size(matched_props) > 0
+        WITH n, node_labels, matched_props,
+             CASE WHEN label = q THEN 100 ELSE 0 END +
+             CASE WHEN label CONTAINS q THEN 50 ELSE 0 END +
+             CASE WHEN uri CONTAINS replace(q, " ", "") THEN 35 ELSE 0 END +
+             CASE WHEN definition CONTAINS q THEN 20 ELSE 0 END +
+             size(matched_props) * 5 AS score
+        RETURN DISTINCT
+          coalesce(n.rdfs__label, n.skos__prefLabel, n.uri, "Resource") AS label,
+          n.uri AS uri,
+          n.skos__definition AS definition,
+          node_labels,
+          matched_props AS matched_properties,
+          score
+        ORDER BY score DESC, label
+        LIMIT $limit
+        """
+        rows = db.execute_cypher(
+            cypher,
+            params={"query": search_text, "limit": normalized_limit},
+            name="mcp_search_ontology_concepts",
+        )
+        for row in rows:
+            labels = row.get("node_labels") or []
+            row["kind"] = (
+                "class" if "owl__Class" in labels
+                else "individual" if "owl__NamedIndividual" in labels
+                else "datatype" if "rdfs__Datatype" in labels
+                else "resource"
+            )
+            matched = row.get("matched_properties") or []
+            row["match_reason"] = ", ".join(matched[:4]) if matched else "label or URI match"
+        return rows
+    except Exception as e:
+        logger.error(f"Error searching ontology concepts: {e}")
+        return [{"error": str(e)}]
+    finally:
+        if database:
+            db.close()
+
+
+@mcp.tool()
+async def preview_concept_neighborhood(
+    class_name: str,
+    database: Optional[str] = None,
+    include_incoming: bool = True,
+) -> Dict[str, Any]:
+    """
+    Preview a source ontology class neighborhood before extracting it.
+
+    Args:
+        class_name: Class label or URI to preview.
+        database: Optional source ontology database. Defaults to the model DB.
+        include_incoming: Include relationships from other classes into this class.
+    """
+    from neo4j_onto2ai_toolset.onto2ai_tool_config import get_staging_db, semanticdb
+
+    db = get_staging_db(database) if database else semanticdb
+    try:
+        labels = [str(class_name or "").strip()]
+        query = MATERIALIZED_SCHEMA_QUERY if include_incoming else MATERIALIZED_SCHEMA_OUTGOING_QUERY
+        rows = db.execute_cypher(
+            query,
+            params={"labels": labels},
+            name="mcp_preview_concept_neighborhood",
+        )
+
+        classes: Dict[str, Dict[str, Any]] = {}
+        relationships: List[Dict[str, Any]] = []
+        for row in rows:
+            src_label = row.get("SourceClassLabel")
+            tgt_label = row.get("TargetClassLabel")
+            if src_label and src_label not in classes:
+                classes[src_label] = {
+                    "label": src_label,
+                    "uri": row.get("SourceClassURI"),
+                    "definition": row.get("SourceClassDef"),
+                }
+            if tgt_label and tgt_label != "Resource" and tgt_label not in classes:
+                classes[tgt_label] = {
+                    "label": tgt_label,
+                    "uri": row.get("TargetClassURI"),
+                    "definition": row.get("TargetClassDef"),
+                }
+            relationships.append(
+                {
+                    "source_class": src_label,
+                    "relationship_type": row.get("RelType"),
+                    "relationship_uri": row.get("RelURI"),
+                    "definition": row.get("RelDef"),
+                    "cardinality": row.get("Cardinality"),
+                    "requirement": row.get("Requirement"),
+                    "target_class": tgt_label,
+                    "target_uri": row.get("TargetClassURI"),
+                }
+            )
+
+        return {
+            "database": database or getattr(semanticdb, "_database_name", "semanticdb"),
+            "class_name": class_name,
+            "classes": sorted(classes.values(), key=lambda item: item.get("label") or ""),
+            "relationships": relationships,
+        }
+    except Exception as e:
+        logger.error(f"Error previewing concept neighborhood: {e}")
+        return {"status": "error", "error": str(e)}
+    finally:
+        if database:
+            db.close()
+
+
+@mcp.tool()
+async def extract_domain_subset(
+    class_names: Union[str, List[str]],
+    staging_db_name: Optional[str] = None,
+    flatten_inheritance: bool = True,
+) -> Dict[str, Any]:
+    """
+    Extract a source ontology subset into the Modeller staging workspace.
+
+    Args:
+        class_names: One or more source ontology class labels or URIs.
+        staging_db_name: Target staging database. Defaults to NEO4J_STAGING_DB_NAME.
+        flatten_inheritance: Copy inherited relationships onto selected classes.
+    """
+    return await staging_materialized_schema(
+        class_names=class_names,
+        staging_db_name=staging_db_name,
+        flatten_inheritance=flatten_inheritance,
+    )
+
 @mcp.tool()
 async def get_ontological_schema(class_names: Union[str, List[str]]) -> Dict[str, Any]:
     """

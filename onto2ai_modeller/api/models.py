@@ -86,3 +86,10 @@ class LLMStatus(BaseModel):
 class LLMUpdateRequest(BaseModel):
     """Request to change the current LLM."""
     llm_name: str
+
+
+class SourceExtractRequest(BaseModel):
+    """Request to extract source ontology concepts into the Modeller workspace."""
+    class_names: List[str]
+    staging_db_name: Optional[str] = None
+    flatten_inheritance: bool = True
