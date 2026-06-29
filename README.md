@@ -4,7 +4,7 @@
 
 Onto2AI Toolset is a generic toolkit for turning ontology knowledge into validated, implementation-ready application code models. It uses Neo4j, MCP, and AI-assisted workflows as supporting technologies for loading, exploring, extracting, shaping, and packaging ontology-driven schemas.
 
-Current release: `v1.0.0`, the first harness-compatible release of the toolset.
+Current release: `v1.1.0`, the MCP-aligned domain adaptation baseline.
 
 This repository is the toolset itself. Field-specific ontologies and models such as entitlement or parcel are examples of outputs that can be produced with the toolset, not the core product definition.
 
@@ -132,7 +132,7 @@ python -m build
 
 ls -la dist/
 
-python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-1.0.0-py3-none-any.whl
+python -m pip install --force-reinstall --no-deps dist/onto2ai_engineer-1.1.0-py3-none-any.whl
 ```
 
 Build domain packages independently from their package directories:
@@ -194,6 +194,7 @@ See: [demo/README4DEMO](./demo/README4DEMO)
 - Config Contract: [docs/configuration.md](./docs/configuration.md)
 - Interface Contract: [docs/interface-contract.md](./docs/interface-contract.md)
 - Milestone Plan: [docs/milestones/onto2ai-engineer-only.md](./docs/milestones/onto2ai-engineer-only.md)
+- Release Notes: [docs/release-notes-v1.1.0.md](./docs/release-notes-v1.1.0.md)
 - Release Notes: [docs/release-notes-v1.0.0.md](./docs/release-notes-v1.0.0.md)
 - Release Notes: [docs/release-notes-v0.4.0.md](./docs/release-notes-v0.4.0.md)
 - Demo Guide: [demo/README4DEMO](./demo/README4DEMO)

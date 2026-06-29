@@ -11,7 +11,7 @@ PACKAGES = find_packages(exclude=["onto2ai_entitlement*", "onto2ai_parcel*"]) + 
 
 setup(
     name="onto2ai-engineer",
-    version="1.0.0",
+    version="1.1.0",
     packages=PACKAGES,
     install_requires=[
         "fastapi",
