@@ -40,16 +40,17 @@ All business concepts MUST have a definition provided via the `skos:definition` 
 ```
 
 ## 3. Base URIs, Domain, and Folder Structure
-Unless otherwise specified by a local project, new ontology documents and local URIs should use the standard project domain. For Onto2AI toolset, this evaluates to:
-`http://www.onto2ai-toolset.com/`
+Unless otherwise specified by a local project, new ontology documents and local URIs must use the standard Onto2AI URI convention:
 
-When grouping ontologies by domain (like `bank` or `fibo`), the base URI must reflect this hierarchy:
-`http://www.onto2ai-toolset.com/ontology/[domain]/[OntologyName]/`
+- Base domain: `http://www.onto2ai-toolset.com/`
+- Ontology base URI: `http://www.onto2ai-toolset.com/ontology/[domain]/[OntologyName]/`
+- Default RDF namespace: the same slash-terminated ontology base URI.
+- Do not append `Ontology` to the ontology file name or ontology URI name unless explicitly required.
 
 **Example Ontology Header:**
 ```xml
-<rdf:RDF xmlns="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement#"
-     xml:base="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement"
+<rdf:RDF xmlns="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
+     xml:base="http://www.onto2ai-toolset.com/ontology/bank/AssetManagement/"
      ...>
 ```
 
@@ -57,6 +58,8 @@ Furthermore, the physical directory structure MUST map exactly to the URI namesp
 
 **Example Folder Structure for the above URI:**
 `resource/ontology/www_onto2ai-toolset_com/ontology/bank/AssetManagement.rdf`
+
+When ontology semantics change, update RDF first, align Cypher/schema artifacts second, validate with `xmllint --noout <rdf_file>`, and then update documentation references.
 
 ### Object Property URI Rule
 Object property URI fragments MUST be written as lowerCamelCase predicates that describe the directed relationship from domain to range.

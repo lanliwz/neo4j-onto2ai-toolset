@@ -1,87 +1,126 @@
-
-
 # Demo Workflow Guide
 
-This guide contains the single-manifest demo workflow, audio generation steps, and video sync commands.
+This guide defines the standard demo-generation workflow for Onto2AI demos.
 
-## Folder Structure
-- `demo/demo-audio-scripts.md` — master script catalog across demos.
-- `demo/demo_tts_jobs.jsonl` — batch TTS job list (`input`, `out`).
-- `demo/audio/*.mp3` — generated narration clips.
-- `demo/video/<demo_name>/<demo_name>.mov` — raw screen recording.
-- `demo/video/<demo_name>/<demo_name>_demo.json` — single source of truth (script + timing + scenes + TTS config).
-- `demo/video/review/*.mp4` — review exports.
-- `demo/demo_generator.py` — scaffolds demo workspace from `.mov`.
+The current standard is the introduction demo: a script-driven, presentation-rendered video with OpenAI `cedar` narration. The workflow keeps durable source files in `demo/`, writes temporary render frames and video segments to the system temp directory, and publishes only the final reusable assets.
 
-## Single Source of Truth
-Use `*_demo.json` as the only canonical file for per-demo production data:
-- `narrative_lines[].text` = narration content (authoritative text)
-- `narrative_lines[].start_ms` / `end_ms` = exact timing
-- `scenes[]` = visual plan and line references
-- `tts` = voice/style config
+## Standard Folder Structure
 
-This avoids drift between separate script/timing/shot files.
+- `demo/introduction/` - source and generation workflow for the Onto2AI introduction demo.
+- `demo/introduction/introduction-script.md` - long-form narration and story source.
+- `demo/introduction/generate_introduction_video.py` - canonical generator for the introduction video.
+- `demo/introduction/render_introduction_template_deck.mjs` - presentation artifact-tool renderer for the LinkedIn-style deck.
+- `demo/introduction/assets/` - durable local visual inputs used by the generator.
+- `demo/introduction/*.pptx` - editable source/template decks.
+- `demo/audio/*.mp3` - generated narration clips.
+- `demo/video/<demo_name>/<demo_name>_demo.json` - single source of truth manifest for a generated demo.
+- `demo/video/<demo_name>/*_narration.txt` - manifest-derived narration text.
+- `demo/video/review/*.mp4` - review/final video exports.
 
-## Generate Demo Skeleton
+## Introduction Demo
+
+The introduction demo is the reference implementation for future demos.
+
+Durable inputs:
+- `demo/introduction/introduction-script.md`
+- `demo/introduction/assets/onto2ai-qa-frontpage-4.png`
+- `demo/introduction/onto2ai-linkedin-presentation-template.pptx`
+- `demo/introduction/generate_introduction_video.py`
+- `demo/introduction/render_introduction_template_deck.mjs`
+
+Generated deliverables:
+- `demo/introduction/onto2ai-introduction-template-video-deck.pptx`
+- `demo/audio/onto2ai_introduction_cedar.mp3`
+- `demo/video/introduction/introduction_demo.json`
+- `demo/video/introduction/introduction_narration.txt`
+- `demo/video/review/onto2ai_introduction_template.mp4`
+
+## Regenerate Introduction Video
+
+Reuse the existing OpenAI `cedar` narration:
+
 ```bash
-# dry run
-python demo/demo_generator.py demo/video/demo01_launch_modeller/demo01.mov --dry-run
-
-# generate scaffold folder + single JSON manifest
-python demo/demo_generator.py demo/video/demo01_launch_modeller/demo01.mov
+python3 demo/introduction/generate_introduction_video.py
 ```
 
-## Generate Audio
+Refresh the OpenAI `cedar` narration and rebuild the video:
+
 ```bash
-# prerequisite
 export OPENAI_API_KEY="your_openai_key"
+python3 demo/introduction/generate_introduction_video.py --refresh-audio
+```
 
-# build narration text directly from manifest (single source of truth)
-jq -r '.narrative_lines | sort_by(.start_ms) | .[].text' \
-  demo/video/demo01/demo01_demo.json \
-  > /tmp/demo01_narration.txt
+Keep scratch frames and segment files for debugging:
 
-# single clip from manifest-derived narration
+```bash
+python3 demo/introduction/generate_introduction_video.py --keep-work
+```
+
+Scratch output is written under the system temp directory, not under `demo/`.
+
+## Single Source Of Truth
+
+Use `*_demo.json` as the canonical per-demo production file:
+
+- `narrative_lines[].text` - authoritative narration text.
+- `narrative_lines[].start_ms` / `end_ms` - scene timing.
+- `slides[]` - presentation content.
+- `output_audio` - narration artifact path.
+- `output_video` - review video artifact path.
+
+This avoids drift between scripts, rendered decks, narration files, and video exports.
+
+## Audio Standard
+
+Use OpenAI TTS with:
+
+- model: `gpt-4o-mini-tts-2025-12-15`
+- voice: `cedar`
+- format: `mp3`
+
+The introduction generator already wraps the standard TTS command. For one-off audio generation, use the shared speech CLI:
+
+```bash
 python /Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py speak \
-  --input-file /tmp/demo01_narration.txt \
+  --model gpt-4o-mini-tts-2025-12-15 \
+  --input-file demo/video/introduction/introduction_narration.txt \
   --voice cedar \
   --response-format mp3 \
   --instructions "Voice Affect: Warm and composed. Tone: Professional and clear. Pacing: Steady." \
-  --out demo/audio/demo01.mp3 \
-  --force
-
-# batch generation for all demos
-python /Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py speak-batch \
-  --input demo/demo_tts_jobs.jsonl \
-  --out-dir demo/audio \
-  --voice cedar \
-  --response-format mp3 \
-  --instructions "Voice Affect: Warm and composed. Tone: Professional and friendly. Pacing: Steady and clear." \
-  --rpm 50 \
+  --out demo/audio/onto2ai_introduction_cedar.mp3 \
   --force
 ```
 
-## Sync Audio With Screen Recording
-```bash
-# sync narration to video, keeping full video length
-ffmpeg -y \
-  -i demo/video/demo01.mov \
-  -i demo/audio/demo01.mp3 \
-  -filter_complex "[1:a]apad[aout]" \
-  -map 0:v -map "[aout]" \
-  -c:v copy -c:a aac -b:a 192k -shortest \
-  demo/video/review/demo01_synced_with_voice.mp4
+## Video Standard
 
-# optional delay (+3 seconds)
-ffmpeg -y \
-  -i demo/video/demo01.mov \
-  -i demo/audio/demo01.mp3 \
-  -filter_complex "[1:a]adelay=3000|3000,apad[aout]" \
-  -map 0:v -map "[aout]" \
-  -c:v copy -c:a aac -b:a 192k -shortest \
-  demo/video/review/demo01_synced_with_voice_offset3s.mp4
+For presentation-style demos:
+
+1. Build or update the `*_demo.json` manifest.
+2. Generate or reuse the `cedar` narration MP3.
+3. Render an editable deck to slide frames using the presentation artifact tool.
+4. Assemble frames into a silent MP4 in temp.
+5. Mux narration into `demo/video/review/<demo_name>.mp4`.
+6. Verify with `ffprobe` before sharing.
+
+Expected introduction output:
+
+```text
+1280x720, 30fps, 92.4s, H.264 video, AAC audio
 ```
+
+## Future Screen-Recording Demos
+
+For UI walkthroughs based on raw recordings, keep the same conventions:
+
+- raw recording under `demo/video/<demo_name>/`
+- one manifest at `demo/video/<demo_name>/<demo_name>_demo.json`
+- narration under `demo/audio/`
+- final review export under `demo/video/review/`
+
+Do not scatter generated scripts, frame dumps, or temporary segment files under the repository. Keep reusable sources and deliverables only.
 
 ## Notes
-- Narration audio is AI-generated.
-- Keep all demo artifacts under `demo/` for consistency.
+
+- Narration audio is AI-generated and should be disclosed when presented externally.
+- Keep all demo artifacts under `demo/`.
+- Prefer deterministic file names so demos can be regenerated and compared.

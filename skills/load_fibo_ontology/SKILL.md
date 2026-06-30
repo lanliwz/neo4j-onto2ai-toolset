@@ -10,18 +10,23 @@ You are responsible for loading the FIBO ontology into the Neo4j environment. Th
 
 ### Configure the Loader
 The core loading logic resides in `neo4j_onto2ai_toolset/onto2ai_loader.py`.
-Before running, ensure the `if __name__ == "__main__":` block is configured with the desired domains:
-- `FND_DOMAIN`: Foundations
-- `BE_DOMAIN`: Business Entities
-- `BP_DOMAIN`: Business Processes
-- `FBC_DOMAIN`: Financial Business and Commerce
 
-### Execute the Load
-Run the loader script from the root of the workspace using the following command to ensure the package and prefixes are correctly resolved:
+Use the package CLI instead of editing the `if __name__ == "__main__":` block. The loader now expects either an explicit ontology URI or a known preset.
+
+Common commands:
 
 ```bash
-export PYTHONPATH=$PYTHONPATH:.
-python neo4j_onto2ai_toolset/onto2ai_loader.py
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
+```
+
+Use the default FIBO domain slice as the normal starting point for industry-ontology exploration. Expand domains only when the user needs a broader source landscape.
+
+### Execute the Load
+Run from the root of the workspace so package imports and prefixes are correctly resolved:
+
+```bash
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
 ```
 
 ### Post-Load Verification
@@ -32,4 +37,6 @@ After loading, the script automatically:
 
 ## Troubleshooting
 - **ShortenStrictException**: If this occurs, a new namespace was found. Add it to `neo4j_onto2ai_toolset/onto2ai_core/prefixes.py`.
-- **Database Reset**: The loader script calls `reset_neo4j_db()` by default. Warn the user if they have existing data they wish to keep.
+- **Database Reset**: Confirm the target database before any reset or reload. Source ontology loading is destructive when reset flags are used.
+- **Source vs Target**: FIBO is a source ontology. Use MCP/Modeller Source Ontology to search and extract a focused subset, then stage and curate the target ontology separately.
+- **Post-load Check**: After loading, use `search_ontology_concepts` or `list_model_classes` against the loaded database to confirm expected concepts are present.

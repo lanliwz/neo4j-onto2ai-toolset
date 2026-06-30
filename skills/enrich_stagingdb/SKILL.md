@@ -6,6 +6,21 @@ description: "Specialized skill for managing, enriching, and consolidating the N
 
 You are a master of the Staging Database (typically `stagingdb`). Use this skill to move data from the primary ontology to staging, enrich classes with properties, create custom classes, manage named individuals, and clean up/flatten the staging schema for production use.
 
+## Operating Boundary
+- Use `stagingdb` for schema/model work: staged ontology subsets, class enrichment, enumeration discovery, generated schema artifacts, and validation before packaging.
+- Use dataset databases such as `testdb` for sample data or runtime-style smoke tests. Dataset databases must not contain ontology schema nodes such as `owl__Class`, `owl__Ontology`, `owl__Restriction`, or ontology-only relationships such as `rdf__type` and `rdfs__subClassOf` unless the task explicitly requires schema validation there.
+- Treat RDF ontology files as the source of truth for finalized ontology meaning. Staging edits are review/prototyping work until reflected back into the RDF and package artifacts.
+- Package finalized domain artifacts independently from the core toolset. Examples include `onto2ai_entitlement/` and `onto2ai_parcel/`.
+
+## URI Convention For Local Staging Additions
+When creating local classes, relationships, or datatypes that do not come from FIBO or another source ontology, use the Onto2AI URI convention unless the user gives a domain-specific URI:
+
+```text
+http://www.onto2ai-toolset.com/ontology/<domain>/<OntologyName>/<Fragment>
+```
+
+Use source ontology URIs for copied FIBO/LCC/standards concepts and Onto2AI URIs only for local target ontology additions.
+
 ## Core Operations
 
 ### Staging Data
@@ -46,13 +61,13 @@ CREATE (person)-[:hasName {
 - Standard cardinality values: `1`, `0..1`, `0..*`, `1..*`
 
 ### Creating Custom Classes
-When FIBO doesn't have a class you need, create it in staging with a custom URI namespace.
+When FIBO or the source ontology does not have a class you need, create it in staging with the target ontology URI namespace.
 
 **Example — Creating Tax Payer:**
 ```cypher
 CREATE (tp:owl__Class {
   rdfs__label: 'tax payer',
-  uri: 'https://example.org/ontology/TaxPayer',
+  uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/TaxPayer',
   skos__definition: 'A person who is obligated to pay taxes and is identified by a tax identifier.'
 })
 
@@ -69,14 +84,14 @@ WITH tp
 MATCH (taxId:owl__Class {rdfs__label: 'tax identifier'})
 CREATE (tp)-[:hasTaxId {
   materialized: true,
-  uri: 'https://example.org/ontology/hasTaxId',
+  uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/hasTaxId',
   skos__definition: 'The tax identifier assigned to a tax payer.',
   cardinality: '1..*'
 }]->(taxId)
 ```
 
 **Rules for custom classes:**
-- Use `https://example.org/ontology/` as the URI namespace
+- Use the target ontology URI namespace, normally `http://www.onto2ai-toolset.com/ontology/<domain>/<OntologyName>/`
 - Use lowercase with spaces for `rdfs__label` (e.g., `'tax payer'`)
 - Use PascalCase for the URI fragment (e.g., `TaxPayer`)
 - Always include `skos__definition`
@@ -223,7 +238,7 @@ Maintain a textual representation of the entire graph schema for easy reference 
 - Ensure the schema description includes an explicit enumeration members section for review.
 
 ### Data Schema Constraints (Archival)
-To ensure data integrity, maintain a Cypher constraints file for the finalized deliverable (for example, `onto2ai_entitlement/staging/neo4j_constraint.cypher`) that defines the physical constraints of the Neo4j database.
+To ensure data integrity, maintain a Cypher constraints file for the finalized domain deliverable (for example, `onto2ai_entitlement/staging/neo4j_constraint.cypher` or `onto2ai_parcel/staging/neo4j_constraint.cypher`) that defines the physical constraints of the Neo4j database.
 
 **Core Principles:**
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
@@ -237,29 +252,31 @@ After changing enum classes, named individuals, subclass relationships, or manda
    - Note: `rdfs__subClassOf` relationships are automatically included in the extracted model.
 2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → transient local review output under `staging/`
    - Child classes inherit from their parent Pydantic class; inherited fields are not redeclared.
+   - Pydantic is one supported application model target. Keep schema decisions generic enough for other target generators.
 3. `generate_neo4j_schema_description(database='stagingdb')` → transient local review output under `staging/`
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
 4. `generate_neo4j_schema_constraint(database='stagingdb')` → transient local review output under `staging/`
-5. Copy finalized release artifacts into `onto2ai_entitlement/staging/`
-5. Run workflow validation test:
+5. Copy finalized release artifacts into the relevant domain package staging folder.
+6. Run the domain workflow validation test, for example:
    - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
+   - or the matching smoke test for the active domain package.
    - The smoke test must always recreate and use `testdb`
    - Keep the sample data in `testdb` by default for manual review
    - Review the printed summary before considering finalization complete
-6. Publish the ontology package from `onto2ai_entitlement/` only after the smoke test passes.
-7. Ensure workflow semantics are covered by test data:
+7. Publish the ontology package only after the smoke test passes.
+8. Ensure workflow semantics are covered by test data. For entitlement/tax-like examples, that may include:
    - person/taxpayer has residence/address
    - W-2 is issued by organization/employer and issued to person
    - Form 1040 is submitted by taxpayer to IRS
 
-### Domain Model Consistency (Pydantic)
-To ensure the generated code is fully compatible with the graph, follow these Pydantic modeling standards:
+### Domain Model Consistency
+To ensure generated application code models are fully compatible with the graph, follow these modeling standards. Pydantic is one supported target; the underlying contract should also support future application code model targets.
 
 **Key Patterns:**
 1. **URI Identity**: All core classes should inherit from a `SemanticModel` base class that includes an optional `uri: str` field.
 2. **Field Aliases**: Use `Field(alias="...")` to map Python field names to their ontological counterparts (the Neo4j relationship types or property names). This allows for clean Python code while maintaining strict graph parity.
    - Example: `taxableIncome: Optional[MonetaryAmount] = Field(alias="hasTaxableIncome", ...)`
-3. **Automated Bridge**: Use the `PydanticNeo4jBridge` utility to automate the conversion between Pydantic objects and Neo4j `MERGE` queries. This utility leverages the aliases to identify the correct graph predicates.
+3. **Automated Bridge**: For Pydantic output, use the `PydanticNeo4jBridge` utility to automate the conversion between Pydantic objects and Neo4j `MERGE` queries. This utility leverages the aliases to identify the correct graph predicates.
 
 **Why**: This 1:1 parity between the domain model and the graph schema enables type-safe, automated data ingestion and extraction without manual Cypher mapping.
 
@@ -271,7 +288,7 @@ When generating final documentation (like `staging_schema.md`), use instance cou
 2.  **Topological Activity**: Labels with outgoing relationships are considered structural classes and should be included.
 3.  **Domain Baseline**: Core entities (e.g., `Person`, `Employer`, `Account`, `Form1010`) are always kept regardless of instances.
 4.  **Leaf Node Rule (Exclusion)**: Labels with zero instances AND no outgoing relationships should be treated as **Datatypes** or **Enums**, even if they appear in the graph topology. They should be excluded from the main "Node Labels (Classes)" table but described in the "Graph Topology" and "Node Properties" sections.
-5.  **Pydantic Enum Filter**: Explicitly exclude any class that is implemented as a Pydantic `Enum` (identified by `enumValues` or `xsd_type` in metadata) from the Classes table.
+5.  **Enum Filter**: Explicitly exclude any class that is implemented as an application enum (identified by `enumValues`, named individuals, or `xsd_type` in metadata) from the Classes table.
 
 **Why**: This ensures the documentation matches the actual implemented model (where many ontological classes are flattened into properties) rather than listing every technical label used in the graph.
 
@@ -349,3 +366,4 @@ MERGE (f)-[:rdfs__subClassOf {materialized: true}]->(parent)
 - **FIBO first**: Check the FIBO ontology for existing definitions before creating custom classes.
 - **Deduplication**: The `consolidate_staging_db` tool automatically de-duplicates URIs, labels, and relationships.
 - **Consolidation cleanup**: `consolidate_staging_db` automatically deletes named individuals linked via `rdf__type` when converting a class to a datatype.
+- **RDF sync**: Before release, reflect accepted staging semantics back into the RDF source and validate with `xmllint`.

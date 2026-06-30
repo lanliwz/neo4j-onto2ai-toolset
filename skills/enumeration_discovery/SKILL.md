@@ -1,10 +1,10 @@
 ---
 name: "Enumeration Discovery"
-description: "Instructions for automatically identifying and modeling ontology classes as Python Enums based on stagingdb content."
+description: "Instructions for identifying ontology enumeration classes and rendering them in generated application models."
 ---
 # Enumeration Discovery Skill
 
-Use these instructions to automatically identify which `owl__Class` nodes in the `stagingdb` should be treated as enumerations in diagrams and code generation.
+Use these instructions to automatically identify which `owl__Class` nodes in the schema/model database, normally `stagingdb`, should be treated as enumerations in diagrams and generated application code models.
 
 ## Discovery Logic
 An enumeration is defined as an `owl__Class` that has one or more `owl__NamedIndividual` members linked via `rdf__type`.
@@ -19,8 +19,10 @@ RETURN c.rdfs__label as className, c.uri as uri, memberCount, sampleMembers
 ORDER BY memberCount DESC
 ```
 
-## Pydantic Modeling
-When an enum class is identified, `generate_schema_code(target_type='pydantic')` now renders it as a Python `Enum` automatically when `owl__NamedIndividual` members exist via `rdf__type`.
+## Application Model Rendering
+When an enum class is identified, generated application code models should render it as a native enumeration type when the target language supports one.
+
+For Pydantic output, `generate_schema_code(target_type='pydantic')` renders it as a Python `Enum` automatically when `owl__NamedIndividual` members exist via `rdf__type`.
 
 ### Verification Pattern
 After regeneration, confirm:
@@ -36,6 +38,5 @@ In UML diagrams, ensure these classes use the `«enumeration»` stereotype.
 ## Maintenance
 - **New Members**: When adding new individuals to the database, always ensure they are linked to the correct class via `rdf__type`.
 - **Deduplication**: Periodically run deduplication queries to ensure that enumeration members are not duplicated across different URIs.
-- **Regeneration Workflow**: After enum changes, regenerate:
-  1. transient local review artifacts under `staging/` via regeneration
-  2. finalized release artifacts under `onto2ai_entitlement/staging/`
+- **Schema vs Dataset Boundary**: `rdf__type` links are valid in `stagingdb` for schema/model enumeration discovery. Do not load ontology-only `rdf__type` links into dataset databases unless the task explicitly requires schema validation there.
+- **Regeneration Workflow**: After enum changes, regenerate transient local review artifacts under `staging/`, then copy finalized artifacts into the relevant domain package staging folder before release.
