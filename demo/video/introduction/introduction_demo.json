@@ -1,0 +1,201 @@
+{
+  "demo": "onto2ai_introduction",
+  "source_script": "demo/introduction/introduction-script.md",
+  "presentation_template": "demo/introduction/onto2ai-linkedin-presentation-template.pptx",
+  "rendered_deck": "demo/introduction/onto2ai-introduction-template-video-deck.pptx",
+  "output_video": "demo/video/review/onto2ai_introduction_template.mp4",
+  "output_audio": "demo/audio/onto2ai_introduction_cedar.mp3",
+  "resolution": "1280x720",
+  "fps": 30,
+  "narrative_lines": [
+    {
+      "id": "intro_01",
+      "start_ms": 0,
+      "end_ms": 8400,
+      "title": "Onto2AI Toolset",
+      "text": "Onto2AI Toolset helps data and AI teams move from trusted industry ontology to application-ready domain models."
+    },
+    {
+      "id": "intro_02",
+      "start_ms": 8400,
+      "end_ms": 16800,
+      "title": "The Challenge",
+      "text": "The challenge is drift. Ontology files, database schemas, code models, and AI prompts often carry different versions of the same business meaning."
+    },
+    {
+      "id": "intro_03",
+      "start_ms": 16800,
+      "end_ms": 25200,
+      "title": "The Goal",
+      "text": "The goal is not Neo4j, and it is not Pydantic alone. The goal is alignment between semantic source and application delivery."
+    },
+    {
+      "id": "intro_04",
+      "start_ms": 25200,
+      "end_ms": 33600,
+      "title": "Start From Standards",
+      "text": "Instead of beginning from scratch, teams can load a source ontology, inspect the semantic landscape, and find the concepts that matter."
+    },
+    {
+      "id": "intro_05",
+      "start_ms": 33600,
+      "end_ms": 42000,
+      "title": "Select The Subset",
+      "text": "Onto2AI Modeller and the shared MCP tools help users search, preview, and select the focused subset needed for a business problem."
+    },
+    {
+      "id": "intro_06",
+      "start_ms": 42000,
+      "end_ms": 50400,
+      "title": "Create The Target Ontology",
+      "text": "The target ontology is curated. Teams consolidate duplicate concepts, align to standards, and add local concepts only where they are truly needed."
+    },
+    {
+      "id": "intro_07",
+      "start_ms": 50400,
+      "end_ms": 58800,
+      "title": "Prototype Artifacts",
+      "text": "Onto2AI then prototypes implementation artifacts, so the ontology can be tested as a working contract, not only as an RDF file."
+    },
+    {
+      "id": "intro_08",
+      "start_ms": 58800,
+      "end_ms": 67200,
+      "title": "Package And Publish",
+      "text": "Finalized domains can be packaged independently, letting application teams consume a governed model without copying the whole toolset."
+    },
+    {
+      "id": "intro_09",
+      "start_ms": 67200,
+      "end_ms": 75600,
+      "title": "Where Modeller Fits",
+      "text": "Onto2AI Modeller makes the workflow visible through Source Ontology, Target Ontology, Semantic Interaction, and Native Query."
+    },
+    {
+      "id": "intro_10",
+      "start_ms": 75600,
+      "end_ms": 84000,
+      "title": "Why It Matters For AI",
+      "text": "For AI workflows, Onto2AI provides governed semantic context. Agents and applications can work from structured meaning instead of loose prompt text."
+    },
+    {
+      "id": "intro_11",
+      "start_ms": 84000,
+      "end_ms": 92400,
+      "title": "Onto2AI Toolset",
+      "text": "That is the purpose of Onto2AI Toolset: to make ontology-driven architecture practical for data, AI, and application delivery."
+    }
+  ],
+  "slides": [
+    {
+      "id": "intro_01",
+      "title": "Onto2AI Toolset",
+      "subtitle": "From industry ontology to application-ready domain models",
+      "bullets": [
+        "Start from trusted standards, not a blank page.",
+        "Extract the domain subset that matters.",
+        "Turn ontology meaning into deployable model artifacts."
+      ]
+    },
+    {
+      "id": "intro_02",
+      "title": "The Challenge",
+      "subtitle": null,
+      "bullets": [
+        "Ontology, databases, code models, and prompts often drift apart.",
+        "Every project repeats local decisions about names and relationships.",
+        "Large industry ontologies are valuable, but too broad for direct delivery."
+      ]
+    },
+    {
+      "id": "intro_03",
+      "title": "The Goal",
+      "subtitle": null,
+      "bullets": [
+        "Neo4j is the workbench technology, not the destination.",
+        "Pydantic is one supported output, not the only target.",
+        "The goal is aligned, implementation-ready application code models."
+      ]
+    },
+    {
+      "id": "intro_04",
+      "title": "Start From Standards",
+      "subtitle": null,
+      "bullets": [
+        "Load a source ontology such as FIBO or an enterprise standard.",
+        "Inspect classes, properties, restrictions, definitions, and imports.",
+        "Use the source ontology as the semantic landscape."
+      ]
+    },
+    {
+      "id": "intro_05",
+      "title": "Select The Subset",
+      "subtitle": null,
+      "bullets": [
+        "Search for concepts like account, parcel, entitlement, or policy.",
+        "Preview neighborhoods and relationship context.",
+        "Collect extraction seeds for the focused business slice."
+      ]
+    },
+    {
+      "id": "intro_06",
+      "title": "Create The Target Ontology",
+      "subtitle": null,
+      "bullets": [
+        "Curate the extracted subset into an enterprise target ontology.",
+        "Consolidate duplicate concepts and preserve source provenance.",
+        "Add application-specific concepts only where needed."
+      ]
+    },
+    {
+      "id": "intro_07",
+      "title": "Prototype Artifacts",
+      "subtitle": null,
+      "bullets": [
+        "Generate constraints, query context, code models, and documentation.",
+        "Validate whether ontology meaning supports real implementation workflows.",
+        "Keep tests and artifacts tied to the same semantic foundation."
+      ]
+    },
+    {
+      "id": "intro_08",
+      "title": "Package And Publish",
+      "subtitle": null,
+      "bullets": [
+        "Package domain models independently from the toolset.",
+        "Include finalized RDF, generated models, constraints, and smoke tests.",
+        "Publish the domain package as an enterprise standard."
+      ]
+    },
+    {
+      "id": "intro_09",
+      "title": "Where Modeller Fits",
+      "subtitle": null,
+      "bullets": [
+        "Source Ontology: inspect standards and enterprise source models.",
+        "Target Ontology: review and tune the working domain model.",
+        "Semantic Interaction and Native Query: ask, inspect, and troubleshoot."
+      ]
+    },
+    {
+      "id": "intro_10",
+      "title": "Why It Matters For AI",
+      "subtitle": null,
+      "bullets": [
+        "AI needs governed semantic context, not loose prompt fragments.",
+        "MCP tools expose ontology search, schema extraction, and validation.",
+        "Data, AI, ontology, and application teams work from one foundation."
+      ]
+    },
+    {
+      "id": "intro_11",
+      "title": "Onto2AI Toolset",
+      "subtitle": "Ontology-driven architecture made practical",
+      "bullets": [
+        "Start with an industry ontology.",
+        "Extract, review, prototype, validate, and package.",
+        "Publish application-ready domain ontology as an enterprise standard."
+      ]
+    }
+  ]
+}
