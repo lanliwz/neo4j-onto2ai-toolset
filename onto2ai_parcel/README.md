@@ -1,8 +1,8 @@
 # Onto2AI Parcel Package
 
-This package is the publishable parcel deliverable from Onto2AI Engineer.
+This package is the publishable residential property deliverable from Onto2AI Engineer, centered on the parcel model.
 
-It bundles the finalized parcel ontology together with the generated implementation artifacts used for validation, query context, application code modeling, and smoke testing.
+It bundles the finalized parcel ontology, companion house and landscape ontologies, and the generated implementation artifacts used for validation, query context, application code modeling, and smoke testing.
 
 The RDF ontology is the source of truth for the package. It includes the parcel application profile, required-field/cardinality restrictions, direct reuse of FIBO real-property/address concepts, and direct reuse of LCC country and U.S. subdivision reference data.
 
@@ -12,6 +12,10 @@ High-confidence duplicate imported classes are canonicalized to OMG Commons conc
 
 - `ontology/Parcel.rdf`
   - source RDF ontology for the finalized parcel domain
+- `ontology/House.rdf`
+  - companion RDF ontology for residential house, footprint, floor-plan, room, opening, utility, and maintenance concepts
+- `ontology/Landscape.rdf`
+  - companion RDF ontology for residential landscape plans, zones, hardscape, planting, drainage, and site features
 - `staging/pydantic_parcel_model.py`
   - generated application code model aligned to the finalized parcel schema; this package currently uses Pydantic as the generated model format and includes the full parcel attribute surface from the RDF
 - `staging/neo4j_query_context.md`
@@ -27,7 +31,10 @@ Use the exported paths from `onto2ai_parcel`:
 
 ```python
 from onto2ai_parcel import (
+    HOUSE_ONTOLOGY_PATH,
+    LANDSCAPE_ONTOLOGY_PATH,
     ONTOLOGY_PATH,
+    ONTOLOGY_PATHS,
     STAGING_PYDANTIC_PATH,
     STAGING_QUERY_CONTEXT_PATH,
     STAGING_CONSTRAINT_PATH,
@@ -53,7 +60,7 @@ It does not package the core Onto2AI toolset or other domain application models.
 
 The intended finalization flow for this package is:
 
-1. Validate the source ontology RDF.
+1. Validate the source ontology RDF files.
 2. Confirm the packaged parcel artifacts are in sync with the finalized staging/schema workflow.
 3. Run the dataset smoke test against `testdb`.
 4. Build the distribution.
@@ -62,6 +69,8 @@ Validation commands:
 
 ```bash
 xmllint --noout ontology/Parcel.rdf
+xmllint --noout ontology/House.rdf
+xmllint --noout ontology/Landscape.rdf
 python staging/parcel_schema_smoke_test.py
 ```
 
@@ -85,3 +94,5 @@ The current parcel package covers:
 - geometry and polygon geometry
 - GPS coordinates and boundary vertices
 - GeoJSON features and feature collections
+- companion house ontology for residential structure and floor-plan modelling
+- companion landscape ontology for residential site planning

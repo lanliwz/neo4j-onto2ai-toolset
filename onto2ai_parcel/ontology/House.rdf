@@ -1,0 +1,380 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://www.onto2ai-toolset.com/ontology/house/House#"
+    xml:base="http://www.onto2ai-toolset.com/ontology/house/House"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+  <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/house/House">
+    <rdfs:label>house ontology</rdfs:label>
+    <skos:definition>Ontology for modeling a residential house, its footprint, rooms, access surfaces, utility connections, and maintenance tasks.</skos:definition>
+  </owl:Ontology>
+
+  <owl:Class rdf:about="#House">
+    <rdfs:label>house</rdfs:label>
+    <skos:definition>A residential building located on a parcel and planned as part of the property lifecycle.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#BuildingFootprint">
+    <rdfs:label>building footprint</rdfs:label>
+    <skos:definition>A polygonal representation of the house outline used for siting, access, and outdoor design coordination.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#FloorPlan">
+    <rdfs:label>floor plan</rdfs:label>
+    <skos:definition>A level-specific interior planning view derived from the house footprint and used to position rooms, stairs, and interior openings.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Room">
+    <rdfs:label>room</rdfs:label>
+    <skos:definition>An interior space within a house used for a functional domestic purpose.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Garage">
+    <rdfs:subClassOf rdf:resource="#Room"/>
+    <rdfs:label>garage</rdfs:label>
+    <skos:definition>A room or enclosed vehicular storage area associated with the house footprint and first-floor circulation.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Stair">
+    <rdfs:subClassOf rdf:resource="#Room"/>
+    <rdfs:label>stair</rdfs:label>
+    <skos:definition>A vertical circulation room element connecting basement, first-floor, and second-floor plan levels.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Wall">
+    <rdfs:label>wall</rdfs:label>
+    <skos:definition>A boundary element defining one side of a room or separating adjacent interior or exterior spaces.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Opening">
+    <rdfs:label>opening</rdfs:label>
+    <skos:definition>An editable wall-hosted boundary segment representing an interior or exterior opening in the floor-plan editor.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Door">
+    <rdfs:subClassOf rdf:resource="#Opening"/>
+    <rdfs:label>door</rdfs:label>
+    <skos:definition>An opening element in a wall used for passage between rooms or between interior and exterior space, rendered in the editor as a virtual wall segment.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Window">
+    <rdfs:subClassOf rdf:resource="#Opening"/>
+    <rdfs:label>window</rdfs:label>
+    <skos:definition>An opening element in a wall used for daylight, view, or ventilation, rendered in the editor as a virtual wall segment.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#AccessSurface">
+    <rdfs:label>access surface</rdfs:label>
+    <skos:definition>A paved or otherwise constructed circulation surface such as a driveway, walkway, or terrace adjacency surface.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Driveway">
+    <rdfs:subClassOf rdf:resource="#AccessSurface"/>
+    <rdfs:label>driveway</rdfs:label>
+    <skos:definition>An access surface used primarily for vehicle approach, parking connection, or garage access.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Walkway">
+    <rdfs:subClassOf rdf:resource="#AccessSurface"/>
+    <rdfs:label>walkway</rdfs:label>
+    <skos:definition>An access surface used primarily for pedestrian movement between the house, street, and outdoor features.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#UtilityConnection">
+    <rdfs:label>utility connection</rdfs:label>
+    <skos:definition>A service connection or equipment interface supporting water, power, drainage, gas, communications, or related house systems.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#MaintenanceTask">
+    <rdfs:label>maintenance task</rdfs:label>
+    <skos:definition>A recurring or planned action needed to maintain a house, site feature, or utility asset in working order.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#ProjectPhase">
+    <rdfs:label>project phase</rdfs:label>
+    <skos:definition>A stage in the design, build, or maintenance lifecycle of a house property.</skos:definition>
+  </owl:Class>
+
+  <owl:ObjectProperty rdf:about="#hasBuildingFootprint">
+    <rdfs:label>has building footprint</rdfs:label>
+    <skos:definition>Relates a house to the footprint geometry used to represent its siting on the parcel.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#BuildingFootprint"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasHouse">
+    <rdfs:label>has house</rdfs:label>
+    <skos:definition>Relates a broader property or parcel context to the house located on that site.</skos:definition>
+    <rdfs:range rdf:resource="#House"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasRoom">
+    <rdfs:label>has room</rdfs:label>
+    <skos:definition>Relates a house to one of its interior rooms.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#Room"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasFloorPlan">
+    <rdfs:label>has floor plan</rdfs:label>
+    <skos:definition>Relates a house to a level-specific floor plan used to organize rooms and interior circulation.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#FloorPlan"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#belongsToFloorPlan">
+    <rdfs:label>belongs to floor plan</rdfs:label>
+    <skos:definition>Relates a room to the floor plan level in which it is positioned.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="#FloorPlan"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasWall">
+    <rdfs:label>has wall</rdfs:label>
+    <skos:definition>Relates a room to one of its bounding wall elements.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="#Wall"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasOpening">
+    <rdfs:label>has opening</rdfs:label>
+    <skos:definition>Relates a room to an opening segment hosted by one of its boundary walls.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="#Opening"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasDoor">
+    <rdfs:label>has door</rdfs:label>
+    <skos:definition>Relates a room to a door opening associated with one of its walls.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="#Door"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasWindow">
+    <rdfs:label>has window</rdfs:label>
+    <skos:definition>Relates a room to a window opening associated with one of its walls.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="#Window"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hostedByWall">
+    <rdfs:label>hosted by wall</rdfs:label>
+    <skos:definition>Relates a door or window opening to the wall segment that hosts and positions it.</skos:definition>
+    <rdfs:domain rdf:resource="#Opening"/>
+    <rdfs:range rdf:resource="#Wall"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasAccessSurface">
+    <rdfs:label>has access surface</rdfs:label>
+    <skos:definition>Relates a house or parcel context to a driveway, walkway, or similar access element.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#AccessSurface"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasUtilityConnection">
+    <rdfs:label>has utility connection</rdfs:label>
+    <skos:definition>Relates a house to a utility service connection or equipment node.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#UtilityConnection"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#requiresMaintenanceTask">
+    <rdfs:label>requires maintenance task</rdfs:label>
+    <skos:definition>Relates a house, room, or site-related object to a maintenance task that keeps it operational or in good condition.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="#MaintenanceTask"/>
+  </owl:ObjectProperty>
+
+  <owl:DatatypeProperty rdf:about="#houseId">
+    <rdfs:label>house id</rdfs:label>
+    <skos:definition>Stable identifier for a house instance within the property graph.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#source">
+    <rdfs:label>source</rdfs:label>
+    <skos:definition>Source system or workflow that created or refreshed the house planning record and is required for persisted house graph instances.</skos:definition>
+    <rdfs:domain rdf:resource="#House"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#footprintId">
+    <rdfs:label>footprint id</rdfs:label>
+    <skos:definition>Stable identifier for a building footprint geometry instance.</skos:definition>
+    <rdfs:domain rdf:resource="#BuildingFootprint"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#coordinateSequenceJson">
+    <rdfs:label>coordinate sequence json</rdfs:label>
+    <skos:definition>Serialized coordinate sequence for a building footprint polygon and required geometry payload for persisted footprint instances.</skos:definition>
+    <rdfs:domain rdf:resource="#BuildingFootprint"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#coordinateSequenceText">
+    <rdfs:label>coordinate sequence text</rdfs:label>
+    <skos:definition>Readable text representation of the building footprint coordinate sequence and required companion form for persisted footprint instances.</skos:definition>
+    <rdfs:domain rdf:resource="#BuildingFootprint"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#planId">
+    <rdfs:label>plan id</rdfs:label>
+    <skos:definition>Stable identifier for a floor plan instance.</skos:definition>
+    <rdfs:domain rdf:resource="#FloorPlan"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#floorPlanLevelName">
+    <rdfs:label>floor plan level name</rdfs:label>
+    <skos:definition>Name of the level represented by a floor plan such as basement, first floor, or second floor, and required when a floor-plan node is materialized.</skos:definition>
+    <rdfs:domain rdf:resource="#FloorPlan"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#roomId">
+    <rdfs:label>room id</rdfs:label>
+    <skos:definition>Stable identifier for a room instance.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#roomType">
+    <rdfs:label>room type</rdfs:label>
+    <skos:definition>Functional room type such as room, stair, garage, bedroom, or living room, required for persisted room instances.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#levelName">
+    <rdfs:label>level name</rdfs:label>
+    <skos:definition>Name of the level on which a room is located and required for persisted room instances.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#area">
+    <rdfs:label>area</rdfs:label>
+    <skos:definition>Measured or derived area of a room.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#areaUnit">
+    <rdfs:label>area unit</rdfs:label>
+    <skos:definition>Unit of measure used for room area values.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#width">
+    <rdfs:label>width</rdfs:label>
+    <skos:definition>Measured or derived width of a room or stair clear opening.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#height">
+    <rdfs:label>height</rdfs:label>
+    <skos:definition>Measured or derived length dimension of a room in the floor-plan editor.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#linearUnit">
+    <rdfs:label>linear unit</rdfs:label>
+    <skos:definition>Unit of measure used for room width and height values.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#notes">
+    <rdfs:label>notes</rdfs:label>
+    <skos:definition>Free-form planning notes associated with a room.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#floorXRatio">
+    <rdfs:label>floor x ratio</rdfs:label>
+    <skos:definition>Horizontal placement ratio of a room inside the level shell.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#floorYRatio">
+    <rdfs:label>floor y ratio</rdfs:label>
+    <skos:definition>Vertical placement ratio of a room inside the level shell.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#floorWidthRatio">
+    <rdfs:label>floor width ratio</rdfs:label>
+    <skos:definition>Width ratio of a room relative to the enclosing floor-plan shell.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#floorHeightRatio">
+    <rdfs:label>floor height ratio</rdfs:label>
+    <skos:definition>Height ratio of a room relative to the enclosing floor-plan shell.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#stairDirection">
+    <rdfs:label>stair direction</rdfs:label>
+    <skos:definition>Direction of stair travel or stair graphic orientation in the floor-plan editor.</skos:definition>
+    <rdfs:domain rdf:resource="#Stair"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#wallLayoutJson">
+    <rdfs:label>wall layout json</rdfs:label>
+    <skos:definition>Serialized representation of room wall segments used by the interactive floor-plan editor and required for persisted editable room layouts.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#doorLayoutJson">
+    <rdfs:label>door layout json</rdfs:label>
+    <skos:definition>Serialized representation of room door openings used by the interactive floor-plan editor, rendered as virtual wall segments on room boundaries, and required for persisted editable room layouts.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#windowLayoutJson">
+    <rdfs:label>window layout json</rdfs:label>
+    <skos:definition>Serialized representation of room window openings used by the interactive floor-plan editor, rendered as virtual wall segments on room boundaries, and required for persisted editable room layouts.</skos:definition>
+    <rdfs:domain rdf:resource="#Room"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#taskId">
+    <rdfs:label>task id</rdfs:label>
+    <skos:definition>Stable identifier for a maintenance task instance.</skos:definition>
+    <rdfs:domain rdf:resource="#MaintenanceTask"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#utilityConnectionId">
+    <rdfs:label>utility connection id</rdfs:label>
+    <skos:definition>Stable identifier for a utility connection instance.</skos:definition>
+    <rdfs:domain rdf:resource="#UtilityConnection"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#phaseName">
+    <rdfs:label>phase name</rdfs:label>
+    <skos:definition>Name of a project phase such as concept design, permitting, build, or maintenance.</skos:definition>
+    <rdfs:domain rdf:resource="#ProjectPhase"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+</rdf:RDF>

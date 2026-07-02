@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://www.onto2ai-toolset.com/ontology/landscape/Landscape#"
+    xml:base="http://www.onto2ai-toolset.com/ontology/landscape/Landscape"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+  <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/landscape/Landscape">
+    <rdfs:label>landscape ontology</rdfs:label>
+    <skos:definition>Ontology for modeling conceptual residential landscape plans, concept zones, and hillside landscape features derived from parcel analysis.</skos:definition>
+  </owl:Ontology>
+
+  <owl:Class rdf:about="#LandscapePlan">
+    <rdfs:label>landscape plan</rdfs:label>
+    <skos:definition>A conceptual plan that organizes parcel-based outdoor spaces, circulation, planting, and infrastructure features.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#ConceptZone">
+    <rdfs:label>concept zone</rdfs:label>
+    <skos:definition>A planning zone representing a broad outdoor program area such as frontage, circulation, drainage, or privacy planting.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#LandscapeFeature">
+    <rdfs:label>landscape feature</rdfs:label>
+    <skos:definition>A specific outdoor landscape element proposed as part of a conceptual residential site plan.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#PlantingFeature">
+    <rdfs:subClassOf rdf:resource="#LandscapeFeature"/>
+    <rdfs:label>planting feature</rdfs:label>
+    <skos:definition>A landscape feature primarily composed of planting, ecological, or screening material.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#HardscapeFeature">
+    <rdfs:subClassOf rdf:resource="#LandscapeFeature"/>
+    <rdfs:label>hardscape feature</rdfs:label>
+    <skos:definition>A landscape feature primarily composed of paving, walls, terraces, or other built site materials.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#DrainageFeature">
+    <rdfs:subClassOf rdf:resource="#LandscapeFeature"/>
+    <rdfs:label>drainage feature</rdfs:label>
+    <skos:definition>A landscape feature intended to intercept, route, infiltrate, or slow stormwater on the site.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#EntryGarden">
+    <rdfs:subClassOf rdf:resource="#PlantingFeature"/>
+    <rdfs:label>entry garden</rdfs:label>
+    <skos:definition>A planted arrival feature that frames approach, softens hardscape, and strengthens front-door orientation.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#CirculationPath">
+    <rdfs:subClassOf rdf:resource="#HardscapeFeature"/>
+    <rdfs:label>circulation path</rdfs:label>
+    <skos:definition>A walk or path alignment that organizes movement across the site and mediates grade transitions.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#OutdoorTerrace">
+    <rdfs:subClassOf rdf:resource="#HardscapeFeature"/>
+    <rdfs:label>outdoor terrace</rdfs:label>
+    <skos:definition>A primary usable outdoor room for seating, dining, and everyday residential gathering.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#Bioswale">
+    <rdfs:subClassOf rdf:resource="#DrainageFeature"/>
+    <rdfs:label>bioswale</rdfs:label>
+    <skos:definition>A planted drainage swale that slows runoff, improves infiltration, and stabilizes a hillside edge.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#ScreeningPlanting">
+    <rdfs:subClassOf rdf:resource="#PlantingFeature"/>
+    <rdfs:label>screening planting</rdfs:label>
+    <skos:definition>A layered perimeter planting feature used for privacy, habitat, and buffering from neighboring exposure.</skos:definition>
+  </owl:Class>
+
+  <owl:Class rdf:about="#RetainingWall">
+    <rdfs:subClassOf rdf:resource="#HardscapeFeature"/>
+    <rdfs:label>retaining wall</rdfs:label>
+    <skos:definition>A grade-control feature used to support level changes, terrace edges, or compact retaining conditions on slope.</skos:definition>
+  </owl:Class>
+
+  <owl:ObjectProperty rdf:about="#hasConceptZone">
+    <rdfs:label>has concept zone</rdfs:label>
+    <skos:definition>Relates a landscape plan to a concept zone that organizes part of the site program.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapePlan"/>
+    <rdfs:range rdf:resource="#ConceptZone"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#hasLandscapeFeature">
+    <rdfs:label>has landscape feature</rdfs:label>
+    <skos:definition>Relates a landscape plan to a landscape feature proposed within the plan.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapePlan"/>
+    <rdfs:range rdf:resource="#LandscapeFeature"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#belongsToConceptZone">
+    <rdfs:label>belongs to concept zone</rdfs:label>
+    <skos:definition>Relates a landscape feature to the concept zone that it helps realize.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="#ConceptZone"/>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="#supportsLandscapeFeature">
+    <rdfs:label>supports landscape feature</rdfs:label>
+    <skos:definition>Relates one landscape feature to another feature that it functionally supports, such as grade transitions supporting a terrace.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="#LandscapeFeature"/>
+  </owl:ObjectProperty>
+
+  <owl:DatatypeProperty rdf:about="#planId">
+    <rdfs:label>plan id</rdfs:label>
+    <skos:definition>Stable identifier for a conceptual landscape plan instance.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapePlan"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#zoneId">
+    <rdfs:label>zone id</rdfs:label>
+    <skos:definition>Stable identifier for a concept zone instance.</skos:definition>
+    <rdfs:domain rdf:resource="#ConceptZone"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#featureId">
+    <rdfs:label>feature id</rdfs:label>
+    <skos:definition>Stable identifier for a landscape feature instance.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#priorityName">
+    <rdfs:label>priority name</rdfs:label>
+    <skos:definition>Priority label describing the relative importance of a feature in the conceptual plan.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#targetSharePercent">
+    <rdfs:label>target share percent</rdfs:label>
+    <skos:definition>Approximate percentage of the site associated with a concept zone or feature program target.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#intentText">
+    <rdfs:label>intent text</rdfs:label>
+    <skos:definition>Natural-language statement describing the planning intent of a zone or feature.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+
+  <owl:DatatypeProperty rdf:about="#placementText">
+    <rdfs:label>placement text</rdfs:label>
+    <skos:definition>Natural-language guidance describing where a landscape feature should be placed on the parcel.</skos:definition>
+    <rdfs:domain rdf:resource="#LandscapeFeature"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+</rdf:RDF>
