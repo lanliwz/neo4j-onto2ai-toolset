@@ -1116,6 +1116,43 @@ function setupToolbar() {
     document.getElementById('zoom-out').addEventListener('click', zoomOut);
     document.getElementById('fit-view').addEventListener('click', fitView);
     document.getElementById('refresh-layout').addEventListener('click', refreshLayout);
+    setupDesignFullscreen();
+}
+
+function setupDesignFullscreen() {
+    const graphPanel = document.getElementById('graph-panel');
+    const fullscreenBtn = document.getElementById('fullscreen-design');
+    if (!graphPanel || !fullscreenBtn) return;
+
+    function resizeDiagram() {
+        if (typeof myDiagram !== 'undefined' && myDiagram) {
+            myDiagram.requestUpdate();
+            if (typeof centerDiagramContent === 'function') {
+                centerDiagramContent();
+            }
+        }
+    }
+
+    function setFullscreen(enabled) {
+        graphPanel.classList.toggle('fullscreen', enabled);
+        fullscreenBtn.classList.toggle('active', enabled);
+        fullscreenBtn.setAttribute('aria-pressed', String(enabled));
+        fullscreenBtn.setAttribute('title', enabled ? 'Exit Full Screen' : 'Expand Design Window');
+        fullscreenBtn.setAttribute('aria-label', enabled ? 'Exit Full Screen' : 'Expand Design Window');
+        fullscreenBtn.textContent = enabled ? '×' : '⛶';
+        setTimeout(resizeDiagram, 50);
+        setTimeout(resizeDiagram, 250);
+    }
+
+    fullscreenBtn.addEventListener('click', () => {
+        setFullscreen(!graphPanel.classList.contains('fullscreen'));
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && graphPanel.classList.contains('fullscreen')) {
+            setFullscreen(false);
+        }
+    });
 }
 
 /**

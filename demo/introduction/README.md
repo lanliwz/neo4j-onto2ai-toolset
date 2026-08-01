@@ -6,17 +6,19 @@ This folder contains the standard, repeatable generation flow for the Onto2AI To
 
 The demo is generated from durable inputs and writes transient render work to the system temp directory:
 
-1. `introduction-script.md` defines the long-form introduction script.
-2. `generate_introduction_video.py` builds the demo manifest and narration text.
-3. `render_introduction_template_deck.mjs` renders the LinkedIn-style deck and slide frames through the presentation artifact tool.
-4. `demo/audio/onto2ai_introduction_cedar.mp3` provides OpenAI `cedar` narration.
-5. `demo/video/review/onto2ai_introduction_template.mp4` is the final review video.
+1. `introduction-script.md` defines the long-form story source.
+2. `demo/video/introduction/introduction_demo.json` is the production source for slide content, narration text, timing, audio path, and video path.
+3. `generate_introduction_video.py` reads the manifest, rebuilds narration timing, and writes the derived narration text.
+4. `render_introduction_template_deck.mjs` renders the LinkedIn-style deck and slide frames through the presentation artifact tool.
+5. `demo/audio/onto2ai_introduction_cedar.mp3` provides OpenAI `cedar` narration.
+6. `demo/video/review/onto2ai_introduction_template.mp4` is the final review video.
 
 ## Durable Inputs
 
 - `assets/onto2ai-qa-frontpage-4.png` - local copy of the LinkedIn article visual used as the cover/background style source.
 - `introduction-script.md` - full narration script and story source.
 - `onto2ai-linkedin-presentation-template.pptx` - editable template based on the Onto2AI LinkedIn article visual style.
+- `../video/introduction/introduction_demo.json` - production manifest for slide content, narration, timing, and outputs.
 
 ## Generated Deliverables
 
@@ -27,6 +29,14 @@ The demo is generated from durable inputs and writes transient render work to th
 - `../video/review/onto2ai_introduction_template.mp4` - final template-style introduction video.
 
 ## Regenerate
+
+Prerequisites:
+
+- `ffmpeg` and `ffprobe`
+- Node.js
+- `uv`
+- presentation artifact-tool setup from the installed presentations skill
+- `OPENAI_API_KEY` only when refreshing narration with `--refresh-audio`
 
 Reuse the existing `cedar` audio:
 
@@ -41,3 +51,6 @@ python3 demo/introduction/generate_introduction_video.py --refresh-audio
 ```
 
 Use `--keep-work` only when debugging rendered frames or segment assembly.
+
+If the presentation skill path changes, set `ONTO2AI_PRESENTATION_SKILL_DIR`.
+If the speech CLI path changes, set `ONTO2AI_TTS_SCRIPT`.

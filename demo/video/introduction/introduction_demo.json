@@ -11,76 +11,76 @@
     {
       "id": "intro_01",
       "start_ms": 0,
-      "end_ms": 8400,
+      "end_ms": 6813,
       "title": "Onto2AI Toolset",
       "text": "Onto2AI Toolset helps data and AI teams move from trusted industry ontology to application-ready domain models."
     },
     {
       "id": "intro_02",
-      "start_ms": 8400,
-      "end_ms": 16800,
+      "start_ms": 6813,
+      "end_ms": 16181,
       "title": "The Challenge",
       "text": "The challenge is drift. Ontology files, database schemas, code models, and AI prompts often carry different versions of the same business meaning."
     },
     {
       "id": "intro_03",
-      "start_ms": 16800,
-      "end_ms": 25200,
+      "start_ms": 16181,
+      "end_ms": 25123,
       "title": "The Goal",
       "text": "The goal is not Neo4j, and it is not Pydantic alone. The goal is alignment between semantic source and application delivery."
     },
     {
       "id": "intro_04",
-      "start_ms": 25200,
-      "end_ms": 33600,
+      "start_ms": 25123,
+      "end_ms": 34065,
       "title": "Start From Standards",
       "text": "Instead of beginning from scratch, teams can load a source ontology, inspect the semantic landscape, and find the concepts that matter."
     },
     {
       "id": "intro_05",
-      "start_ms": 33600,
-      "end_ms": 42000,
+      "start_ms": 34065,
+      "end_ms": 43007,
       "title": "Select The Subset",
       "text": "Onto2AI Modeller and the shared MCP tools help users search, preview, and select the focused subset needed for a business problem."
     },
     {
       "id": "intro_06",
-      "start_ms": 42000,
-      "end_ms": 50400,
+      "start_ms": 43007,
+      "end_ms": 52375,
       "title": "Create The Target Ontology",
       "text": "The target ontology is curated. Teams consolidate duplicate concepts, align to standards, and add local concepts only where they are truly needed."
     },
     {
       "id": "intro_07",
-      "start_ms": 50400,
-      "end_ms": 58800,
+      "start_ms": 52375,
+      "end_ms": 61317,
       "title": "Prototype Artifacts",
       "text": "Onto2AI then prototypes implementation artifacts, so the ontology can be tested as a working contract, not only as an RDF file."
     },
     {
       "id": "intro_08",
-      "start_ms": 58800,
-      "end_ms": 67200,
+      "start_ms": 61317,
+      "end_ms": 68982,
       "title": "Package And Publish",
       "text": "Finalized domains can be packaged independently, letting application teams consume a governed model without copying the whole toolset."
     },
     {
       "id": "intro_09",
-      "start_ms": 67200,
-      "end_ms": 75600,
+      "start_ms": 68982,
+      "end_ms": 75795,
       "title": "Where Modeller Fits",
       "text": "Onto2AI Modeller makes the workflow visible through Source Ontology, Target Ontology, Semantic Interaction, and Native Query."
     },
     {
       "id": "intro_10",
-      "start_ms": 75600,
-      "end_ms": 84000,
+      "start_ms": 75795,
+      "end_ms": 84737,
       "title": "Why It Matters For AI",
       "text": "For AI workflows, Onto2AI provides governed semantic context. Agents and applications can work from structured meaning instead of loose prompt text."
     },
     {
       "id": "intro_11",
-      "start_ms": 84000,
+      "start_ms": 84737,
       "end_ms": 92400,
       "title": "Onto2AI Toolset",
       "text": "That is the purpose of Onto2AI Toolset: to make ontology-driven architecture practical for data, AI, and application delivery."

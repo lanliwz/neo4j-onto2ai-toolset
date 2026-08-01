@@ -1121,6 +1121,23 @@ body.resizing * {
     background: var(--bg-primary);
 }
 
+.graph-panel.fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    border: 0;
+}
+
+.graph-panel.fullscreen .panel-viz-tabs {
+    flex-shrink: 0;
+}
+
+.graph-panel.fullscreen #graph-container {
+    min-height: 0;
+}
+
 .graph-toolbar {
     position: absolute;
     top: 52px;
@@ -1148,6 +1165,12 @@ body.resizing * {
 
 .toolbar-btn:hover {
     color: var(--text-primary);
+    border-color: var(--accent-primary);
+}
+
+.toolbar-btn.active {
+    color: white;
+    background: var(--accent-primary);
     border-color: var(--accent-primary);
 }
 

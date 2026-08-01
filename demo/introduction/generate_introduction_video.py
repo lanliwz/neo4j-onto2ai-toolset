@@ -35,11 +35,19 @@ DECK_PATH = ROOT / "demo" / "introduction" / "onto2ai-introduction-template-vide
 REVIEW_PATH = REVIEW_DIR / "onto2ai_introduction_template.mp4"
 
 ARTIFACT_SKILL_DIR = Path(
-    "/Users/weizhang/.codex/plugins/cache/openai-primary-runtime/"
-    "presentations/26.623.12021/skills/presentations"
+    os.environ.get(
+        "ONTO2AI_PRESENTATION_SKILL_DIR",
+        "/Users/weizhang/.codex/plugins/cache/openai-primary-runtime/"
+        "presentations/26.623.12021/skills/presentations",
+    )
 )
 ARTIFACT_SETUP = ARTIFACT_SKILL_DIR / "container_tools" / "setup_artifact_tool_workspace.mjs"
-TTS_SCRIPT = Path("/Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py")
+TTS_SCRIPT = Path(
+    os.environ.get(
+        "ONTO2AI_TTS_SCRIPT",
+        "/Users/weizhang/.codex/skills/speech/scripts/text_to_speech.py",
+    )
+)
 
 WIDTH = 1280
 HEIGHT = 720
@@ -48,7 +56,7 @@ TTS_MODEL = "gpt-4o-mini-tts-2025-12-15"
 TTS_VOICE = "cedar"
 
 
-SLIDES = [
+DEFAULT_SLIDES = [
     {
         "title": "Onto2AI Toolset",
         "subtitle": "From industry ontology to application-ready domain models",
@@ -200,6 +208,52 @@ def ensure_inputs() -> None:
         raise SystemExit("Missing required input(s):\n" + "\n".join(str(path) for path in missing))
 
 
+def load_source_slides() -> list[dict[str, object]]:
+    if not MANIFEST_PATH.exists():
+        return DEFAULT_SLIDES
+
+    source = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    slides = source.get("slides") or []
+    narrative_lines = source.get("narrative_lines") or []
+    if len(slides) != len(narrative_lines):
+        raise SystemExit(
+            f"Manifest slide/narration count mismatch: {len(slides)} slides, "
+            f"{len(narrative_lines)} narrative lines"
+        )
+
+    loaded_slides: list[dict[str, object]] = []
+    for slide, narrative in zip(slides, narrative_lines, strict=True):
+        narration = str(narrative.get("text") or "").strip()
+        bullets = slide.get("bullets") or []
+        if not slide.get("title") or not narration or not bullets:
+            raise SystemExit("Manifest slides must include title, bullets, and narration text.")
+        loaded_slides.append(
+            {
+                "title": slide["title"],
+                "subtitle": slide.get("subtitle"),
+                "bullets": bullets,
+                "narration": narration,
+            }
+        )
+    return loaded_slides
+
+
+def weighted_scene_timings(slides: list[dict[str, object]], duration: float) -> list[tuple[int, int]]:
+    weights = [max(1, len(str(slide["narration"]).split())) for slide in slides]
+    total_weight = sum(weights)
+    total_ms = int(round(duration * 1000))
+    timings: list[tuple[int, int]] = []
+    start_ms = 0
+    for index, weight in enumerate(weights, start=1):
+        if index == len(weights):
+            end_ms = total_ms
+        else:
+            end_ms = start_ms + int(round(total_ms * weight / total_weight))
+        timings.append((start_ms, end_ms))
+        start_ms = end_ms
+    return timings
+
+
 def audio_duration_seconds() -> float:
     return float(
         output_text(
@@ -217,22 +271,20 @@ def audio_duration_seconds() -> float:
     )
 
 
-def build_manifest(duration: float) -> None:
+def build_manifest(slides: list[dict[str, object]], duration: float) -> None:
     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
-    duration_per_slide_ms = int(duration * 1000 / len(SLIDES))
-    start_ms = 0
     narrative_lines = []
-    for index, slide in enumerate(SLIDES, start=1):
+    for index, (slide, timing) in enumerate(zip(slides, weighted_scene_timings(slides, duration), strict=True), start=1):
+        start_ms, end_ms = timing
         narrative_lines.append(
             {
                 "id": f"intro_{index:02d}",
                 "start_ms": start_ms,
-                "end_ms": start_ms + duration_per_slide_ms,
+                "end_ms": end_ms,
                 "title": slide["title"],
                 "text": slide["narration"],
             }
         )
-        start_ms += duration_per_slide_ms
 
     manifest = {
         "demo": "onto2ai_introduction",
@@ -251,12 +303,12 @@ def build_manifest(duration: float) -> None:
                 "subtitle": slide.get("subtitle"),
                 "bullets": slide["bullets"],
             }
-            for index, slide in enumerate(SLIDES, start=1)
+            for index, slide in enumerate(slides, start=1)
         ],
     }
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     NARRATION_TEXT_PATH.write_text(
-        "\n\n".join(str(slide["narration"]) for slide in SLIDES) + "\n",
+        "\n\n".join(str(slide["narration"]) for slide in slides) + "\n",
         encoding="utf-8",
     )
 
@@ -300,11 +352,30 @@ def generate_audio(refresh: bool) -> None:
     )
 
 
+def resolve_artifact_setup() -> Path:
+    if ARTIFACT_SETUP.exists():
+        return ARTIFACT_SETUP
+
+    candidates = sorted(
+        Path("/Users/weizhang/.codex/plugins/cache/openai-primary-runtime").glob(
+            "presentations/*/skills/presentations/container_tools/setup_artifact_tool_workspace.mjs"
+        ),
+        reverse=True,
+    )
+    if candidates:
+        return candidates[0]
+    return ARTIFACT_SETUP
+
+
 def setup_artifact_workspace(workspace: Path) -> None:
-    if not ARTIFACT_SETUP.exists():
-        raise SystemExit(f"Missing artifact-tool setup script: {ARTIFACT_SETUP}")
+    artifact_setup = resolve_artifact_setup()
+    if not artifact_setup.exists():
+        raise SystemExit(
+            "Missing artifact-tool setup script. Set ONTO2AI_PRESENTATION_SKILL_DIR "
+            f"or install the presentations skill. Tried: {ARTIFACT_SETUP}"
+        )
     workspace.mkdir(parents=True, exist_ok=True)
-    run(["node", str(ARTIFACT_SETUP), "--workspace", str(workspace)])
+    run(["node", str(artifact_setup), "--workspace", str(workspace)])
     shutil.copyfile(DECK_BUILDER, workspace / DECK_BUILDER.name)
 
 
@@ -448,10 +519,11 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     ensure_inputs()
-    build_manifest(duration=92.4)
+    slides = load_source_slides()
+    build_manifest(slides, duration=92.4)
     generate_audio(refresh=args.refresh_audio)
     duration = audio_duration_seconds()
-    build_manifest(duration=duration)
+    build_manifest(slides, duration=duration)
 
     work_root = Path(tempfile.gettempdir()) / "onto2ai-demo-generation" / "introduction"
     if work_root.exists() and not args.keep_work:
