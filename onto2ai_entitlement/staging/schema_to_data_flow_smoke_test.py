@@ -30,8 +30,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from onto2ai_entitlement.staging import pydantic_schema_model
 
-TEST_DB_NAME = "testdb"
+DEFAULT_TEST_DB_NAME = f"entitlement-smoke-{uuid.uuid4().hex[:8]}"
 THIS_DIR = Path(__file__).resolve().parent
+ONTOLOGY_RELATIONSHIPS = {"rdf__type", "rdfs__subClassOf"}
 
 
 @dataclass
@@ -160,10 +161,11 @@ def parse_schema_description(path: Path) -> Tuple[Dict[str, Set[str]], Dict[str,
     return mandatory_props_by_class, enum_members_by_class, topology_map
 
 
-def recreate_test_database(driver, db_name: str) -> None:
-    """Drop and recreate the dedicated smoke-test database."""
+def prepare_test_database(driver, db_name: str, reset_database: bool) -> None:
+    """Create the smoke-test database, optionally resetting it first."""
     with driver.session(database="system") as session:
-        session.run(f"DROP DATABASE `{db_name}` IF EXISTS").consume()
+        if reset_database:
+            session.run(f"DROP DATABASE `{db_name}` IF EXISTS").consume()
         session.run(f"CREATE DATABASE `{db_name}` IF NOT EXISTS").consume()
         for _ in range(30):
             row = session.run(
@@ -218,6 +220,22 @@ def _is_entitlement_model() -> bool:
     )
 
 
+def _require_entitlement_model() -> None:
+    if not _is_entitlement_model():
+        raise RuntimeError(
+            "Packaged pydantic_schema_model is not an entitlement model; "
+            "regenerate onto2ai_entitlement/staging artifacts from the entitlement ontology."
+        )
+
+
+def _add_label_with_ancestors(labels: Set[str], label: str, subclass_map: Dict[str, str]) -> None:
+    cur = label
+    labels.add(cur)
+    while cur in subclass_map:
+        cur = subclass_map[cur]
+        labels.add(cur)
+
+
 def load_sample_data(
     driver,
     db_name: str,
@@ -225,348 +243,103 @@ def load_sample_data(
     enum_members_by_class: Dict[str, Set[str]],
     subclass_map: Dict[str, str],
 ) -> Set[str]:
-    """Load sample entities for each class using generated pydantic_schema_model classes.
+    """Load sample entities for each entitlement class."""
+    _require_entitlement_model()
 
-    Subclass nodes receive multi-labels so a TaxPayer node is (:TaxPayer:Person).
-    """
-    if _is_entitlement_model():
-        relational_database = pydantic_schema_model.RelationalDatabase(
-            relationalDatabaseId="db-001",
-            databaseName="warehouse",
-            databaseVendor="postgresql",
-            databaseVersion="16",
-            databaseEdition="community",
-            hostName="db.internal.local",
-            portNumber=5432,
-        )
-        jdbc_profile = pydantic_schema_model.JdbcConnectionProfile(
-            jdbcConnectionProfileId="jdbc-001",
-            jdbcUrl="jdbc:postgresql://db.internal.local:5432/warehouse",
-            jdbcDriver="org.postgresql.Driver",
-            jdbcUserName="entitlement_app",
-            connectionTimeoutSeconds=30,
-            sslMode="require",
-        )
-        schema = pydantic_schema_model.Schema(
-            schemaId="schema-001",
-            schemaName="analytics",
-            schemaOwner="data_platform",
-            schemaType="application",
-            schemaDescription="Analytics schema protected by entitlement rules.",
-            isDefaultSchema=True,
-        )
-        table = pydantic_schema_model.Table(
-            tableId="table-001",
-            tableName="customer_account",
-            tableType="base table",
-            tableOwner="data_platform",
-            tableDescription="Customer account table.",
-            rowCountEstimate=125000,
-            isTemporaryTable=False,
-        )
-        column = pydantic_schema_model.Column(
-            columnId="column-001",
-            columnName="region_code",
-            columnDataType="varchar",
-            columnLength=20,
-            isNullable=False,
-            ordinalPosition=3,
-            hasSensitivityClassification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL,
-        )
-        row_filter_rule = pydantic_schema_model.RowFilterRule(
-            rowFilterRuleId="rfr-001",
-            hasFilterAction=pydantic_schema_model.FilterAction.ALLOW,
-            hasMatchMode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES,
-            hasComparisonOperator=pydantic_schema_model.ComparisonOperator.IN_LIST,
-            hasValueSourceType=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE,
-            valueSourceExpression="user.allowed_regions",
-            hasDenyBehavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS,
-            llmRewriteInstruction="Rewrite the WHERE clause to restrict region_code to the allowed values.",
-            rewriteTemplate="WHERE region_code IN ({values})",
-            ruleExpression="region_code IN allowed_regions",
-            hasPriority=pydantic_schema_model.RulePriority.HIGH_PRIORITY,
-        )
-        column_mask_rule = pydantic_schema_model.ColumnMaskRule(
-            columnMaskRuleId="cmr-001",
-            hasMaskAction=pydantic_schema_model.MaskAction.REDACT,
-            hasMaskingMethod=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION,
-            maskValueExpression="'***'",
-            hasFallbackBehavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY,
-            llmRewriteInstruction="Rewrite the SELECT projection to mask region_code when access is denied.",
-            rewriteTemplate="CASE WHEN {condition} THEN region_code ELSE '***' END",
-            ruleExpression="mask region_code when unauthorized",
-            hasValueSourceType=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT,
-            valueSourceExpression="user.masking_scope",
-            hasPriority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY,
-        )
-        policy = pydantic_schema_model.Policy(
-            policyId="policy-001",
-            policyName=["Regional access policy"],
-            policyDescription=["Applies row filtering and masking to regional account data."],
-        )
-        policy_group = pydantic_schema_model.PolicyGroup(
-            policyGroupId="pg-001",
-            policyGroupName=["regional analysts"],
-        )
-        user = pydantic_schema_model.User(
-            userId="user-001",
-            hasUserType=pydantic_schema_model.UserType.HUMAN_USER,
-        )
+    relational_database = pydantic_schema_model.RelationalDatabase(
+        relationalDatabaseId=f"db-{test_run}",
+        databaseName="warehouse",
+        databaseVendor="postgresql",
+        databaseVersion="16",
+        databaseEdition="community",
+        hostName="db.internal.local",
+        portNumber=5432,
+    )
+    jdbc_profile = pydantic_schema_model.JdbcConnectionProfile(
+        jdbcConnectionProfileId=f"jdbc-{test_run}",
+        jdbcUrl="jdbc:postgresql://db.internal.local:5432/warehouse",
+        jdbcDriver="org.postgresql.Driver",
+        jdbcUserName="entitlement_app",
+        connectionTimeoutSeconds=30,
+        sslMode="require",
+    )
+    schema = pydantic_schema_model.Schema(
+        schemaId=f"schema-{test_run}",
+        schemaName="analytics",
+        schemaOwner="data_platform",
+        schemaType="application",
+        schemaDescription="Analytics schema protected by entitlement rules.",
+        isDefaultSchema=True,
+    )
+    table = pydantic_schema_model.Table(
+        tableId=f"table-{test_run}",
+        tableName="customer_account",
+        tableType="base table",
+        tableOwner="data_platform",
+        tableDescription="Customer account table.",
+        rowCountEstimate=125000,
+        isTemporaryTable=False,
+    )
+    column = pydantic_schema_model.Column(
+        columnId=f"column-{test_run}",
+        columnName="region_code",
+        columnDataType="varchar",
+        columnLength=20,
+        isNullable=False,
+        ordinalPosition=3,
+        hasSensitivityClassification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL,
+    )
+    row_filter_rule = pydantic_schema_model.RowFilterRule(
+        rowFilterRuleId=f"rfr-{test_run}",
+        hasFilterAction=pydantic_schema_model.FilterAction.ALLOW,
+        hasMatchMode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES,
+        hasComparisonOperator=pydantic_schema_model.ComparisonOperator.IN_LIST,
+        hasValueSourceType=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE,
+        valueSourceExpression="user.allowed_regions",
+        hasDenyBehavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS,
+        llmRewriteInstruction="Rewrite the WHERE clause to restrict region_code to the allowed values.",
+        rewriteTemplate="WHERE region_code IN ({values})",
+        ruleExpression="region_code IN allowed_regions",
+        hasPriority=pydantic_schema_model.RulePriority.HIGH_PRIORITY,
+    )
+    column_mask_rule = pydantic_schema_model.ColumnMaskRule(
+        columnMaskRuleId=f"cmr-{test_run}",
+        hasMaskAction=pydantic_schema_model.MaskAction.REDACT,
+        hasMaskingMethod=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION,
+        maskValueExpression="'***'",
+        hasFallbackBehavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY,
+        llmRewriteInstruction="Rewrite the SELECT projection to mask region_code when access is denied.",
+        rewriteTemplate="CASE WHEN {condition} THEN region_code ELSE '***' END",
+        ruleExpression="mask region_code when unauthorized",
+        hasValueSourceType=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT,
+        valueSourceExpression="user.masking_scope",
+        hasPriority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY,
+    )
+    policy = pydantic_schema_model.Policy(
+        policyId=f"policy-{test_run}",
+        policyName=["Regional access policy"],
+        policyDescription=["Applies row filtering and masking to regional account data."],
+    )
+    policy_group = pydantic_schema_model.PolicyGroup(
+        policyGroupId=f"pg-{test_run}",
+        policyGroupName=["regional analysts"],
+    )
+    user = pydantic_schema_model.User(
+        userId=f"user-{test_run}",
+        hasUserType=pydantic_schema_model.UserType.HUMAN_USER,
+    )
 
-        model_instances = {
-            "RelationalDatabase": relational_database,
-            "JdbcConnectionProfile": jdbc_profile,
-            "Schema": schema,
-            "Table": table,
-            "Column": column,
-            "RowFilterRule": row_filter_rule,
-            "ColumnMaskRule": column_mask_rule,
-            "Policy": policy,
-            "PolicyGroup": policy_group,
-            "User": user,
-        }
-
-        created_labels: Set[str] = set()
-        model_node_ids: Dict[str, str] = {}
-        enum_node_ids: Dict[Tuple[str, str], str] = {}
-
-        with driver.session(database=db_name) as session:
-            session.run("MATCH (n {testRun: $run}) DETACH DELETE n", run=test_run)
-
-            for enum_class, members in sorted(enum_members_by_class.items()):
-                for member_label in sorted(members):
-                    node_id = str(uuid.uuid4())
-                    session.run(
-                        f"""
-                        CREATE (n:`{enum_class}` {{
-                          id: $id,
-                          rdfs__label: $label,
-                          testRun: $run,
-                          sampleTag: 'schema_workflow',
-                          sampleCreatedAt: $ts
-                        }})
-                        """,
-                        id=node_id,
-                        label=member_label,
-                        run=test_run,
-                        ts=datetime.now(timezone.utc).isoformat(),
-                    )
-                    enum_node_ids[(enum_class, member_label)] = node_id
-                    created_labels.add(enum_class)
-
-            for label, instance in model_instances.items():
-                node_id = str(uuid.uuid4())
-                dumped = instance.model_dump(by_alias=True, exclude_none=True, mode="json")
-                props = _to_neo4j_props(dumped)
-                props.update({"testRun": test_run, "sampleTag": "schema_workflow"})
-                label_expr = _label_chain(label, subclass_map)
-                session.run(
-                    f"CREATE (n:{label_expr} {{id: $id}}) SET n += $props",
-                    id=node_id,
-                    props=props,
-                )
-                model_node_ids[label] = node_id
-                created_labels.add(label)
-
-            session.run(
-                """
-                MATCH (j:JdbcConnectionProfile {id: $jdbc_id, testRun: $run})
-                MATCH (d:RelationalDatabase {id: $db_id, testRun: $run})
-                MATCH (s:Schema {id: $schema_id, testRun: $run})
-                MATCH (t:Table {id: $table_id, testRun: $run})
-                MATCH (c:Column {id: $column_id, testRun: $run})
-                MATCH (rf:RowFilterRule {id: $row_rule_id, testRun: $run})
-                MATCH (cm:ColumnMaskRule {id: $mask_rule_id, testRun: $run})
-                MATCH (p:Policy {id: $policy_id, testRun: $run})
-                MATCH (pg:PolicyGroup {id: $policy_group_id, testRun: $run})
-                MATCH (u:User {id: $user_id, testRun: $run})
-                MATCH (ut:UserType {rdfs__label: $user_type, testRun: $run})
-                MATCH (classification:SensitivityClassification {rdfs__label: $sensitivity_classification, testRun: $run})
-                MATCH (high:RulePriority {rdfs__label: $high_priority, testRun: $run})
-                MATCH (medium:RulePriority {rdfs__label: $medium_priority, testRun: $run})
-                MATCH (filter_action:FilterAction {rdfs__label: $filter_action, testRun: $run})
-                MATCH (match_mode:MatchMode {rdfs__label: $match_mode, testRun: $run})
-                MATCH (comparison_operator:ComparisonOperator {rdfs__label: $comparison_operator, testRun: $run})
-                MATCH (deny_behavior:DenyBehavior {rdfs__label: $deny_behavior, testRun: $run})
-                MATCH (rf_value_source_type:ValueSourceType {rdfs__label: $rf_value_source_type, testRun: $run})
-                MATCH (mask_action:MaskAction {rdfs__label: $mask_action, testRun: $run})
-                MATCH (masking_method:MaskingMethod {rdfs__label: $masking_method, testRun: $run})
-                MATCH (fallback_behavior:FallbackBehavior {rdfs__label: $fallback_behavior, testRun: $run})
-                MATCH (cm_value_source_type:ValueSourceType {rdfs__label: $cm_value_source_type, testRun: $run})
-                CREATE (j)-[:connectsTo]->(d)
-                CREATE (s)-[:belongsToDatabase]->(d)
-                CREATE (t)-[:belongsToSchema]->(s)
-                CREATE (c)-[:belongsToTable]->(t)
-                CREATE (c)-[:hasSensitivityClassification]->(classification)
-                CREATE (rf)-[:targetsFilteredColumn]->(c)
-                CREATE (rf)-[:hasPriority]->(high)
-                CREATE (rf)-[:hasFilterAction]->(filter_action)
-                CREATE (rf)-[:hasMatchMode]->(match_mode)
-                CREATE (rf)-[:hasComparisonOperator]->(comparison_operator)
-                CREATE (rf)-[:hasDenyBehavior]->(deny_behavior)
-                CREATE (rf)-[:hasValueSourceType]->(rf_value_source_type)
-                CREATE (cm)-[:targetsMaskedColumn]->(c)
-                CREATE (cm)-[:hasPriority]->(medium)
-                CREATE (cm)-[:hasMaskAction]->(mask_action)
-                CREATE (cm)-[:hasMaskingMethod]->(masking_method)
-                CREATE (cm)-[:hasFallbackBehavior]->(fallback_behavior)
-                CREATE (cm)-[:hasValueSourceType]->(cm_value_source_type)
-                CREATE (p)-[:hasRowFilterRule]->(rf)
-                CREATE (p)-[:hasColumnMaskRule]->(cm)
-                CREATE (pg)-[:includesPolicy]->(p)
-                CREATE (u)-[:isMemberOf]->(pg)
-                CREATE (u)-[:hasUserType]->(ut)
-                """,
-                jdbc_id=model_node_ids["JdbcConnectionProfile"],
-                db_id=model_node_ids["RelationalDatabase"],
-                schema_id=model_node_ids["Schema"],
-                table_id=model_node_ids["Table"],
-                column_id=model_node_ids["Column"],
-                row_rule_id=model_node_ids["RowFilterRule"],
-                mask_rule_id=model_node_ids["ColumnMaskRule"],
-                policy_id=model_node_ids["Policy"],
-                policy_group_id=model_node_ids["PolicyGroup"],
-                user_id=model_node_ids["User"],
-                user_type=pydantic_schema_model.UserType.HUMAN_USER.value,
-                sensitivity_classification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL.value,
-                high_priority=pydantic_schema_model.RulePriority.HIGH_PRIORITY.value,
-                medium_priority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY.value,
-                filter_action=pydantic_schema_model.FilterAction.ALLOW.value,
-                match_mode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES.value,
-                comparison_operator=pydantic_schema_model.ComparisonOperator.IN_LIST.value,
-                deny_behavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS.value,
-                rf_value_source_type=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE.value,
-                mask_action=pydantic_schema_model.MaskAction.REDACT.value,
-                masking_method=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION.value,
-                fallback_behavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY.value,
-                cm_value_source_type=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT.value,
-                run=test_run,
-            )
-
-        return created_labels
-
-    employer = pydantic_schema_model.Employer(
-        has_address=["1 Main St, New York, NY 10001"],
-        has_ein="12-3456789",
-        has_employer_name="Acme Corp",
-        has_phone_number=["+1-212-555-0101"],
-    )
-    person = pydantic_schema_model.Person(
-        has_age=["37"],
-        has_citizenship=["United States"],
-        has_date_of_birth="1988-06-15",
-        has_date_of_death=None,
-        has_name=["Alex Doe"],
-        has_place_of_birth="New York",
-        has_residence=["101 Main St, New York, NY 10001"],
-        has_tax_id=["999-88-7777"],
-        is_employed_by=[employer],
-    )
-    money = pydantic_schema_model.MonetaryAmount(
-        has_amount="1234.56",
-        is_denominated_in=pydantic_schema_model.Currency.US_DOLLAR,
-    )
-    exchange = pydantic_schema_model.Exchange()
-    organization = pydantic_schema_model.Organization(
-        has_ein="98-7654321",
-        has_tax_id="98-7654321",
-    )
-    taxpayer = pydantic_schema_model.TaxPayer(
-        has_age=["35"],
-        has_citizenship=["United States"],
-        has_date_of_birth="1990-01-01",
-        has_date_of_death=None,
-        has_name=["Jamie Taxpayer"],
-        has_place_of_birth="Boston",
-        has_residence=["101 Main St, New York, NY 10001"],
-        has_tax_id=["123-45-6789"],
-        is_employed_by=[employer],
-    )
-    w2_form = pydantic_schema_model.W2Form(
-        has_allocated_tips="0.00",
-        has_box12_codes=["D"],
-        has_dependent_care_benefits="0.00",
-        has_federal_income_tax_withheld="2000.00",
-        has_medicare_tax_withheld="725.00",
-        has_medicare_wages_and_tips="50000.00",
-        has_nonqualified_plans="0.00",
-        has_other_info=["State wages included"],
-        has_report_date_time=[datetime(2026, 1, 31, 12, 0, tzinfo=timezone.utc)],
-        has_retirement_plan="true",
-        has_social_security_tax_withheld="3100.00",
-        has_social_security_tips="0.00",
-        has_social_security_wages="50000.00",
-        has_tax_year="2025",
-        has_third_party_sick_pay="0.00",
-        has_wages_tips_other_comp="50000.00",
-        is_provided_by=["Acme Corp Payroll"],
-        is_statutory_employee="false",
-        is_submitted_by=["Acme Corp Payroll"],
-        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
-        issued_by=employer,
-        issued_to=person,
-    )
-    crypto_asset = pydantic_schema_model.CryptoAsset(
-        has_token_symbol="BTC",
-        is_traded_on=[exchange],
-    )
-    individual_return = pydantic_schema_model.IndividualTaxReturn(
-        has_report_date_time=[datetime(2026, 2, 1, 10, 15, tzinfo=timezone.utc)],
-        is_provided_by=["Tax Software Inc"],
-        is_submitted_by=["Jamie Taxpayer"],
-        is_submitted_to=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE,
-        has_taxable_income=money,
-        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
-        has_agi=money,
-        has_total_tax=money,
-        has_total_payments=money,
-        has_refund_amount=money,
-        has_amount_owed=money,
-        has_line1a_wages=money,
-        has_line2b_taxable_interest=money,
-        has_line3b_ordinary_dividends=money,
-        has_line6b_taxable_social_security=money,
-        has_line12_standard_deduction=money,
-        has_line16_tax_value=money,
-        has_line19_child_tax_credit=money,
-        has_line24_total_tax=money,
-        has_line33_total_payments=money,
-    )
-    form_1040 = pydantic_schema_model.Form1040_2025(
-        has_report_date_time=[datetime(2026, 2, 1, 10, 20, tzinfo=timezone.utc)],
-        is_provided_by=["Tax Software Inc"],
-        is_submitted_by=["Jamie Taxpayer"],
-        is_submitted_to=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE,
-        has_taxable_income=money,
-        has_report_status=pydantic_schema_model.Reportstatus.SUBMITTED,
-        has_agi=money,
-        has_total_tax=money,
-        has_total_payments=money,
-        has_refund_amount=money,
-        has_amount_owed=money,
-        has_line1a_wages=money,
-        has_line2b_taxable_interest=money,
-        has_line3b_ordinary_dividends=money,
-        has_line6b_taxable_social_security=money,
-        has_line12_standard_deduction=money,
-        has_line16_tax_value=money,
-        has_line19_child_tax_credit=money,
-        has_line24_total_tax=money,
-        has_line33_total_payments=money,
-    )
     model_instances = {
-        "Organization": organization,
-        "Exchange": exchange,
-        "W2Form": w2_form,
-        "CryptoAsset": crypto_asset,
-        "Person": person,
-        "PhysicalAddress": pydantic_schema_model.PhysicalAddress(),
-        "Form1120USCorporationIncomeTaxReturn": pydantic_schema_model.Form1120USCorporationIncomeTaxReturn(),
-        "IndividualTaxReturn": individual_return,
-        "MonetaryAmount": money,
-        "Form1040_2025": form_1040,
-        "TaxPayer": taxpayer,
-        "Employer": employer,
+        "RelationalDatabase": relational_database,
+        "JdbcConnectionProfile": jdbc_profile,
+        "Schema": schema,
+        "Table": table,
+        "Column": column,
+        "RowFilterRule": row_filter_rule,
+        "ColumnMaskRule": column_mask_rule,
+        "Policy": policy,
+        "PolicyGroup": policy_group,
+        "User": user,
     }
 
     created_labels: Set[str] = set()
@@ -612,88 +385,80 @@ def load_sample_data(
                 props=props,
             )
             model_node_ids[label] = node_id
-            created_labels.add(label)
+            _add_label_with_ancestors(created_labels, label, subclass_map)
 
-        # Build a core set of relationships for validation and topology smoke-testing.
         session.run(
             """
-            MATCH (m:MonetaryAmount {id: $money_id, testRun: $run})
-            MATCH (c:Currency {id: $currency_id, testRun: $run})
-            CREATE (m)-[:isDenominatedIn]->(c)
+            MATCH (j:JdbcConnectionProfile {id: $jdbc_id, testRun: $run})
+            MATCH (d:RelationalDatabase {id: $db_id, testRun: $run})
+            MATCH (s:Schema {id: $schema_id, testRun: $run})
+            MATCH (t:Table {id: $table_id, testRun: $run})
+            MATCH (c:Column {id: $column_id, testRun: $run})
+            MATCH (rf:RowFilterRule {id: $row_rule_id, testRun: $run})
+            MATCH (cm:ColumnMaskRule {id: $mask_rule_id, testRun: $run})
+            MATCH (p:Policy {id: $policy_id, testRun: $run})
+            MATCH (pg:PolicyGroup {id: $policy_group_id, testRun: $run})
+            MATCH (u:User {id: $user_id, testRun: $run})
+            MATCH (ut:UserType {rdfs__label: $user_type, testRun: $run})
+            MATCH (classification:SensitivityClassification {rdfs__label: $sensitivity_classification, testRun: $run})
+            MATCH (high:RulePriority {rdfs__label: $high_priority, testRun: $run})
+            MATCH (medium:RulePriority {rdfs__label: $medium_priority, testRun: $run})
+            MATCH (filter_action:FilterAction {rdfs__label: $filter_action, testRun: $run})
+            MATCH (match_mode:MatchMode {rdfs__label: $match_mode, testRun: $run})
+            MATCH (comparison_operator:ComparisonOperator {rdfs__label: $comparison_operator, testRun: $run})
+            MATCH (deny_behavior:DenyBehavior {rdfs__label: $deny_behavior, testRun: $run})
+            MATCH (rf_value_source_type:ValueSourceType {rdfs__label: $rf_value_source_type, testRun: $run})
+            MATCH (mask_action:MaskAction {rdfs__label: $mask_action, testRun: $run})
+            MATCH (masking_method:MaskingMethod {rdfs__label: $masking_method, testRun: $run})
+            MATCH (fallback_behavior:FallbackBehavior {rdfs__label: $fallback_behavior, testRun: $run})
+            MATCH (cm_value_source_type:ValueSourceType {rdfs__label: $cm_value_source_type, testRun: $run})
+            CREATE (j)-[:connectsTo]->(d)
+            CREATE (s)-[:belongsToDatabase]->(d)
+            CREATE (t)-[:belongsToSchema]->(s)
+            CREATE (c)-[:belongsToTable]->(t)
+            CREATE (c)-[:hasSensitivityClassification]->(classification)
+            CREATE (rf)-[:targetsFilteredColumn]->(c)
+            CREATE (rf)-[:hasPriority]->(high)
+            CREATE (rf)-[:hasFilterAction]->(filter_action)
+            CREATE (rf)-[:hasMatchMode]->(match_mode)
+            CREATE (rf)-[:hasComparisonOperator]->(comparison_operator)
+            CREATE (rf)-[:hasDenyBehavior]->(deny_behavior)
+            CREATE (rf)-[:hasValueSourceType]->(rf_value_source_type)
+            CREATE (cm)-[:targetsMaskedColumn]->(c)
+            CREATE (cm)-[:hasPriority]->(medium)
+            CREATE (cm)-[:hasMaskAction]->(mask_action)
+            CREATE (cm)-[:hasMaskingMethod]->(masking_method)
+            CREATE (cm)-[:hasFallbackBehavior]->(fallback_behavior)
+            CREATE (cm)-[:hasValueSourceType]->(cm_value_source_type)
+            CREATE (p)-[:hasRowFilterRule]->(rf)
+            CREATE (p)-[:hasColumnMaskRule]->(cm)
+            CREATE (pg)-[:includesPolicy]->(p)
+            CREATE (u)-[:isMemberOf]->(pg)
+            CREATE (u)-[:hasUserType]->(ut)
             """,
-            money_id=model_node_ids["MonetaryAmount"],
-            currency_id=enum_node_ids[("Currency", pydantic_schema_model.Currency.US_DOLLAR.value)],
-            run=test_run,
-        )
-        session.run(
-            """
-            MATCH (w:W2Form {id: $w2_id, testRun: $run})
-            MATCH (e:Employer {id: $emp_id, testRun: $run})
-            MATCH (o:Organization {id: $org_id, testRun: $run})
-            MATCH (p:Person {id: $person_id, testRun: $run})
-            MATCH (s:Reportstatus {rdfs__label: $status, testRun: $run})
-            CREATE (w)-[:issuedBy]->(e)
-            CREATE (w)-[:issuedBy]->(o)
-            CREATE (w)-[:issuedTo]->(p)
-            CREATE (w)-[:hasReportStatus]->(s)
-            """,
-            w2_id=model_node_ids["W2Form"],
-            emp_id=model_node_ids["Employer"],
-            org_id=model_node_ids["Organization"],
-            person_id=model_node_ids["Person"],
-            status=pydantic_schema_model.Reportstatus.SUBMITTED.value,
-            run=test_run,
-        )
-        session.run(
-            """
-            MATCH (p:Person {id: $person_id, testRun: $run})
-            MATCH (t:TaxPayer {id: $taxpayer_id, testRun: $run})
-            MATCH (e:Employer {id: $emp_id, testRun: $run})
-            MATCH (a:PhysicalAddress {id: $address_id, testRun: $run})
-            CREATE (p)-[:isEmployedBy]->(e)
-            CREATE (t)-[:isEmployedBy]->(e)
-            CREATE (p)-[:hasResidence]->(a)
-            CREATE (t)-[:hasResidence]->(a)
-            """,
-            person_id=model_node_ids["Person"],
-            taxpayer_id=model_node_ids["TaxPayer"],
-            emp_id=model_node_ids["Employer"],
-            address_id=model_node_ids["PhysicalAddress"],
-            run=test_run,
-        )
-        session.run(
-            """
-            MATCH (c:CryptoAsset {id: $crypto_id, testRun: $run})
-            MATCH (x:Exchange {id: $exchange_id, testRun: $run})
-            CREATE (c)-[:isTradedOn]->(x)
-            """,
-            crypto_id=model_node_ids["CryptoAsset"],
-            exchange_id=model_node_ids["Exchange"],
-            run=test_run,
-        )
-        session.run(
-            """
-            MATCH (r1:IndividualTaxReturn {id: $itr_id, testRun: $run})
-            MATCH (r2:Form1040_2025 {id: $f1040_id, testRun: $run})
-            MATCH (m:MonetaryAmount {id: $money_id, testRun: $run})
-            MATCH (t:TaxPayer {id: $taxpayer_id, testRun: $run})
-            MATCH (ta:TaxAuthority {rdfs__label: $irs_label, testRun: $run})
-            MATCH (status:Reportstatus {rdfs__label: $status_label, testRun: $run})
-            CREATE (r1)-[:isSubmittedTo]->(ta)
-            CREATE (r2)-[:isSubmittedTo]->(ta)
-            CREATE (r1)-[:isSubmittedBy]->(t)
-            CREATE (r2)-[:isSubmittedBy]->(t)
-            CREATE (r1)-[:hasReportStatus]->(status)
-            CREATE (r2)-[:hasReportStatus]->(status)
-            CREATE (r1)-[:hasTaxableIncome]->(m)
-            CREATE (r2)-[:hasTaxableIncome]->(m)
-            """,
-            itr_id=model_node_ids["IndividualTaxReturn"],
-            f1040_id=model_node_ids["Form1040_2025"],
-            money_id=model_node_ids["MonetaryAmount"],
-            taxpayer_id=model_node_ids["TaxPayer"],
-            irs_label=pydantic_schema_model.TaxAuthority.INTERNAL_REVENUE_SERVICE.value,
-            status_label=pydantic_schema_model.Reportstatus.SUBMITTED.value,
+            jdbc_id=model_node_ids["JdbcConnectionProfile"],
+            db_id=model_node_ids["RelationalDatabase"],
+            schema_id=model_node_ids["Schema"],
+            table_id=model_node_ids["Table"],
+            column_id=model_node_ids["Column"],
+            row_rule_id=model_node_ids["RowFilterRule"],
+            mask_rule_id=model_node_ids["ColumnMaskRule"],
+            policy_id=model_node_ids["Policy"],
+            policy_group_id=model_node_ids["PolicyGroup"],
+            user_id=model_node_ids["User"],
+            user_type=pydantic_schema_model.UserType.HUMAN_USER.value,
+            sensitivity_classification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL.value,
+            high_priority=pydantic_schema_model.RulePriority.HIGH_PRIORITY.value,
+            medium_priority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY.value,
+            filter_action=pydantic_schema_model.FilterAction.ALLOW.value,
+            match_mode=pydantic_schema_model.MatchMode.MULTIPLE_VALUES.value,
+            comparison_operator=pydantic_schema_model.ComparisonOperator.IN_LIST.value,
+            deny_behavior=pydantic_schema_model.DenyBehavior.RETURN_NO_ROWS.value,
+            rf_value_source_type=pydantic_schema_model.ValueSourceType.SUBJECT_ATTRIBUTE.value,
+            mask_action=pydantic_schema_model.MaskAction.REDACT.value,
+            masking_method=pydantic_schema_model.MaskingMethod.STATIC_SUBSTITUTION.value,
+            fallback_behavior=pydantic_schema_model.FallbackBehavior.BLOCK_QUERY.value,
+            cm_value_source_type=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT.value,
             run=test_run,
         )
 
@@ -749,60 +514,40 @@ def validate_sample_data(
             raise AssertionError(f"Class {cls} missing mandatory properties: {missing}")
 
     with driver.session(database=db_name) as session:
-        if "MonetaryAmount" in target_classes:
-            money_rels = topology_map.get("MonetaryAmount", {})
-            enum_targets = []
-            for rel_type, targets in money_rels.items():
-                for tgt in targets:
-                    if tgt in enum_members_by_class:
-                        enum_targets.append((rel_type, tgt))
-            for rel_type, enum_cls in enum_targets:
-                rows = session.run(
-                    f"""
-                    MATCH (m:MonetaryAmount {{testRun: $run}})-[:`{rel_type}`]->(e:`{enum_cls}`)
-                    RETURN e.rdfs__label AS label
-                    """,
-                    run=test_run,
-                ).data()
-                if not rows:
-                    raise AssertionError(
-                        f"Missing mandatory enum relationship MonetaryAmount-[:{rel_type}]->{enum_cls}"
-                    )
-                allowed = enum_members_by_class.get(enum_cls, set())
-                for row in rows:
-                    label = row.get("label")
-                    if label not in allowed:
-                        raise AssertionError(
-                            f"Enum value '{label}' is not allowed for {enum_cls}; allowed={sorted(allowed)}"
-                        )
+        for src, relationships in sorted(topology_map.items()):
+            if src not in target_classes:
+                continue
+            for rel_type, targets in sorted(relationships.items()):
+                if rel_type in ONTOLOGY_RELATIONSHIPS:
+                    continue
+                for tgt in sorted(targets):
+                    if tgt not in target_classes:
+                        continue
+                    count = session.run(
+                        f"""
+                        MATCH (:`{src}` {{testRun: $run}})-[:`{rel_type}`]->(:`{tgt}` {{testRun: $run}})
+                        RETURN count(*) AS c
+                        """,
+                        run=test_run,
+                    ).single()["c"]
+                    if count < 1:
+                        raise AssertionError(f"Missing {src} -[:{rel_type}]-> {tgt} relationship")
 
-        if "User" in target_classes and "PolicyGroup" in target_classes:
-            scenario_checks = [
-                ("MATCH (u:User {testRun: $run})-[:isMemberOf]->(:PolicyGroup {testRun: $run}) RETURN count(*) AS c", "Missing User -> isMemberOf -> PolicyGroup relationship"),
-                ("MATCH (:PolicyGroup {testRun: $run})-[:includesPolicy]->(:Policy {testRun: $run}) RETURN count(*) AS c", "Missing PolicyGroup -> includesPolicy -> Policy relationship"),
-                ("MATCH (:Policy {testRun: $run})-[:hasRowFilterRule]->(:RowFilterRule {testRun: $run}) RETURN count(*) AS c", "Missing Policy -> hasRowFilterRule -> RowFilterRule relationship"),
-                ("MATCH (:Policy {testRun: $run})-[:hasColumnMaskRule]->(:ColumnMaskRule {testRun: $run}) RETURN count(*) AS c", "Missing Policy -> hasColumnMaskRule -> ColumnMaskRule relationship"),
-                ("MATCH (:RowFilterRule {testRun: $run})-[:targetsFilteredColumn]->(:Column {testRun: $run}) RETURN count(*) AS c", "Missing RowFilterRule -> targetsFilteredColumn -> Column relationship"),
-                ("MATCH (:ColumnMaskRule {testRun: $run})-[:targetsMaskedColumn]->(:Column {testRun: $run}) RETURN count(*) AS c", "Missing ColumnMaskRule -> targetsMaskedColumn -> Column relationship"),
-                ("MATCH (:User {testRun: $run})-[:hasUserType]->(:UserType {testRun: $run}) RETURN count(*) AS c", "Missing User -> hasUserType -> UserType relationship"),
-                ("MATCH (:RowFilterRule {testRun: $run})-[:hasPriority]->(:RulePriority {testRun: $run}) RETURN count(*) AS c", "Missing RowFilterRule -> hasPriority -> RulePriority relationship"),
-                ("MATCH (:ColumnMaskRule {testRun: $run})-[:hasPriority]->(:RulePriority {testRun: $run}) RETURN count(*) AS c", "Missing ColumnMaskRule -> hasPriority -> RulePriority relationship"),
-                ("MATCH (:JdbcConnectionProfile {testRun: $run})-[:connectsTo]->(:RelationalDatabase {testRun: $run}) RETURN count(*) AS c", "Missing JdbcConnectionProfile -> connectsTo -> RelationalDatabase relationship"),
-                ("MATCH (:Schema {testRun: $run})-[:belongsToDatabase]->(:RelationalDatabase {testRun: $run}) RETURN count(*) AS c", "Missing Schema -> belongsToDatabase -> RelationalDatabase relationship"),
-                ("MATCH (:Table {testRun: $run})-[:belongsToSchema]->(:Schema {testRun: $run}) RETURN count(*) AS c", "Missing Table -> belongsToSchema -> Schema relationship"),
-                ("MATCH (:Column {testRun: $run})-[:belongsToTable]->(:Table {testRun: $run}) RETURN count(*) AS c", "Missing Column -> belongsToTable -> Table relationship"),
-            ]
-        else:
-            scenario_checks = [
-                ("MATCH (w:W2Form {testRun: $run})-[:issuedTo]->(:Person {testRun: $run}) RETURN count(*) AS c", "Missing W2Form -> issuedTo -> Person relationship"),
-                ("MATCH (w:W2Form {testRun: $run})-[:issuedBy]->(:Organization {testRun: $run}) RETURN count(*) AS c", "Missing W2Form -> issuedBy -> Organization relationship"),
-                ("MATCH (f:Form1040_2025 {testRun: $run})-[:isSubmittedBy]->(:TaxPayer {testRun: $run}) RETURN count(*) AS c", "Missing Form1040_2025 -> isSubmittedBy -> TaxPayer relationship"),
-                ("MATCH (p:Person {testRun: $run})-[:hasResidence]->(:PhysicalAddress {testRun: $run}) RETURN count(*) AS c", "Missing Person -> hasResidence -> PhysicalAddress relationship"),
-            ]
-        for query, message in scenario_checks:
-            count = session.run(query, run=test_run).single()["c"]
-            if count < 1:
-                raise AssertionError(message)
+                    if tgt in enum_members_by_class:
+                        rows = session.run(
+                            f"""
+                            MATCH (:`{src}` {{testRun: $run}})-[:`{rel_type}`]->(e:`{tgt}` {{testRun: $run}})
+                            RETURN e.rdfs__label AS label
+                            """,
+                            run=test_run,
+                        ).data()
+                        allowed = enum_members_by_class.get(tgt, set())
+                        for row in rows:
+                            label = row.get("label")
+                            if label not in allowed:
+                                raise AssertionError(
+                                    f"Enum value '{label}' is not allowed for {tgt}; allowed={sorted(allowed)}"
+                                )
     return target_classes
 
 
@@ -824,10 +569,29 @@ def main() -> int:
         help="Unique test run identifier",
     )
     parser.add_argument(
+        "--database",
+        default=DEFAULT_TEST_DB_NAME,
+        help=(
+            "Neo4j database to use. Defaults to a generated entitlement smoke-test "
+            "database so existing testdb content is not overwritten."
+        ),
+    )
+    parser.add_argument(
+        "--reset-database",
+        action="store_true",
+        help="Drop and recreate the selected database before the smoke test.",
+    )
+    parser.add_argument(
         "--keep-data",
         action="store_true",
         default=True,
         help="Keep test data in the database after the test for manual inspection. Default: keep data.",
+    )
+    parser.add_argument(
+        "--cleanup",
+        dest="keep_data",
+        action="store_false",
+        help="Delete smoke-test sample data after validation.",
     )
     args = parser.parse_args()
 
@@ -848,14 +612,14 @@ def main() -> int:
 
     driver = GraphDatabase.driver(cfg.uri, auth=(cfg.username, cfg.password))
     try:
-        recreate_test_database(driver, TEST_DB_NAME)
-        applied = apply_constraints(driver, TEST_DB_NAME, constraints_path)
+        prepare_test_database(driver, args.database, args.reset_database)
+        applied = apply_constraints(driver, args.database, constraints_path)
         created_labels = load_sample_data(
-            driver, TEST_DB_NAME, args.test_run, enum_members_by_class, subclass_map
+            driver, args.database, args.test_run, enum_members_by_class, subclass_map
         )
         validated_labels = validate_sample_data(
             driver,
-            TEST_DB_NAME,
+            args.database,
             args.test_run,
             mandatory_props_by_class,
             enum_members_by_class,
@@ -864,19 +628,21 @@ def main() -> int:
         )
 
         print("Schema workflow test passed")
-        print(f"Database: {TEST_DB_NAME}")
+        print(f"Database: {args.database}")
         print(f"Test run: {args.test_run}")
         print(f"Constraints applied: {applied}")
         print(f"Sample labels validated ({len(validated_labels)}): {', '.join(validated_labels)}")
         if args.keep_data:
-            print("Summary: dedicated testdb was recreated, constraints were applied, sample data loaded, validated, and retained for review.")
+            reset_note = "recreated" if args.reset_database else "created or reused"
+            print(f"Summary: database was {reset_note}, constraints were applied, sample data loaded, validated, and retained for review.")
             print(f"Test data retained (sampleTag='schema_workflow', testRun='{args.test_run}')")
-            print("  To inspect:  MATCH (n {sampleTag: 'schema_workflow'}) RETURN labels(n), n")
-            print("  To clean up: MATCH (n {sampleTag: 'schema_workflow'}) DETACH DELETE n")
+            print(f"  To inspect:  MATCH (n {{testRun: '{args.test_run}'}}) RETURN labels(n), n")
+            print(f"  To clean up: MATCH (n {{testRun: '{args.test_run}'}}) DETACH DELETE n")
         else:
-            print("Summary: dedicated testdb was recreated, constraints were applied, sample data loaded, validated, and cleaned up.")
-            with driver.session(database=TEST_DB_NAME) as session:
-                session.run("MATCH (n {sampleTag: 'schema_workflow'}) DETACH DELETE n")
+            reset_note = "recreated" if args.reset_database else "created or reused"
+            print(f"Summary: database was {reset_note}, constraints were applied, sample data loaded, validated, and cleaned up.")
+            with driver.session(database=args.database) as session:
+                session.run("MATCH (n {testRun: $run}) DETACH DELETE n", run=args.test_run)
             print("Test data cleaned up.")
         return 0
     finally:

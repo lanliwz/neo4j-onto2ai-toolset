@@ -68,24 +68,38 @@ python staging/schema_to_data_flow_smoke_test.py
 
 Smoke test behavior:
 
-- always recreates and uses `testdb`
+- creates or reuses a generated smoke-test database by default
+- never drops an existing database unless `--reset-database` is passed
 - applies the generated Neo4j constraints
 - loads representative entitlement sample data
 - validates required properties and core relationships
-- keeps the sample data in `testdb` by default for review
+- keeps the sample data by default for review
+
+Useful options:
+
+```bash
+# Use a named database without dropping existing data.
+python staging/schema_to_data_flow_smoke_test.py --database entitlement-smoke
+
+# Explicitly reset a named smoke-test database before loading sample data.
+python staging/schema_to_data_flow_smoke_test.py --database entitlement-smoke --reset-database
+
+# Remove only the current test run's sample data after validation.
+python staging/schema_to_data_flow_smoke_test.py --cleanup
+```
 
 ## Review Queries
 
 Inspect retained smoke-test data:
 
 ```cypher
-MATCH (n {sampleTag: 'schema_workflow'}) RETURN labels(n), n
+MATCH (n {testRun: '<test-run-from-output>'}) RETURN labels(n), n
 ```
 
-Clean retained smoke-test data:
+Clean one retained smoke-test run:
 
 ```cypher
-MATCH (n {sampleTag: 'schema_workflow'}) DETACH DELETE n
+MATCH (n {testRun: '<test-run-from-output>'}) DETACH DELETE n
 ```
 
 ## Current Domain Scope
@@ -122,6 +136,6 @@ Before publishing, confirm:
 - URI-mirrored ontology RDF and packaged ontology RDF are current and identical
 - staging artifacts are regenerated and in sync
 - build succeeds
-- smoke test passes on `testdb`
+- smoke test passes on a generated or explicitly selected smoke-test database
 - smoke-test summary is reviewed
 - the package is published from `onto2ai_entitlement/`
