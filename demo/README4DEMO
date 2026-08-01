@@ -7,9 +7,13 @@ The current standard is the introduction demo: a script-driven, presentation-ren
 ## Standard Folder Structure
 
 - `demo/introduction/` - source and generation workflow for the Onto2AI introduction demo.
+- `demo/entitlement/` - source and generation workflow for the Onto2AI entitlement demo.
 - `demo/introduction/introduction-script.md` - long-form narration and story source.
+- `demo/entitlement/entitlement-script.md` - long-form entitlement narration and story source.
 - `demo/introduction/generate_introduction_video.py` - canonical generator for the introduction video.
+- `demo/entitlement/generate_entitlement_video.py` - generator for the entitlement video.
 - `demo/introduction/render_introduction_template_deck.mjs` - presentation artifact-tool renderer for the LinkedIn-style deck.
+- `demo/entitlement/render_entitlement_template_deck.mjs` - entitlement presentation artifact-tool renderer.
 - `demo/introduction/assets/` - durable local visual inputs used by the generator.
 - `demo/introduction/*.pptx` - editable source/template decks.
 - `demo/audio/*.mp3` - generated narration clips.
@@ -35,6 +39,24 @@ Generated deliverables:
 - `demo/video/introduction/introduction_narration.txt`
 - `demo/video/review/onto2ai_introduction_template.mp4`
 
+## Entitlement Demo
+
+The entitlement demo follows the same manifest-first, presentation-rendered structure.
+
+Durable inputs:
+- `demo/entitlement/entitlement-script.md`
+- `demo/entitlement/assets/onto2ai-qa-frontpage-4.png`
+- `demo/entitlement/onto2ai-linkedin-presentation-template.pptx`
+- `demo/entitlement/generate_entitlement_video.py`
+- `demo/entitlement/render_entitlement_template_deck.mjs`
+
+Generated deliverables:
+- `demo/entitlement/onto2ai-entitlement-template-video-deck.pptx`
+- `demo/audio/onto2ai_entitlement_cedar.mp3` when narration is refreshed
+- `demo/video/entitlement/entitlement_demo.json`
+- `demo/video/entitlement/entitlement_narration.txt`
+- `demo/video/review/onto2ai_entitlement_template.mp4`
+
 ## Regenerate Introduction Video
 
 Reuse the existing OpenAI `cedar` narration:
@@ -57,6 +79,27 @@ python3 demo/introduction/generate_introduction_video.py --keep-work
 ```
 
 Scratch output is written under the system temp directory, not under `demo/`.
+
+## Regenerate Entitlement Video
+
+Reuse existing OpenAI `cedar` narration after it has been generated:
+
+```bash
+python3 demo/entitlement/generate_entitlement_video.py
+```
+
+Render a no-network silent review video:
+
+```bash
+python3 demo/entitlement/generate_entitlement_video.py --silent
+```
+
+Refresh the OpenAI `cedar` narration and rebuild the video:
+
+```bash
+export OPENAI_API_KEY="your_openai_key"
+python3 demo/entitlement/generate_entitlement_video.py --refresh-audio
+```
 
 ## Single Source Of Truth
 

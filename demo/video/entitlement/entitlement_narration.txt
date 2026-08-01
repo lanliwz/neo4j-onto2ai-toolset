@@ -1,0 +1,21 @@
+This demo shows how Onto2AI turns an entitlement ontology into a validated package for row-level filtering and column-level masking.
+
+Entitlement rules often live in scattered implementation details. That makes them hard to review, hard to validate, and risky for AI-assisted data access.
+
+The goal is a governed entitlement model that can be inspected as ontology and consumed as implementation-ready artifacts.
+
+The core entitlement model is intentionally direct. Users inherit policy through groups, and policies collect the rules that govern access.
+
+The ontology also models the protected data surface: database, schema, table, column, connection profile, and sensitivity classification.
+
+For row-level access, row filter rules describe the target column, the comparison semantics, where values come from, and how a query can be rewritten.
+
+For column-level protection, column mask rules describe how protected values are revealed, redacted, tokenized, substituted, or nullified.
+
+From that ontology, Onto2AI packages generated artifacts: schema JSON, query context, Neo4j constraints, and a Pydantic application model view.
+
+Before publishing, the entitlement package runs a smoke test that applies constraints, loads representative sample data, and validates the topology.
+
+The result is an independent domain package. Teams consume the entitlement standard without copying the entire modelling workbench.
+
+That is the Onto2AI entitlement workflow: model policy meaning once, generate aligned artifacts, validate them, and package the result for delivery.
