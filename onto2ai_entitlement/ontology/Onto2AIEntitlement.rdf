@@ -11,7 +11,7 @@
   <owl:Ontology rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/">
     <rdfs:label>onto2ai-entitlement</rdfs:label>
     <skos:definition xml:lang="en">Ontology for row-level and column-level entitlement enforcement across JDBC-accessible relational databases.</skos:definition>
-    <owl:versionInfo>1.0.0</owl:versionInfo>
+    <owl:versionInfo>1.0.1</owl:versionInfo>
   </owl:Ontology>
 
   <!-- Classes -->

@@ -2,6 +2,8 @@
 
 This package is the publishable entitlement deliverable from Onto2AI Engineer.
 
+Current package release: `1.0.1`.
+
 It bundles the source ontology together with the finalized staging artifacts used for implementation, validation, and review.
 
 ## Contents
@@ -145,3 +147,6 @@ Before publishing, confirm:
 - smoke test passes on a generated or explicitly selected smoke-test database
 - smoke-test summary is reviewed
 - the package is published from `onto2ai_entitlement/`
+
+Release details are recorded in
+[`docs/release-notes-onto2ai-entitlement-v1.0.1.md`](https://github.com/lanliwz/neo4j-onto2ai-toolset/blob/main/docs/release-notes-onto2ai-entitlement-v1.0.1.md).
