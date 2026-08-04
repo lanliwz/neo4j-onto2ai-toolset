@@ -64,6 +64,12 @@ def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
         rel.inferred = true,
         rel.cardinality = cardinality,
         rel.requirement = requirement,
+        rel.unique = CASE
+          WHEN '{property_meta_type}' = 'owl__DatatypeProperty'
+            AND toLower(coalesce(op.skos__definition, '')) CONTAINS 'unique identifier'
+          THEN true
+          ELSE coalesce(rel.unique, false)
+        END,
         rel.materialized = true,
         rel.property_type = '{property_meta_type}',
         rel.inferred_by = 'domain-range'
@@ -93,6 +99,12 @@ def materialize_properties(db: Neo4jDatabase, property_meta_type: str):
         rel.inferred = true,
         rel.cardinality = cardinality,
         rel.requirement = requirement,
+        rel.unique = CASE
+          WHEN '{property_meta_type}' = 'owl__DatatypeProperty'
+            AND toLower(coalesce(onp.skos__definition, '')) CONTAINS 'unique identifier'
+          THEN true
+          ELSE coalesce(rel.unique, false)
+        END,
         rel.materialized = true,
         rel.property_type = '{property_meta_type}',
         rel.inferred_by = 'restriction'

@@ -23,6 +23,7 @@ PREFIXES_CANON: Dict[str, str] = {
 
     # Onto2AI local ontologies
     "onto2ai_iam": "http://www.onto2ai-toolset.com/ontology/iam/Onto2AIIAM/",
+    "onto2ai_entitlement": "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/",
     "onto2ai_houseplan": "http://www.onto2ai-toolset.com/ontology/houseplan/HousePlan/#",
     "onto2ai_parcel": "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/",
 
@@ -201,6 +202,7 @@ PREFIXES_ALIAS: Dict[str, str] = {
     # common alternates
     "dcterms": PREFIXES_CANON["dct"],
     "onto2ai-iam": PREFIXES_CANON["onto2ai_iam"],
+    "onto2ai-entitlement": PREFIXES_CANON["onto2ai_entitlement"],
     "onto2ai-houseplan": PREFIXES_CANON["onto2ai_houseplan"],
 
     # your old long forms (if you want to keep docs/queries compatible)

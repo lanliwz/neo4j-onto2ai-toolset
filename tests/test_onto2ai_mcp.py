@@ -60,6 +60,16 @@ class MaterializedSchemaQueryTests(unittest.TestCase):
         self.assertIn("enumLabel IN labels(i)", constraint_source)
         self.assertIn("class_keys", constraint_source)
 
+    def test_constraint_generation_preserves_unique_property_metadata(self):
+        import inspect
+        import neo4j_onto2ai_toolset.onto2ai_mcp as onto2ai_mcp
+
+        constraint_source = inspect.getsource(onto2ai_mcp.generate_neo4j_schema_constraint)
+
+        self.assertIn("coalesce(r.unique, false) as prop_unique", constraint_source)
+        self.assertIn('"unique_properties": set()', constraint_source)
+        self.assertIn("REQUIRE n.`{prop_name}` IS UNIQUE", constraint_source)
+
 
 if __name__ == "__main__":
     unittest.main()

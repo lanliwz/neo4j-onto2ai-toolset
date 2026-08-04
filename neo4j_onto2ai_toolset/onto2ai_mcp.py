@@ -1447,7 +1447,7 @@ async def extract_data_model(
               i.skos__definition AS IndividualDef,
               c.rdfs__label AS ClassLabel,
               c.uri AS ClassURI,
-              t.uri AS TypeRelURI
+              'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AS TypeRelURI
             UNION
             MATCH (c:owl__Class)
             WHERE c.rdfs__label IN $labels OR c.uri IN $labels
@@ -1659,8 +1659,9 @@ async def generate_neo4j_schema_constraint(
     
     This tool produces a deterministic Cypher script that includes:
     1. Existence constraints (IS NOT NULL) for all mandatory data properties.
-    2. Comments providing URI, Label, and Definition metadata for AI semantic discovery.
-    3. NO constraints or indexes for metadata fields like URI or Label (follows production separation principle).
+    2. Uniqueness constraints (IS UNIQUE) for ontology properties marked unique.
+    3. Comments providing URI, Label, and Definition metadata for AI semantic discovery.
+    4. NO constraints or indexes for metadata fields like URI or Label (follows production separation principle).
     
     Args:
         database: Optional database name (e.g., 'stagingdb'). Defaults to 'semanticdb'.
@@ -1682,6 +1683,7 @@ async def generate_neo4j_schema_constraint(
                n.uri as class_uri,
                type(r) as prop_name,
                r.cardinality as prop_cardinality,
+               coalesce(r.unique, false) as prop_unique,
                coalesce(m.rdfs__label, m.uri) as target_label,
                m.uri as target_uri,
                CASE
@@ -1742,6 +1744,7 @@ async def generate_neo4j_schema_constraint(
                     "definition": row['class_definition'],
                     "uri": row['class_uri'],
                     "properties": {},
+                    "unique_properties": set(),
                     "mandatory_relationships": []
                 }
             if row['prop_name']:
@@ -1752,6 +1755,8 @@ async def generate_neo4j_schema_constraint(
                 target_uri = row.get("target_uri")
 
                 if target_kind == "datatype":
+                    if row.get("prop_unique"):
+                        schema_data[cls_label]["unique_properties"].add(prop_name)
                     current = schema_data[cls_label]["properties"].get(prop_name)
                     if current:
                         candidates = [str(current or "").strip(), str(prop_cardinality or "").strip()]
@@ -1812,6 +1817,16 @@ async def generate_neo4j_schema_constraint(
                     cypher_output.append(
                         f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS "
                         f"FOR (n:{safe_label}) REQUIRE n.`{prop_name}` IS NOT NULL;"
+                    )
+                if prop_name in data["unique_properties"]:
+                    safe_prop = re.sub(r'[^A-Za-z0-9_]', '_', prop_name)
+                    constraint_name = re.sub(r'[^A-Za-z0-9_]', '_', f"{actual_label}_{safe_prop}_Unique")
+                    if constraint_name and constraint_name[0].isdigit():
+                        constraint_name = f"C_{constraint_name}"
+                    cypher_output.append(f"// Unique property: {prop_name}")
+                    cypher_output.append(
+                        f"CREATE CONSTRAINT {constraint_name} IF NOT EXISTS "
+                        f"FOR (n:{safe_label}) REQUIRE n.`{prop_name}` IS UNIQUE;"
                     )
 
             # Relationship requirements are documented as comments only.

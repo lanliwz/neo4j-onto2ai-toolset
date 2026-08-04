@@ -262,6 +262,7 @@ def load_sample_data(
         jdbcUserName="entitlement_app",
         connectionTimeoutSeconds=30,
         sslMode="require",
+        connectsTo=relational_database,
     )
     schema = pydantic_schema_model.Schema(
         schemaId=f"schema-{test_run}",
@@ -270,6 +271,7 @@ def load_sample_data(
         schemaType="application",
         schemaDescription="Analytics schema protected by entitlement rules.",
         isDefaultSchema=True,
+        belongsToDatabase=relational_database,
     )
     table = pydantic_schema_model.Table(
         tableId=f"table-{test_run}",
@@ -279,6 +281,7 @@ def load_sample_data(
         tableDescription="Customer account table.",
         rowCountEstimate=125000,
         isTemporaryTable=False,
+        belongsToSchema=schema,
     )
     column = pydantic_schema_model.Column(
         columnId=f"column-{test_run}",
@@ -287,6 +290,7 @@ def load_sample_data(
         columnLength=20,
         isNullable=False,
         ordinalPosition=3,
+        belongsToTable=table,
         hasSensitivityClassification=pydantic_schema_model.SensitivityClassification.CONFIDENTIAL,
     )
     row_filter_rule = pydantic_schema_model.RowFilterRule(
@@ -301,6 +305,7 @@ def load_sample_data(
         rewriteTemplate="WHERE region_code IN ({values})",
         ruleExpression="region_code IN allowed_regions",
         hasPriority=pydantic_schema_model.RulePriority.HIGH_PRIORITY,
+        targetsFilteredColumn=[column],
     )
     column_mask_rule = pydantic_schema_model.ColumnMaskRule(
         columnMaskRuleId=f"cmr-{test_run}",
@@ -314,6 +319,7 @@ def load_sample_data(
         hasValueSourceType=pydantic_schema_model.ValueSourceType.SESSION_CONTEXT,
         valueSourceExpression="user.masking_scope",
         hasPriority=pydantic_schema_model.RulePriority.MEDIUM_PRIORITY,
+        targetsMaskedColumn=[column],
     )
     policy = pydantic_schema_model.Policy(
         policyId=f"policy-{test_run}",
@@ -323,10 +329,12 @@ def load_sample_data(
     policy_group = pydantic_schema_model.PolicyGroup(
         policyGroupId=f"pg-{test_run}",
         policyGroupName=["regional analysts"],
+        includesPolicy=[policy],
     )
     user = pydantic_schema_model.User(
         userId=f"user-{test_run}",
         hasUserType=pydantic_schema_model.UserType.HUMAN_USER,
+        isMemberOf=[policy_group],
     )
 
     model_instances = {

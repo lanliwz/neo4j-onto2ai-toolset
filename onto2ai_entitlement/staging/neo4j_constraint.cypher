@@ -1,5 +1,5 @@
 // ===========================================================
-// NEO4J SCHEMA CONSTRAINTS (Source: full_schema_model.json)
+// NEO4J SCHEMA CONSTRAINTS (Source: stagingdb)
 // Generated to enforce structural integrity while keeping metadata as comments.
 // ===========================================================
 
@@ -10,6 +10,7 @@
 CREATE CONSTRAINT Column_columnId_Required IF NOT EXISTS FOR (n:`Column`) REQUIRE n.`columnId` IS NOT NULL;
 // Unique property: columnId
 CREATE CONSTRAINT Column_columnId_Unique IF NOT EXISTS FOR (n:`Column`) REQUIRE n.`columnId` IS UNIQUE;
+// Mandatory class relationship: belongsToTable -> table (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table)
 
 // Class: column mask rule
 // Definition: Rule that transforms or redacts sensitive column values.
@@ -18,31 +19,29 @@ CREATE CONSTRAINT Column_columnId_Unique IF NOT EXISTS FOR (n:`Column`) REQUIRE 
 CREATE CONSTRAINT ColumnMaskRule_columnMaskRuleId_Required IF NOT EXISTS FOR (n:`ColumnMaskRule`) REQUIRE n.`columnMaskRuleId` IS NOT NULL;
 // Unique property: columnMaskRuleId
 CREATE CONSTRAINT ColumnMaskRule_columnMaskRuleId_Unique IF NOT EXISTS FOR (n:`ColumnMaskRule`) REQUIRE n.`columnMaskRuleId` IS UNIQUE;
+// Mandatory class relationship: targetsMaskedColumn -> column (cardinality: 1..*, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column)
+// Mandatory enum relationship: hasPriority -> rule priority (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority). members=['high priority', 'low priority', 'medium priority']
 
 // Class: comparison operator
 // Definition: Enumeration of comparison operators available to row filter predicates.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator
 
-
 // Class: deny behavior
 // Definition: Enumeration of enforcement behaviors applied when a row filter rule denies access.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior
 
-
 // Class: entitlement rule
 // Definition: Abstract superclass for entitlement rules that constrain row visibility or column values.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule
-
+// Mandatory enum relationship: hasPriority -> rule priority (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority). members=['high priority', 'low priority', 'medium priority']
 
 // Class: fallback behavior
 // Definition: Enumeration of fallback behaviors applied when a column mask rule cannot resolve masking inputs.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior
 
-
 // Class: filter action
 // Definition: Enumeration of actions a row filter rule can apply during entitlement evaluation.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction
-
 
 // Class: jdbc connection profile
 // Definition: JDBC endpoint and driver metadata for a target database.
@@ -51,21 +50,19 @@ CREATE CONSTRAINT ColumnMaskRule_columnMaskRuleId_Unique IF NOT EXISTS FOR (n:`C
 CREATE CONSTRAINT JdbcConnectionProfile_jdbcConnectionProfileId_Required IF NOT EXISTS FOR (n:`JdbcConnectionProfile`) REQUIRE n.`jdbcConnectionProfileId` IS NOT NULL;
 // Unique property: jdbcConnectionProfileId
 CREATE CONSTRAINT JdbcConnectionProfile_jdbcConnectionProfileId_Unique IF NOT EXISTS FOR (n:`JdbcConnectionProfile`) REQUIRE n.`jdbcConnectionProfileId` IS UNIQUE;
+// Mandatory class relationship: connectsTo -> relational database (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase)
 
 // Class: mask action
 // Definition: Enumeration of actions a column mask rule can apply to protected column values.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction
 
-
 // Class: masking method
 // Definition: Enumeration of masking or transformation strategies available to column mask rules.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod
 
-
 // Class: match mode
 // Definition: Enumeration of value cardinality modes expected by a row filter rule.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode
-
 
 // Class: policy
 // Definition: Bundle of row-filter and/or column-mask rules.
@@ -82,6 +79,7 @@ CREATE CONSTRAINT Policy_policyId_Unique IF NOT EXISTS FOR (n:`Policy`) REQUIRE 
 CREATE CONSTRAINT PolicyGroup_policyGroupId_Required IF NOT EXISTS FOR (n:`PolicyGroup`) REQUIRE n.`policyGroupId` IS NOT NULL;
 // Unique property: policyGroupId
 CREATE CONSTRAINT PolicyGroup_policyGroupId_Unique IF NOT EXISTS FOR (n:`PolicyGroup`) REQUIRE n.`policyGroupId` IS UNIQUE;
+// Mandatory class relationship: includesPolicy -> policy (cardinality: 1..*, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Policy)
 
 // Class: relational database
 // Definition: JDBC-connectable relational database platform.
@@ -98,11 +96,12 @@ CREATE CONSTRAINT RelationalDatabase_relationalDatabaseId_Unique IF NOT EXISTS F
 CREATE CONSTRAINT RowFilterRule_rowFilterRuleId_Required IF NOT EXISTS FOR (n:`RowFilterRule`) REQUIRE n.`rowFilterRuleId` IS NOT NULL;
 // Unique property: rowFilterRuleId
 CREATE CONSTRAINT RowFilterRule_rowFilterRuleId_Unique IF NOT EXISTS FOR (n:`RowFilterRule`) REQUIRE n.`rowFilterRuleId` IS UNIQUE;
+// Mandatory class relationship: targetsFilteredColumn -> column (cardinality: 1..*, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column)
+// Mandatory enum relationship: hasPriority -> rule priority (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority). members=['high priority', 'low priority', 'medium priority']
 
 // Class: rule priority
 // Definition: Enumeration of precedence levels used to order entitlement rules during evaluation.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority
-
 
 // Class: schema
 // Definition: Relational schema/container for tables.
@@ -111,11 +110,11 @@ CREATE CONSTRAINT RowFilterRule_rowFilterRuleId_Unique IF NOT EXISTS FOR (n:`Row
 CREATE CONSTRAINT Schema_schemaId_Required IF NOT EXISTS FOR (n:`Schema`) REQUIRE n.`schemaId` IS NOT NULL;
 // Unique property: schemaId
 CREATE CONSTRAINT Schema_schemaId_Unique IF NOT EXISTS FOR (n:`Schema`) REQUIRE n.`schemaId` IS UNIQUE;
+// Mandatory class relationship: belongsToDatabase -> relational database (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase)
 
 // Class: sensitivity classification
 // Definition: Enumeration of data sensitivity levels used to classify relational columns for entitlement and masking decisions.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification
-
 
 // Class: table
 // Definition: Relational table containing columns.
@@ -124,6 +123,7 @@ CREATE CONSTRAINT Schema_schemaId_Unique IF NOT EXISTS FOR (n:`Schema`) REQUIRE 
 CREATE CONSTRAINT Table_tableId_Required IF NOT EXISTS FOR (n:`Table`) REQUIRE n.`tableId` IS NOT NULL;
 // Unique property: tableId
 CREATE CONSTRAINT Table_tableId_Unique IF NOT EXISTS FOR (n:`Table`) REQUIRE n.`tableId` IS UNIQUE;
+// Mandatory class relationship: belongsToSchema -> schema (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema)
 
 // Class: user
 // Definition: Principal that invokes or is evaluated against entitlement policies, including a human actor or an automated process.
@@ -132,11 +132,12 @@ CREATE CONSTRAINT Table_tableId_Unique IF NOT EXISTS FOR (n:`Table`) REQUIRE n.`
 CREATE CONSTRAINT User_userId_Required IF NOT EXISTS FOR (n:`User`) REQUIRE n.`userId` IS NOT NULL;
 // Unique property: userId
 CREATE CONSTRAINT User_userId_Unique IF NOT EXISTS FOR (n:`User`) REQUIRE n.`userId` IS UNIQUE;
+// Mandatory enum relationship: hasUserType -> user type (cardinality: 1, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType). members=['human user', 'process user']
+// Mandatory class relationship: isMemberOf -> policy group (cardinality: 1..*, uri: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PolicyGroup)
 
 // Class: user type
 // Definition: Classification of a user by the kind of actor it represents for entitlement evaluation.
 // URI: http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType
-
 
 // Class: value source type
 // Definition: Enumeration of runtime source categories used to resolve entitlement rule values.

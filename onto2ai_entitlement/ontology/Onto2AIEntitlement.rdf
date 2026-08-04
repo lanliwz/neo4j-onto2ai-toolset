@@ -25,6 +25,20 @@
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasUserType"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isMemberOf"/>
+        <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/PolicyGroup"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/UserType">
@@ -40,6 +54,13 @@
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/policyGroupId"/>
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/includesPolicy"/>
+        <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Policy"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -67,6 +88,41 @@
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsFilteredColumn"/>
+        <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFilterAction"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FilterAction"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMatchMode"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MatchMode"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasComparisonOperator"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ComparisonOperator"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasDenyBehavior"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule">
@@ -78,6 +134,34 @@
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnMaskRuleId"/>
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/targetsMaskedColumn"/>
+        <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskAction"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskAction"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasMaskingMethod"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasFallbackBehavior"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -135,6 +219,20 @@
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule">
     <rdfs:label>entitlement rule</rdfs:label>
     <skos:definition xml:lang="en">Abstract superclass for entitlement rules that constrain row visibility or column values.</skos:definition>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasPriority"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RulePriority"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasValueSourceType"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ValueSourceType"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema">
@@ -145,6 +243,13 @@
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaId"/>
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToDatabase"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -159,6 +264,13 @@
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToSchema"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column">
@@ -169,6 +281,20 @@
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnId"/>
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/belongsToTable"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hasSensitivityClassification"/>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/SensitivityClassification"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -193,6 +319,13 @@
         <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcConnectionProfileId"/>
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
         <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectsTo"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+        <owl:onClass rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -448,6 +581,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ruleExpression">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>rule expression</rdfs:label>
     <skos:definition xml:lang="en">The executable or declarative expression associated with an entitlement rule.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
@@ -455,6 +589,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/valueSourceExpression">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>value source expression</rdfs:label>
     <skos:definition xml:lang="en">The expression, path, or lookup instruction used to resolve entitlement rule values at runtime.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
@@ -462,6 +597,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/llmRewriteInstruction">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>llm rewrite instruction</rdfs:label>
     <skos:definition xml:lang="en">A canonical instruction telling an LLM how to rewrite a query for this entitlement rule.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
@@ -469,6 +605,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rewriteTemplate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>rewrite template</rdfs:label>
     <skos:definition xml:lang="en">A deterministic query or projection rewrite template with placeholders for runtime entitlement values.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/EntitlementRule"/>
@@ -476,6 +613,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/maskValueExpression">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>mask value expression</rdfs:label>
     <skos:definition xml:lang="en">The expression used to compute the masked value emitted by a column mask rule.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ColumnMaskRule"/>
@@ -483,6 +621,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>schema name</rdfs:label>
     <skos:definition xml:lang="en">The name of a relational schema.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
@@ -490,6 +629,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaOwner">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>schema owner</rdfs:label>
     <skos:definition xml:lang="en">The owning principal or administrative owner of a relational schema.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
@@ -497,6 +637,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>schema type</rdfs:label>
     <skos:definition xml:lang="en">The functional or administrative type of a relational schema.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
@@ -504,6 +645,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/schemaDescription">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>schema description</rdfs:label>
     <skos:definition xml:lang="en">A descriptive summary of the purpose or contents of a relational schema.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
@@ -511,6 +653,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isDefaultSchema">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>is default schema</rdfs:label>
     <skos:definition xml:lang="en">Indicates whether a relational schema is the default schema in its database context.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Schema"/>
@@ -518,6 +661,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>table name</rdfs:label>
     <skos:definition xml:lang="en">The name of a relational table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -525,6 +669,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>table type</rdfs:label>
     <skos:definition xml:lang="en">The functional type of a relational table, such as base table or view-backed table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -532,6 +677,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableOwner">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>table owner</rdfs:label>
     <skos:definition xml:lang="en">The owning principal or administrative owner of a relational table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -539,6 +685,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/tableDescription">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>table description</rdfs:label>
     <skos:definition xml:lang="en">A descriptive summary of the purpose or contents of a relational table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -546,6 +693,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/rowCountEstimate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>row count estimate</rdfs:label>
     <skos:definition xml:lang="en">An estimated row count for a relational table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -553,6 +701,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isTemporaryTable">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>is temporary table</rdfs:label>
     <skos:definition xml:lang="en">Indicates whether a relational table is temporary or session-scoped.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Table"/>
@@ -560,6 +709,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column name</rdfs:label>
     <skos:definition xml:lang="en">The name of a relational column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -567,6 +717,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnDataType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column data type</rdfs:label>
     <skos:definition xml:lang="en">The declared database data type of a relational column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -574,6 +725,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnLength">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column length</rdfs:label>
     <skos:definition xml:lang="en">The maximum defined length for a relational column value.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -581,6 +733,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnPrecision">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column precision</rdfs:label>
     <skos:definition xml:lang="en">The numeric precision defined for a relational column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -588,6 +741,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnScale">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column scale</rdfs:label>
     <skos:definition xml:lang="en">The numeric scale defined for a relational column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -595,6 +749,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/isNullable">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>is nullable</rdfs:label>
     <skos:definition xml:lang="en">Indicates whether a relational column permits null values.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -602,6 +757,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/columnDefaultValue">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>column default value</rdfs:label>
     <skos:definition xml:lang="en">The default value expression defined for a relational column.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -609,6 +765,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ordinalPosition">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>ordinal position</rdfs:label>
     <skos:definition xml:lang="en">The ordinal position of a relational column within its table.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/Column"/>
@@ -616,6 +773,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseVendor">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>database vendor</rdfs:label>
     <skos:definition xml:lang="en">The database vendor or product family for a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -623,6 +781,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>database name</rdfs:label>
     <skos:definition xml:lang="en">The logical or configured name of a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -630,6 +789,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseVersion">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>database version</rdfs:label>
     <skos:definition xml:lang="en">The software version of a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -637,6 +797,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/databaseEdition">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>database edition</rdfs:label>
     <skos:definition xml:lang="en">The commercial or deployment edition of a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -644,6 +805,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/hostName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>host name</rdfs:label>
     <skos:definition xml:lang="en">The network host name serving a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -651,6 +813,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/portNumber">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>port number</rdfs:label>
     <skos:definition xml:lang="en">The network port used by a relational database instance.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RelationalDatabase"/>
@@ -658,6 +821,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcUrl">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>jdbc url</rdfs:label>
     <skos:definition xml:lang="en">The JDBC connection URL for a connection profile.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"/>
@@ -665,6 +829,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcDriver">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>jdbc driver</rdfs:label>
     <skos:definition xml:lang="en">The JDBC driver class or driver identifier for a connection profile.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"/>
@@ -672,6 +837,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/jdbcUserName">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>jdbc user name</rdfs:label>
     <skos:definition xml:lang="en">The user name used by a JDBC connection profile to authenticate to a database.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"/>
@@ -679,6 +845,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/connectionTimeoutSeconds">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>connection timeout seconds</rdfs:label>
     <skos:definition xml:lang="en">The connection timeout in seconds for a JDBC connection profile.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"/>
@@ -686,6 +853,7 @@
   </owl:DatatypeProperty>
 
   <owl:DatatypeProperty rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/sslMode">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     <rdfs:label>ssl mode</rdfs:label>
     <skos:definition xml:lang="en">The SSL or transport security mode configured for a JDBC connection profile.</skos:definition>
     <rdfs:domain rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/JdbcConnectionProfile"/>
@@ -819,10 +987,11 @@
     <skos:definition xml:lang="en">Deny behavior that rewrites access to produce an empty result set.</skos:definition>
   </owl:NamedIndividual>
 
-  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryDenyBehavior">
+  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryBehavior">
     <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/DenyBehavior"/>
+    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
     <rdfs:label>block query</rdfs:label>
-    <skos:definition xml:lang="en">Deny behavior that blocks the data access request.</skos:definition>
+    <skos:definition xml:lang="en">Enforcement behavior that blocks the data access request, whether selected as a deny action or as a masking fallback.</skos:definition>
   </owl:NamedIndividual>
 
   <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/RevealMaskAction">
@@ -883,12 +1052,6 @@
     <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/MaskingMethod"/>
     <rdfs:label>null replacement</rdfs:label>
     <skos:definition xml:lang="en">Masking method that replaces the original value with null.</skos:definition>
-  </owl:NamedIndividual>
-
-  <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/BlockQueryFallbackBehavior">
-    <rdf:type rdf:resource="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/FallbackBehavior"/>
-    <rdfs:label>block query</rdfs:label>
-    <skos:definition xml:lang="en">Fallback behavior that blocks the query when masking inputs cannot be resolved.</skos:definition>
   </owl:NamedIndividual>
 
   <owl:NamedIndividual rdf:about="http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/ReturnNullFallbackBehavior">

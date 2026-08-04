@@ -60,7 +60,13 @@ The intended finalization flow for this package is:
 4. Run the smoke test as the last step.
 5. Publish the ontology package only after the smoke test passes.
 
-Smoke test command:
+Artifact regeneration command:
+
+```bash
+python ../scripts/regenerate_entitlement_artifacts.py --database stagingdb
+```
+
+Then run the smoke test:
 
 ```bash
 python staging/schema_to_data_flow_smoke_test.py

@@ -8,9 +8,16 @@ from rdflib import Graph
 
 from neo4j_onto2ai_toolset import onto2ai_loader
 from neo4j_onto2ai_toolset.onto2ai_core import base_functions
+from neo4j_onto2ai_toolset.onto2ai_core.prefixes import PREFIXES_CANON
 
 
 class OntologyLoaderTests(unittest.TestCase):
+    def test_entitlement_namespace_is_registered_for_strict_shortening(self):
+        self.assertEqual(
+            PREFIXES_CANON["onto2ai_entitlement"],
+            "http://www.onto2ai-toolset.com/ontology/entitlement/Onto2AIEntitlement/",
+        )
+
     def test_load_ontology_tracks_loaded_and_processed_iris_separately(self):
         root_iri = "http://example.com/root"
         missing_iri = "http://example.com/missing"
