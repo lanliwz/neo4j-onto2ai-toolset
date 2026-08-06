@@ -60,7 +60,7 @@ Use schema mode when the task is about turning ontology content into implementat
 Required rules:
 
 1. Generate or update schema artifacts from ontology intent, not as an unrelated parallel design.
-2. Keep Cypher constraints, Neo4j query context, Pydantic models, and similar artifacts aligned to the ontology source.
+2. Keep Cypher constraints, Neo4j query context, generated application code models, and similar artifacts aligned to the ontology source.
 3. Perform schema validation in the schema/model database, normally `stagingdb`.
 4. Do not treat schema artifacts as the ontology source of truth.
 
@@ -70,7 +70,7 @@ Use dataset mode when the task is about sample data, smoke tests, or runtime-sty
 
 Required rules:
 
-1. Use dataset-oriented databases such as `testdb`, not the schema/model database, unless the task explicitly requires schema validation.
+1. Use an isolated disposable dataset database such as `<domain>-smoke-<id>`, never the schema/model database, unless the task explicitly requires schema validation.
 2. Keep dataset databases free of ontology schema nodes such as `owl__Class`, `owl__Ontology`, and `owl__Restriction`.
 3. Do not use ontology-only relationships such as `rdf__type` or `rdfs__subClassOf` in dataset databases unless the task explicitly requires schema validation in a schema/model database.
 4. Test constraints, enumerations, and application relationships with instance-oriented sample data only.

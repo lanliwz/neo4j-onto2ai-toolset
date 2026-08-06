@@ -1,34 +1,33 @@
 #!/usr/bin/env python3
-"""Generic release-mode verification for the Onto2AI toolset."""
+"""Package-aware release-mode verification for Onto2AI distributions."""
 
 from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
-import sys
 import tarfile
+import tomllib
 import zipfile
 from pathlib import Path
 
+from rdflib import Graph, OWL
+
+from harness_config import RELEASES, ReleaseSpec, selected_releases
 from harness_log import append_harness_log
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SETUP_PY = REPO_ROOT / "setup.py"
-MANIFEST_IN = REPO_ROOT / "MANIFEST.in"
 README_MD = REPO_ROOT / "README.md"
 MODELLER_MAIN = REPO_ROOT / "onto2ai_modeller" / "main.py"
-DIST_DIR = REPO_ROOT / "dist"
-
 GENERIC_DOCS = [
-    REPO_ROOT / "README.md",
+    README_MD,
     REPO_ROOT / "docs" / "quickstart.md",
     REPO_ROOT / "docs" / "operator-runbook.md",
     REPO_ROOT / "docs" / "harness" / "modes.md",
     REPO_ROOT / "docs" / "harness" / "checklists.md",
 ]
-
 FORBIDDEN_GENERIC_DOC_PATTERNS = (
     "python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test",
     "python staging/schema_to_data_flow_smoke_test.py",
@@ -37,24 +36,10 @@ FORBIDDEN_GENERIC_DOC_PATTERNS = (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run release-mode verification for the toolset.")
-    parser.add_argument(
-        "--build",
-        action="store_true",
-        help="Build source and wheel artifacts after version checks pass.",
-    )
+    parser = argparse.ArgumentParser(description="Run package-aware release verification.")
+    parser.add_argument("--package", action="append", choices=[*sorted(RELEASES), "all"])
+    parser.add_argument("--build", action="store_true", help="Build and inspect selected distributions.")
     return parser.parse_args()
-
-
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
-
-
-def extract_version(text: str, pattern: str, label: str) -> str:
-    match = re.search(pattern, text, re.MULTILINE)
-    if not match:
-        raise RuntimeError(f"Could not find {label}")
-    return match.group(1)
 
 
 def require(condition: bool, message: str) -> None:
@@ -62,132 +47,114 @@ def require(condition: bool, message: str) -> None:
         raise RuntimeError(message)
 
 
-def check_generic_docs() -> None:
-    for path in GENERIC_DOCS:
-        text = read_text(path)
-        for pattern in FORBIDDEN_GENERIC_DOC_PATTERNS:
-            require(pattern not in text, f"Found stale generic-doc reference {pattern!r} in {path}")
+def extract(text: str, pattern: str, label: str) -> str:
+    match = re.search(pattern, text, re.MULTILINE)
+    if not match:
+        raise RuntimeError(f"Could not find {label}")
+    return match.group(1)
 
 
-def check_no_root_staging_packaging() -> None:
-    setup_lines = SETUP_PY.read_text(encoding="utf-8").splitlines()
-    manifest_lines = MANIFEST_IN.read_text(encoding="utf-8").splitlines()
-
-    for line in setup_lines:
-        stripped = line.strip()
-        require(
-            not re.match(r'"staging"\s*:', stripped),
-            "setup.py must not define package_data for a root staging package",
-        )
-
-    for line in manifest_lines:
-        stripped = line.strip()
-        require(
-            not stripped.startswith("recursive-include staging "),
-            "MANIFEST.in must not package transient root staging artifacts",
-        )
+def core_version() -> str:
+    setup_text = (REPO_ROOT / "setup.py").read_text(encoding="utf-8")
+    version = extract(setup_text, r'version="([^"]+)"', "setup.py version")
+    modeller = extract(MODELLER_MAIN.read_text(encoding="utf-8"), r'version="([^"]+)"', "Modeller version")
+    readme = extract(README_MD.read_text(encoding="utf-8"), r"onto2ai_engineer-([0-9.]+)-py3", "README wheel version")
+    require(len({version, modeller, readme}) == 1, f"Core version mismatch: setup={version}, modeller={modeller}, README={readme}")
+    return version
 
 
-def check_no_example_output_packaging() -> None:
-    setup_text = read_text(SETUP_PY)
-    manifest_text = read_text(MANIFEST_IN)
-    forbidden_tokens = ("onto2ai_entitlement", "onto2ai_parcel")
-    for token in forbidden_tokens:
-        require(
-            f"recursive-include {token}" not in manifest_text,
-            f"MANIFEST.in must not package example output package: {token}",
-        )
-        require(
-            f"prune {token}" in manifest_text,
-            f"MANIFEST.in must explicitly prune example output package: {token}",
-        )
+def domain_version(spec: ReleaseSpec) -> str:
+    metadata = tomllib.loads(spec.version_file.read_text(encoding="utf-8"))
+    version = str(metadata["project"]["version"])
+    init_version = extract(
+        (spec.package_dir / "__init__.py").read_text(encoding="utf-8"),
+        r'__version__\s*=\s*"([^"]+)"',
+        f"{spec.name} __version__",
+    )
+    ontology_versions: set[str] = set()
+    for ontology in spec.ontology_files:
+        graph = Graph().parse(ontology)
+        ontology_versions.update(str(value) for value in graph.objects(None, OWL.versionInfo))
+    require(init_version == version, f"{spec.name} version mismatch: pyproject={version}, __init__={init_version}")
+    require(not ontology_versions or ontology_versions == {version}, f"{spec.name} ontology versions do not match {version}: {sorted(ontology_versions)}")
+    return version
 
-    package_assignment = re.search(r"PACKAGES\s*=\s*(?P<body>.+?)\n\nsetup\(", setup_text, re.DOTALL)
-    require(package_assignment is not None, "setup.py must define PACKAGES before setup()")
-    package_block = package_assignment.group("body")
+
+def check_core_boundaries() -> None:
+    setup_text = (REPO_ROOT / "setup.py").read_text(encoding="utf-8")
+    manifest_text = (REPO_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+    require("recursive-include staging " not in manifest_text, "Root distribution must not package transient staging/")
+    for token in ("onto2ai_entitlement", "onto2ai_parcel"):
+        require(f"prune {token}" in manifest_text, f"MANIFEST.in must prune {token}")
     require(
-        'exclude=["onto2ai_entitlement*", "onto2ai_parcel*"]' in package_block,
-        "setup.py must exclude example output packages from the generic distribution",
+        'exclude=["onto2ai_entitlement*", "onto2ai_parcel*"]' in setup_text,
+        "Core setup.py must exclude domain packages",
     )
+    for path in GENERIC_DOCS:
+        text = path.read_text(encoding="utf-8")
+        for pattern in FORBIDDEN_GENERIC_DOC_PATTERNS:
+            require(pattern not in text, f"Stale generic-doc reference {pattern!r} in {path}")
 
 
-def expected_dist_paths(version: str) -> tuple[Path, Path]:
-    return (
-        DIST_DIR / f"onto2ai_engineer-{version}-py3-none-any.whl",
-        DIST_DIR / f"onto2ai_engineer-{version}.tar.gz",
-    )
+def build_distribution(spec: ReleaseSpec, version: str) -> tuple[Path, Path]:
+    uv = shutil.which("uv")
+    require(bool(uv), "uv is required for release builds")
+    dist_dir = spec.package_dir / "dist"
+    subprocess.run([uv, "build", "--out-dir", str(dist_dir)], check=True, cwd=spec.package_dir)
+    normalized = spec.distribution_name.replace("-", "_")
+    wheel = dist_dir / f"{normalized}-{version}-py3-none-any.whl"
+    sdist = dist_dir / f"{normalized}-{version}.tar.gz"
+    require(wheel.is_file(), f"Missing built wheel: {wheel}")
+    require(sdist.is_file(), f"Missing built source distribution: {sdist}")
+    return wheel, sdist
 
 
-def check_dist_artifacts(version: str) -> None:
-    wheel_path, sdist_path = expected_dist_paths(version)
-    require(wheel_path.exists(), f"Missing built wheel artifact: {wheel_path}")
-    require(sdist_path.exists(), f"Missing built source artifact: {sdist_path}")
-    with zipfile.ZipFile(wheel_path) as wheel:
-        wheel_names = wheel.namelist()
-    with tarfile.open(sdist_path) as sdist:
-        sdist_names = sdist.getnames()
-    for forbidden_prefix in ("onto2ai_entitlement/", "onto2ai_parcel/"):
-        require(
-            not any(name.startswith(forbidden_prefix) for name in wheel_names),
-            f"Wheel must not contain example output package files: {forbidden_prefix}",
-        )
-        require(
-            not any(f"/{forbidden_prefix}" in name for name in sdist_names),
-            f"Source distribution must not contain example output package files: {forbidden_prefix}",
-        )
+def inspect_distribution(spec: ReleaseSpec, wheel: Path, sdist: Path) -> None:
+    with zipfile.ZipFile(wheel) as archive:
+        wheel_names = archive.namelist()
+    with tarfile.open(sdist) as archive:
+        sdist_names = archive.getnames()
+    if spec.name == "core":
+        for prefix in ("onto2ai_entitlement/", "onto2ai_parcel/"):
+            require(not any(name.startswith(prefix) for name in wheel_names), f"Core wheel contains {prefix}")
+            require(not any(f"/{prefix}" in name for name in sdist_names), f"Core sdist contains {prefix}")
+    else:
+        package_prefix = spec.package_dir.name + "/"
+        require(any(name.startswith(package_prefix + "ontology/") for name in wheel_names), f"{spec.name} wheel lacks ontology files")
+        require(any(name.startswith(package_prefix + "staging/") for name in wheel_names), f"{spec.name} wheel lacks schema artifacts")
 
 
 def main() -> int:
     args = parse_args()
+    specs = selected_releases(args.package)
     try:
-        setup_version = extract_version(read_text(SETUP_PY), r'version="([^"]+)"', "setup.py version")
-        modeller_version = extract_version(read_text(MODELLER_MAIN), r'version="([^"]+)"', "Onto2AI Modeller version")
-        readme_wheel_version = extract_version(
-            read_text(README_MD),
-            r"onto2ai_engineer-([0-9]+\.[0-9]+\.[0-9]+)-py3-none-any\.whl",
-            "README wheel version example",
-        )
+        versions: dict[str, str] = {}
+        for spec in specs:
+            version = core_version() if spec.name == "core" else domain_version(spec)
+            versions[spec.name] = version
+            if spec.name == "core":
+                check_core_boundaries()
+            if args.build:
+                inspect_distribution(spec, *build_distribution(spec, version))
 
-        versions = {
-            "setup.py": setup_version,
-            "onto2ai_modeller/main.py": modeller_version,
-            "README.md wheel example": readme_wheel_version,
-        }
-        unique_versions = sorted(set(versions.values()))
-        if len(unique_versions) != 1:
-            details = ", ".join(f"{name}={value}" for name, value in versions.items())
-            raise RuntimeError(f"Release version mismatch detected: {details}")
-
-        check_generic_docs()
-        check_no_root_staging_packaging()
-        check_no_example_output_packaging()
-
-        if args.build:
-            subprocess.run([sys.executable, "-m", "build", "--no-isolation"], check=True, cwd=REPO_ROOT)
-            check_dist_artifacts(unique_versions[0])
-
-        print("Harness release verification passed.")
-        print(f"version: {unique_versions[0]}")
-        print(f"build: {'enabled' if args.build else 'skipped'}")
-
+        status = "passed" if args.build else "checked"
         append_harness_log(
             script="harness_verify_release.py",
             mode="release",
-            status="passed",
-            version=unique_versions[0],
+            status=status,
+            packages=[spec.name for spec in specs],
+            versions=versions,
             build_enabled=args.build,
-            dist_checked=args.build,
         )
+        if args.build:
+            print("Harness release verification passed.")
+        else:
+            print("Harness release readiness checks completed; build was not run.")
+        for name, version in versions.items():
+            print(f"{name}: {version}")
         return 0
     except Exception as exc:
-        append_harness_log(
-            script="harness_verify_release.py",
-            mode="release",
-            status="failed",
-            build_enabled=args.build,
-            dist_checked=args.build,
-            error=str(exc),
-        )
+        append_harness_log(script="harness_verify_release.py", mode="release", status="failed", error=str(exc))
         raise
 
 

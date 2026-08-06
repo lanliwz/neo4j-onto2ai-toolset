@@ -20,12 +20,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "profile",
         choices=("verify", "release"),
-        help="Flow to run. 'verify' runs the generic checks; 'release' also performs a package build.",
+        help="Flow to run. 'verify' runs repository checks; 'release' forces live checks and package builds.",
     )
     parser.add_argument(
         "--skip-xmllint",
         action="store_true",
         help="Pass through to ontology verification.",
+    )
+    parser.add_argument("--domain", action="append", choices=["entitlement", "parcel"])
+    parser.add_argument("--live", action="store_true", help="Run live stagingdb and isolated dataset checks.")
+    parser.add_argument(
+        "--package",
+        action="append",
+        choices=["core", "entitlement", "parcel", "all"],
+        help="Release package to build. Defaults to core.",
     )
     return parser.parse_args()
 
@@ -38,20 +46,36 @@ def run_step(name: str, cmd: list[str]) -> None:
 def main() -> int:
     args = parse_args()
 
+    live = args.live or args.profile == "release"
+    domains = args.domain or ["entitlement", "parcel"]
+    domain_args = [value for domain in domains for value in ("--domain", domain)]
+
     flow: list[tuple[str, list[str]]] = [
         ("Preflight: ontology", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "ontology"]),
-        ("Preflight: schema", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "schema"]),
         ("Ontology verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_ontology.py")]),
+        ("Preflight: schema", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "schema"]),
+        ("Schema verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_schema.py"), *domain_args]),
+        ("Preflight: dataset", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "dataset"]),
+        ("Dataset verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_dataset.py"), *domain_args]),
         ("Mode boundary verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_mode_boundaries.py")]),
-        ("Preflight: release", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "release"]),
-        ("Release verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_release.py")]),
     ]
 
     if args.skip_xmllint:
-        flow[2][1].append("--skip-xmllint")
+        flow[1][1].append("--skip-xmllint")
+
+    if live:
+        flow[3][1].append("--live")
+        flow[5][1].append("--live")
 
     if args.profile == "release":
-        flow[-1][1].append("--build")
+        packages = args.package or ["core"]
+        package_args = [value for package in packages for value in ("--package", package)]
+        flow.extend(
+            [
+                ("Preflight: release", [sys.executable, str(SCRIPT_DIR / "harness_preflight.py"), "release"]),
+                ("Release verification", [sys.executable, str(SCRIPT_DIR / "harness_verify_release.py"), "--build", *package_args]),
+            ]
+        )
 
     try:
         for step_name, cmd in flow:
@@ -60,10 +84,11 @@ def main() -> int:
         append_harness_log(
             script="harness_run.py",
             mode="release" if args.profile == "release" else "schema",
-            status="passed",
+            status="passed" if live else "checked",
             profile=args.profile,
             step_count=len(flow),
             xmllint_enabled=not args.skip_xmllint,
+            live_enabled=live,
             build_enabled=args.profile == "release",
         )
         print("Harness run completed.")
@@ -78,6 +103,7 @@ def main() -> int:
             profile=args.profile,
             step_count=len(flow),
             xmllint_enabled=not args.skip_xmllint,
+            live_enabled=live,
             build_enabled=args.profile == "release",
             error=str(exc),
         )

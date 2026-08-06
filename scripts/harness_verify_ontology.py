@@ -9,11 +9,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+from harness_config import DOMAINS, CANONICAL_ONTOLOGY_ROOT
 from harness_log import append_harness_log
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_ONTOLOGY_ROOT = REPO_ROOT / "resource" / "ontology" / "www_onto2ai-toolset_com" / "ontology"
 VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "validate_ontology.py"
 
 
@@ -22,8 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "path",
         nargs="?",
-        default=str(DEFAULT_ONTOLOGY_ROOT),
-        help="RDF file or directory to validate. Defaults to the repo ontology root.",
+        help="RDF file or directory to validate. Defaults to canonical and packaged Onto2AI ontologies.",
     )
     parser.add_argument(
         "--skip-xmllint",
@@ -46,13 +45,22 @@ def run(cmd: list[str]) -> None:
 def main() -> int:
     args = parse_args()
     try:
-        target = Path(args.path).resolve()
-        if not target.exists():
-            raise FileNotFoundError(f"{target} does not exist")
+        if args.path:
+            targets = [Path(args.path).resolve()]
+        else:
+            targets = [CANONICAL_ONTOLOGY_ROOT]
+            targets.extend(spec.package_dir / "ontology" for spec in DOMAINS.values())
+        for target in targets:
+            if not target.exists():
+                raise FileNotFoundError(f"{target} does not exist")
+            run([sys.executable, str(VALIDATE_SCRIPT), str(target)])
 
-        run([sys.executable, str(VALIDATE_SCRIPT), str(target)])
-
-        rdf_files = iter_rdf_files(target)
+        rdf_files = sorted({rdf for target in targets for rdf in iter_rdf_files(target)})
+        if not args.path:
+            for spec in DOMAINS.values():
+                for canonical, packaged in zip(spec.canonical_ontologies, spec.packaged_ontologies, strict=True):
+                    if canonical.read_bytes() != packaged.read_bytes():
+                        raise RuntimeError(f"Ontology mirror drift: {canonical} != {packaged}")
         if not args.skip_xmllint:
             xmllint = shutil.which("xmllint")
             if xmllint is None:
@@ -61,7 +69,7 @@ def main() -> int:
                 run([xmllint, "--noout", str(rdf_file)])
 
         print("Harness ontology verification passed.")
-        print(f"target: {target}")
+        print(f"targets: {len(targets)}")
         print(f"rdf_file_count: {len(rdf_files)}")
         print(f"xmllint: {'skipped' if args.skip_xmllint else 'enabled'}")
 
@@ -69,7 +77,7 @@ def main() -> int:
             script="harness_verify_ontology.py",
             mode="ontology",
             status="passed",
-            target=str(target),
+            targets=[str(target) for target in targets],
             rdf_file_count=len(rdf_files),
             xmllint_enabled=not args.skip_xmllint,
         )
@@ -79,7 +87,7 @@ def main() -> int:
             script="harness_verify_ontology.py",
             mode="ontology",
             status="failed",
-            target=str(Path(args.path).resolve()),
+            targets=[str(Path(args.path).resolve())] if args.path else ["default"],
             error=str(exc),
             xmllint_enabled=not args.skip_xmllint,
         )

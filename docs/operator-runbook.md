@@ -53,21 +53,20 @@ After ontology or schema changes:
    - `python scripts/harness_preflight.py release`
 2. Regenerate transient local review artifacts as needed under `staging/`
 3. Keep finalized domain artifacts in their canonical package or release paths, not in transient root `staging/`
-4. Run generic harness verification:
-   - `python scripts/harness_verify_ontology.py`
-   - `python scripts/harness_verify_mode_boundaries.py`
-5. Run any domain-specific schema validation or dataset smoke tests in the downstream package or workspace that owns them
-6. Finalize schema design only after the generic harness checks and any downstream domain checks pass
+4. Run portable harness verification:
+   - `python scripts/harness_run.py verify`
+5. Before release, run live schema and isolated dataset validation for the selected domain:
+   - `python scripts/harness_run.py verify --live --domain entitlement`
+6. Build a release only through the enforced release flow:
+   - `python scripts/harness_run.py release --domain entitlement --package entitlement`
 
 ### Finalization Workflow
 Use this gate before publishing a schema for downstream API/UI/data usage:
 1. Review model quality in Onto2AI Modeller (ontology, UML, and class-model views).
 2. Ensure artifacts are regenerated and in sync in the canonical package or release location.
-3. Run release verification:
-   - `python scripts/harness_verify_release.py`
-   - optional build check: `python scripts/harness_verify_release.py --build`
-4. Verify representative query or smoke-test scenarios pass in the downstream package or workspace that owns them.
-5. Build and publish the relevant package or release artifact from its canonical location.
+3. Run portable checks with `python scripts/harness_run.py verify`.
+4. Run the matching live release gate, for example `python scripts/harness_run.py release --domain parcel --package parcel`.
+5. Publish only the artifacts produced and inspected by that release gate.
 6. Proceed to distribution only when generic harness checks, downstream validation, and package build all pass.
 
 ## Smoke Checks

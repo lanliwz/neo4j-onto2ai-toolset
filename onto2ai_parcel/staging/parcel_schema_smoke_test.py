@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
-"""Dataset-only smoke test for the staged parcel slice in testdb.
+"""Dataset-only smoke test for the staged parcel slice.
 
 Workflow:
-1. Recreate the dedicated `testdb` database.
+1. Recreate an isolated dataset database.
 2. Apply dataset constraints derived from staging artifacts.
-3. Load enum/reference data plus sample parcel instances into `testdb`.
-4. Verify dataset topology and constraint behavior in `testdb`.
+3. Load enum/reference data plus sample parcel instances into that database.
+4. Verify dataset topology and constraint behavior there.
 
-This test must not load ontology/schema nodes such as `owl__Class` into `testdb`.
+This test must not load ontology/schema nodes such as `owl__Class` into the dataset database.
 """
 
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import sys
 import time
+import uuid
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
@@ -23,12 +25,14 @@ from pathlib import Path
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
+from dotenv import load_dotenv
 from pydantic import ValidationError
 
 THIS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = THIS_DIR.parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+load_dotenv(REPO_ROOT / ".env")
 
 from onto2ai_parcel.staging.pydantic_parcel_model import (
     BoundaryVertex,
@@ -42,7 +46,7 @@ from onto2ai_parcel.staging.pydantic_parcel_model import (
     USStateEnum,
 )
 
-TEST_DB_NAME = "testdb"
+TEST_DB_NAME = f"parcel-smoke-{uuid.uuid4().hex[:8]}"
 STAGING_DB_NAME = os.getenv("NEO4J_STAGING_DB_NAME", "stagingdb")
 US_POSTAL_ADDRESS_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#USPostalAddress"
 PARCEL_URI = "http://www.onto2ai-toolset.com/ontology/parcel/Parcel/#Parcel"
@@ -59,6 +63,7 @@ USA_URI = "https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedS
 CANADA_URI = "https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/Canada"
 QUERY_CONTEXT_PATH = THIS_DIR / "neo4j_query_context.md"
 CONSTRAINT_PATH = THIS_DIR / "neo4j_constraint.cypher"
+DATABASE_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9.-]*$")
 
 
 @dataclass(frozen=True)
@@ -90,6 +95,11 @@ def recreate_test_database(driver, db_name: str) -> None:
             if row and str(row["status"]).lower() == "online":
                 break
             time.sleep(0.5)
+
+
+def drop_test_database(driver, db_name: str) -> None:
+    with driver.session(database="system") as session:
+        session.run(f"DROP DATABASE `{db_name}` IF EXISTS").consume()
 
 
 def parse_constraints_file(path: Path) -> list[str]:
@@ -653,6 +663,24 @@ def validate_testdb(driver) -> dict[str, object]:
 
 
 def main() -> int:
+    global TEST_DB_NAME
+
+    parser = argparse.ArgumentParser(description="Run the parcel dataset smoke test")
+    parser.add_argument(
+        "--database",
+        default=TEST_DB_NAME,
+        help="Isolated Neo4j database used for dataset validation.",
+    )
+    parser.add_argument(
+        "--drop-database-after",
+        action="store_true",
+        help="Drop the isolated smoke-test database after validation.",
+    )
+    args = parser.parse_args()
+    if not DATABASE_NAME_PATTERN.fullmatch(args.database):
+        raise ValueError(f"Invalid Neo4j database name: {args.database!r}")
+    TEST_DB_NAME = args.database
+
     config = get_neo4j_config()
     driver = GraphDatabase.driver(config.uri, auth=(config.username, config.password))
     try:
@@ -667,6 +695,8 @@ def main() -> int:
             print(f"{key}: {value}")
         return 0
     finally:
+        if args.drop_database_after:
+            drop_test_database(driver, TEST_DB_NAME)
         driver.close()
 
 

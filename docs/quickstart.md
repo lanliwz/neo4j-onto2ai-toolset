@@ -105,14 +105,15 @@ Before distributing a toolset-driven ontology output:
    - `python scripts/harness_preflight.py schema`
    - `python scripts/harness_preflight.py dataset`
    - `python scripts/harness_preflight.py release`
-   - or run the generic flow directly: `python scripts/harness_run.py verify`
+   - or run portable repository checks: `python scripts/harness_run.py verify`
+   - add live schema and dataset gates for a domain: `python scripts/harness_run.py verify --live --domain entitlement`
 2. Run generic ontology verification:
    - `python scripts/harness_verify_ontology.py`
 3. Run generic mode-boundary verification:
    - `python scripts/harness_verify_mode_boundaries.py`
 4. Run release verification:
-   - `python scripts/harness_verify_release.py`
-   - optional build check: `python scripts/harness_verify_release.py --build`
-   - or full release flow: `python scripts/harness_run.py release`
+   - readiness only: `python scripts/harness_verify_release.py --package entitlement`
+   - build and inspect: `python scripts/harness_verify_release.py --package entitlement --build`
+   - full live release gate: `python scripts/harness_run.py release --domain entitlement --package entitlement`
 5. Confirm generated artifacts are in sync and committed together.
-6. Validate any domain-specific query or smoke-test scenarios in the appropriate downstream package or workspace.
+6. Confirm the live gate used isolated disposable dataset databases and removed them after validation.

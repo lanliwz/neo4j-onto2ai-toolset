@@ -6,8 +6,8 @@ Use it as a preflight and exit checklist before doing substantial work in this r
 
 Related mode definitions:
 
-- [modes.md](/Users/weizhang/github/neo4j-onto2ai-toolset/docs/harness/modes.md)
-- [AGENTS.md](/Users/weizhang/github/neo4j-onto2ai-toolset/AGENTS.md)
+- [modes.md](./modes.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ## How To Use This Document
 
@@ -24,10 +24,11 @@ Optional helper:
 ```bash
 python scripts/harness_preflight.py <ontology|schema|dataset|release>
 python scripts/harness_run.py verify
-python scripts/harness_run.py release
+python scripts/harness_run.py verify --live --domain entitlement
+python scripts/harness_run.py release --domain entitlement --package entitlement
 ```
 
-Harness scripts also append lightweight JSONL run records to `log/harness_runs.jsonl`.
+Harness scripts also append lightweight JSONL run records to `log/harness_runs.jsonl`. Printed preflights are recorded as `presented`, offline checks as `checked`, and completed live gates as `passed`.
 
 If a task spans multiple modes, complete them in this order:
 
@@ -123,7 +124,7 @@ Use dataset mode for smoke tests, sample data, runtime behavior, and instance-or
 
 - confirm schema validation has already been completed separately
 - identify the dataset smoke test or sample-data load path
-- confirm `testdb` is the target runtime-style database
+- confirm an isolated disposable database is the runtime-style target
 - confirm the test is instance-oriented, not ontology/schema-oriented
 
 ### Allowed Files
@@ -136,18 +137,19 @@ Use dataset mode for smoke tests, sample data, runtime behavior, and instance-or
 
 ### Allowed Databases
 
-- `testdb`
+- an isolated disposable database such as `<domain>-smoke-<id>`
+- never `stagingdb`
 
 ### Required Validators
 
-- smoke test execution in `testdb`
-- checks that no ontology schema nodes are loaded into `testdb`
-- checks that no ontology-only edges such as `rdf__type` or `rdfs__subClassOf` are used in `testdb`
+- smoke test execution in an isolated dataset database
+- checks that no ontology schema nodes are loaded into that database
+- checks that no ontology-only edges such as `rdf__type` or `rdfs__subClassOf` are used there
 - checks that constraints reject invalid runtime data where applicable
 
 ### Exit Criteria
 
-- smoke tests pass in `testdb`
+- smoke tests pass in an isolated dataset database
 - runtime graph is dataset-only
 - major entity, enumeration, and relationship paths are exercised
 - ontology/schema validation remains separated from runtime data validation

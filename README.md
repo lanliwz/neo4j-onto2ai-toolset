@@ -50,12 +50,14 @@ The toolset now starts from an explicit harness boundary so agentic work stays r
 The four operating modes are:
 - `ontology mode`: RDF-first ontology authoring with URI rules and `xmllint` validation
 - `schema mode`: generate and validate Cypher, query context, and application code artifacts from ontology intent
-- `dataset mode`: dataset-only smoke tests in `testdb` with no `owl__Class`, `rdf__type`, or `rdfs__subClassOf`
+- `dataset mode`: dataset-only smoke tests in isolated disposable databases with no `owl__Class`, `rdf__type`, or `rdfs__subClassOf`
 - `release mode`: package checks, versioning, milestone notes, and release discipline
 
 See: [docs/harness/modes.md](./docs/harness/modes.md)
 Checklist: [docs/harness/checklists.md](./docs/harness/checklists.md)
 Preflight: `python scripts/harness_preflight.py <ontology|schema|dataset|release>`
+
+`verify` performs portable repository checks. Add `--live` to validate selected domains against `stagingdb` and execute their smoke tests in isolated disposable databases. `release` always performs those live gates and builds the selected package.
 
 ## Typical Uses
 This toolset is especially useful when you want to:
@@ -178,11 +180,16 @@ python scripts/validate_ontology.py resource/ontology/www_onto2ai-toolset_com/on
 ### Harness Verification
 ```bash
 python scripts/harness_run.py verify
-python scripts/harness_run.py release
+python scripts/harness_run.py verify --live --domain entitlement
+python scripts/harness_run.py release --domain entitlement --package entitlement
+python scripts/harness_run.py release --domain parcel --package parcel
+python scripts/harness_run.py release --package all
 python scripts/harness_preflight.py ontology
 python scripts/harness_verify_ontology.py
+python scripts/harness_verify_schema.py --domain entitlement --live
+python scripts/harness_verify_dataset.py --domain entitlement --live
 python scripts/harness_verify_mode_boundaries.py
-python scripts/harness_verify_release.py
+python scripts/harness_verify_release.py --package all --build
 ```
 
 ### Modeller

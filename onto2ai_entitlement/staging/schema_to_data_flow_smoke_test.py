@@ -33,6 +33,7 @@ from onto2ai_entitlement.staging import pydantic_schema_model
 DEFAULT_TEST_DB_NAME = f"entitlement-smoke-{uuid.uuid4().hex[:8]}"
 THIS_DIR = Path(__file__).resolve().parent
 ONTOLOGY_RELATIONSHIPS = {"rdf__type", "rdfs__subClassOf"}
+DATABASE_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9.-]*$")
 
 
 @dataclass
@@ -178,6 +179,11 @@ def prepare_test_database(driver, db_name: str, reset_database: bool) -> None:
 
     with driver.session(database=db_name) as session:
         session.run("RETURN 1 AS ok").consume()
+
+
+def drop_test_database(driver, db_name: str) -> None:
+    with driver.session(database="system") as session:
+        session.run(f"DROP DATABASE `{db_name}` IF EXISTS").consume()
 
 
 def apply_constraints(driver, db_name: str, constraints_path: Path) -> int:
@@ -522,6 +528,28 @@ def validate_sample_data(
             raise AssertionError(f"Class {cls} missing mandatory properties: {missing}")
 
     with driver.session(database=db_name) as session:
+        ontology_node_count = session.run(
+            """
+            MATCH (n)
+            WHERE any(label IN labels(n) WHERE label IN ['owl__Class', 'owl__Ontology', 'owl__Restriction'])
+            RETURN count(n) AS count
+            """
+        ).single()["count"]
+        if ontology_node_count:
+            raise AssertionError(f"Dataset database contains {ontology_node_count} ontology schema nodes")
+
+        ontology_relationship_count = session.run(
+            """
+            MATCH ()-[r]->()
+            WHERE type(r) IN ['rdf__type', 'rdfs__subClassOf']
+            RETURN count(r) AS count
+            """
+        ).single()["count"]
+        if ontology_relationship_count:
+            raise AssertionError(
+                f"Dataset database contains {ontology_relationship_count} ontology-only relationships"
+            )
+
         for src, relationships in sorted(topology_map.items()):
             if src not in target_classes:
                 continue
@@ -601,7 +629,14 @@ def main() -> int:
         action="store_false",
         help="Delete smoke-test sample data after validation.",
     )
+    parser.add_argument(
+        "--drop-database-after",
+        action="store_true",
+        help="Drop the isolated smoke-test database after validation.",
+    )
     args = parser.parse_args()
+    if not DATABASE_NAME_PATTERN.fullmatch(args.database):
+        raise ValueError(f"Invalid Neo4j database name: {args.database!r}")
 
     cfg = get_neo4j_config()
     constraints_path = Path(args.constraints)
@@ -654,6 +689,8 @@ def main() -> int:
             print("Test data cleaned up.")
         return 0
     finally:
+        if args.drop_database_after:
+            drop_test_database(driver, args.database)
         driver.close()
 
 

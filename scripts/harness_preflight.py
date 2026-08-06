@@ -49,7 +49,7 @@ MODE_DATA = {
         "title": "Schema Mode",
         "entry_checks": [
             "Confirm the ontology source is already updated.",
-            "Identify which artifacts are in scope: Cypher, query context, constraints, Pydantic models, or schema validation scripts.",
+            "Identify which artifacts are in scope: Cypher, query context, constraints, application code models, or schema validation scripts.",
             "Identify the canonical schema package or workspace location.",
             "Confirm stagingdb is the target database for validation.",
         ],
@@ -57,7 +57,7 @@ MODE_DATA = {
             "ontology-aligned Cypher files",
             "neo4j_query_context.md",
             "neo4j_constraint.cypher",
-            "Pydantic model files",
+            "application code model files, including Pydantic when selected",
             "schema validation scripts",
             "package-local staging artifacts such as onto2ai_<domain>/staging/...",
             "transient staging/ files only when explicitly workspace-local and not release sources",
@@ -67,7 +67,7 @@ MODE_DATA = {
         ],
         "required_validators": [
             "schema validation against stagingdb",
-            "cross-check query context, constraints, and Pydantic models for drift",
+            "cross-check query context, constraints, and generated application code models for drift",
             "verify schema artifacts still reflect ontology intent and naming",
         ],
         "exit_criteria": [
@@ -82,27 +82,27 @@ MODE_DATA = {
         "entry_checks": [
             "Confirm schema validation has already been completed separately.",
             "Identify the dataset smoke test or sample-data load path.",
-            "Confirm testdb is the target runtime-style database.",
+            "Confirm an isolated dataset database is the target, never stagingdb.",
             "Confirm the test is instance-oriented, not ontology/schema-oriented.",
         ],
         "allowed_files": [
             "smoke test scripts",
             "sample data loaders",
-            "dataset-oriented Pydantic usage",
+            "dataset-oriented application code model usage",
             "package-local staging test artifacts",
             "runtime validation helpers",
         ],
         "allowed_databases": [
-            "testdb",
+            "an isolated disposable database such as <domain>-smoke-<id>",
         ],
         "required_validators": [
-            "smoke test execution in testdb",
-            "checks that no ontology schema nodes are loaded into testdb",
-            "checks that no ontology-only edges such as rdf__type or rdfs__subClassOf are used in testdb",
+            "smoke test execution in an isolated dataset database",
+            "checks that no ontology schema nodes are loaded into the dataset database",
+            "checks that no ontology-only edges such as rdf__type or rdfs__subClassOf are used there",
             "checks that constraints reject invalid runtime data where applicable",
         ],
         "exit_criteria": [
-            "Smoke tests pass in testdb.",
+            "Smoke tests pass in an isolated dataset database.",
             "Runtime graph is dataset-only.",
             "Major entity, enumeration, and relationship paths are exercised.",
             "Ontology/schema validation remains separated from runtime data validation.",
@@ -177,7 +177,7 @@ def main() -> int:
         append_harness_log(
             script="harness_preflight.py",
             mode=args.mode,
-            status="passed",
+            status="presented",
             checklist_sections=5,
         )
         return 0

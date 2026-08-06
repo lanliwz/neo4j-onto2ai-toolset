@@ -62,7 +62,7 @@ The intended finalization flow for this package is:
 
 1. Validate the source ontology RDF files.
 2. Confirm the packaged parcel artifacts are in sync with the finalized staging/schema workflow.
-3. Run the dataset smoke test against `testdb`.
+3. Run the dataset smoke test against an isolated disposable database.
 4. Build the distribution.
 
 Validation commands:
@@ -71,13 +71,13 @@ Validation commands:
 xmllint --noout ontology/Parcel.rdf
 xmllint --noout ontology/House.rdf
 xmllint --noout ontology/Landscape.rdf
-python staging/parcel_schema_smoke_test.py
+python staging/parcel_schema_smoke_test.py --drop-database-after
 ```
 
 Dataset rule:
 
 - validate ontology and schema in `stagingdb`
-- keep `testdb` dataset-oriented
+- keep the isolated smoke-test database dataset-oriented
 - do not load ontology-only nodes such as `owl__Class` into the dataset database
 - do not materialize ontology-only relationships such as `rdf__type` or `rdfs__subClassOf` in dataset smoke tests
 

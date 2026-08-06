@@ -11,7 +11,7 @@ These modes are intentionally strict. They reduce drift between RDF, Neo4j artif
 
 Operational checklist:
 
-- [checklists.md](/Users/weizhang/github/neo4j-onto2ai-toolset/docs/harness/checklists.md)
+- [checklists.md](./checklists.md)
 
 ## Overview
 
@@ -100,9 +100,10 @@ Typical work:
 - verify constraints reject invalid runtime data
 - validate application-oriented graph topology
 
-Primary database:
+Primary database boundary:
 
-- `testdb`
+- an isolated disposable database such as `<domain>-smoke-<id>`
+- never `stagingdb`
 
 Rules:
 
@@ -113,7 +114,7 @@ Rules:
 
 Exit criteria:
 
-- smoke tests pass in `testdb`
+- smoke tests pass in an isolated dataset database
 - runtime graph contains no ontology schema nodes
 - sample data exercises the major constraints and relationships
 
@@ -147,7 +148,7 @@ Exit criteria:
 Use these boundaries to avoid mixed-responsibility work:
 
 - `stagingdb` is for ontology/schema validation
-- `testdb` is for dataset-only smoke testing
+- isolated disposable databases are for dataset-only smoke testing
 - root `staging/` is transient local workspace, not release source
 - packaged domain outputs should live in their package directories
 
