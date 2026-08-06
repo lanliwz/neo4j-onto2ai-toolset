@@ -1,0 +1,4 @@
+interface:
+  display_name: "Staging Database Expert"
+  short_description: "Manage and validate staging ontology models"
+  default_prompt: "Use $enrich-stagingdb to update and validate this model in stagingdb."

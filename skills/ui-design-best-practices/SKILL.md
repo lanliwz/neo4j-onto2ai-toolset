@@ -1,6 +1,6 @@
 ---
-name: "UI Design Best Practices"
-description: "Guidelines and patterns for implementing modern, theme-aware, and accessible UI components in Onto2AI Modeller."
+name: ui-design-best-practices
+description: Design and verify modern, accessible Onto2AI Modeller interfaces. Use for workbench layout, themes, GoJS diagrams, zoom stability, source/target tab behavior, URI display, model configuration, and LLM errors.
 ---
 # UI Design Best Practices
 
@@ -54,7 +54,7 @@ Ensure all text and diagram elements provide sufficient contrast in both themes.
 - **Workbench Density**: Favor navigator-style layouts with left catalog/search, center ontology view/detail, and right inspector/properties when the workflow involves browsing concepts.
 - **Glassmorphism**: Use semi-transparent backgrounds sparingly. Do not let decorative style reduce legibility or density.
 - **Animations**: Use micro-animations for hover states and transitions between views, but avoid motion that makes diagrams jump.
-- **Responsive Splitters**: Use the `split.js` pattern for resizable panels.
+- **Responsive Panels**: Extend the existing CSS layout and full-screen design-window controls. Add a splitter dependency only when resizable dragging is explicitly required and the dependency is intentionally wired into `index.html` and `app.js`.
 - **URI Display**: Treat URIs as unique identifiers. Display them as selectable text, not links, unless a surface is explicitly intended for web navigation.
 - **Configuration**: LLM model lists and defaults should be populated from `onto2ai_modeller/config.yaml`, not hard-coded in frontend code.
 - **LLM Errors**: When chat fails, show provider, model, status/category, and a practical next action. Quota and missing-key failures should not look like generic chat failures.

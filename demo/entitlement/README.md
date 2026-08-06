@@ -6,7 +6,7 @@ This folder contains the standard, repeatable generation flow for the Onto2AI en
 
 The demo follows the introduction demo pattern:
 
-1. `entitlement-script.md` defines the durable story source.
+1. `entitlement-script.md` is a durable editorial reference; accepted changes must be synchronized into the manifest.
 2. `demo/video/entitlement/entitlement_demo.json` is the production source for slide content, narration text, timing, audio path, and video path.
 3. `generate_entitlement_video.py` reads the manifest, rebuilds narration timing, and writes the derived narration text.
 4. `render_entitlement_template_deck.mjs` renders the LinkedIn-style deck and slide frames through the presentation artifact tool.
@@ -16,7 +16,7 @@ The demo follows the introduction demo pattern:
 ## Durable Inputs
 
 - `assets/onto2ai-qa-frontpage-4.png` - local copy of the LinkedIn article visual used as the cover/background style source.
-- `entitlement-script.md` - full narration script and story source.
+- `entitlement-script.md` - editorial narration reference; the current generator does not parse it.
 - `onto2ai-linkedin-presentation-template.pptx` - editable template based on the Onto2AI LinkedIn article visual style.
 - `../video/entitlement/entitlement_demo.json` - production manifest for slide content, narration, timing, and outputs.
 

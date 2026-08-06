@@ -1,0 +1,4 @@
+interface:
+  display_name: "MCP Server Expert"
+  short_description: "Maintain and troubleshoot Onto2AI MCP"
+  default_prompt: "Use $onto2ai-mcp-expert to inspect and update the Onto2AI MCP server safely."

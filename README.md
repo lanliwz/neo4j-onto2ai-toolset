@@ -129,13 +129,13 @@ onto2ai-mcp http 8082
 
 ### Loader
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri> --no-reset
 
 # or load a known preset, such as the default FIBO domain slice
-python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains --no-reset
 ```
 
-The loader requires an explicit ontology URI or preset. You can use it to bring well-known ontologies into the graph-backed workbench, inspect them, and prepare them for subset extraction and downstream ontology design.
+The loader requires an explicit ontology URI or preset. `load` resets the configured target database by default, so use `--no-reset` unless a clean replacement was explicitly requested and the target database has been confirmed. You can use it to bring well-known ontologies into the graph-backed workbench, inspect them, and prepare them for subset extraction and downstream ontology design.
 
 ### Packaging
 Build the core toolset from the repository root:

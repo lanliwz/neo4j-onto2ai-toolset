@@ -1,6 +1,6 @@
 ---
-name: "Ontology Expert"
-description: "Specialized knowledge for RDF/OWL to Neo4j mapping and ontology-driven graph database design."
+name: ontology-expert
+description: Design, review, and implement RDF/OWL ontologies and ontology-driven Neo4j schemas. Use for ontology modeling, URI conventions, cardinalities, RDF-first changes, generated application models, and domain-package validation.
 ---
 # Ontology Expert Instructions
 
@@ -29,7 +29,7 @@ Follow these rules when mapping OWL/RDF to Neo4j:
 - **Classes**: Map to Neo4j Node Labels (e.g., `owl__Class` -> `:owl__Class`).
 - **Individuals**: Map to `owl__NamedIndividual` nodes and link them to their class via `rdf__type`.
 - **Object Properties**: Map to relationships between nodes. Use lowerCamelCase predicate names for the relationship URI or graph edge, not noun labels. Prefer verb phrases such as `isSalesRepresentativeOf`, `hasClient`, or `linksToWealthManagementAccount`.
-- **Data Properties**: **DEPRECATED**. Map domain-specific attributes (rates, dates, money, statuses) as **Relationships** to `rdfs__Datatype` nodes or `owl__Class` enumeration nodes for ontological consistency.
+- **Datatype Properties**: Model scalar and list-valued attributes as standard `owl:DatatypeProperty` resources with domain, range, definition, and cardinality. The loader materializes them as schema relationships to `rdfs__Datatype` nodes; application-model generators render them as fields.
 - **Annotations**: Map to Node Properties (e.g., `rdfs__label`, `skos__definition`).
 
 ## Architectural Visualization (UML)
@@ -57,7 +57,7 @@ When generating Pydantic classes using the `generate_schema_code` tool:
 5. **Enums as Enums**: Ensure that `owl__Class` nodes enriched with individuals are rendered as standard Python `enum.Enum` classes.
     - **Canonical Example (Currency)**: `Currency` should be modeled as an `Enum` containing members like `US_DOLLAR = "US Dollar"`, `EURO = "Euro"`, etc.
     - **Usage**: Reference the Enum directly in parent classes (e.g., `MonetaryAmount.has_currency: Currency`).
-6. **Artifact Regeneration**: After enum-related changes, regenerate transient local review artifacts under `staging/`, then copy finalized release artifacts into the relevant domain package staging folder (for example, `onto2ai_entitlement/staging/` or `onto2ai_parcel/staging/`) so downstream review/code remain in sync.
+6. **Artifact Regeneration**: Prefer a checked-in deterministic package generator when available. For entitlement, run `venv/bin/python scripts/regenerate_entitlement_artifacts.py --database stagingdb`; otherwise regenerate transient review artifacts and promote only reviewed output into the relevant domain package.
 
 ## Modeller Customization
 When extending the Modeller's model support:

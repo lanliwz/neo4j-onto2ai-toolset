@@ -6,7 +6,7 @@ This folder contains the standard, repeatable generation flow for the Onto2AI To
 
 The demo is generated from durable inputs and writes transient render work to the system temp directory:
 
-1. `introduction-script.md` defines the long-form story source.
+1. `introduction-script.md` is a long-form editorial reference; accepted changes must be synchronized into the manifest.
 2. `demo/video/introduction/introduction_demo.json` is the production source for slide content, narration text, timing, audio path, and video path.
 3. `generate_introduction_video.py` reads the manifest, rebuilds narration timing, and writes the derived narration text.
 4. `render_introduction_template_deck.mjs` renders the LinkedIn-style deck and slide frames through the presentation artifact tool.
@@ -16,7 +16,7 @@ The demo is generated from durable inputs and writes transient render work to th
 ## Durable Inputs
 
 - `assets/onto2ai-qa-frontpage-4.png` - local copy of the LinkedIn article visual used as the cover/background style source.
-- `introduction-script.md` - full narration script and story source.
+- `introduction-script.md` - editorial narration reference; the current generator does not parse it.
 - `onto2ai-linkedin-presentation-template.pptx` - editable template based on the Onto2AI LinkedIn article visual style.
 - `../video/introduction/introduction_demo.json` - production manifest for slide content, narration, timing, and outputs.
 

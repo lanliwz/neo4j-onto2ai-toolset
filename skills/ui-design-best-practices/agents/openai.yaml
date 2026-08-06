@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Design Best Practices"
+  short_description: "Design accessible Onto2AI Modeller UI"
+  default_prompt: "Use $ui-design-best-practices to implement and verify this Onto2AI Modeller interface change."

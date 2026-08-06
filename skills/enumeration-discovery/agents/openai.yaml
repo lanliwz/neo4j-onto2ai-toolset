@@ -1,0 +1,4 @@
+interface:
+  display_name: "Enumeration Discovery"
+  short_description: "Find and preserve ontology enumerations"
+  default_prompt: "Use $enumeration-discovery to identify and validate the enumeration classes in this ontology."

@@ -1,6 +1,6 @@
 ---
-name: "MCP Server Expert"
-description: "Instructions for maintaining, running, and extending the Onto2AI MCP Server."
+name: onto2ai-mcp-expert
+description: Maintain, run, troubleshoot, and extend the Onto2AI MCP server. Use for tool registration, transports, Modeller API parity, schema extraction, generation, configuration, and server restarts.
 ---
 # MCP Server Expert (onto2ai_mcp)
 
@@ -74,7 +74,7 @@ Generates a structured Markdown summary with five sections:
 
 #### Other Tools
 - **`generate_schema_code` (target_type='graph_schema')**: Invokes the schema description logic for a deployment-ready representation.
-- **`generate_neo4j_schema_constraint`**: Emits datatype `IS NOT NULL` constraints and enum-aware mandatory relationship comments.
+- **`generate_neo4j_schema_constraint`**: Emits datatype `IS NOT NULL` constraints, `IS UNIQUE` constraints for ontology properties marked unique, and enum-aware mandatory relationship comments.
 - **`extract_data_model`**: Deterministic base for graph schema, code models, constraints, and documentation. Use this before generated artifacts.
 - **`generate_shacl_for_modelling`**: SHACL-oriented validation artifact generation from the extracted model.
 

@@ -2,14 +2,14 @@
 
 This guide defines the standard demo-generation workflow for Onto2AI demos.
 
-The current standard is the introduction demo: a script-driven, presentation-rendered video with OpenAI `cedar` narration. The workflow keeps durable source files in `demo/`, writes temporary render frames and video segments to the system temp directory, and publishes only the final reusable assets.
+The current standard is the introduction demo: a manifest-driven, presentation-rendered video with OpenAI `cedar` narration. The workflow keeps editorial source files in `demo/`, writes temporary render frames and video segments to the system temp directory, and publishes only the final reusable assets.
 
 ## Standard Folder Structure
 
 - `demo/introduction/` - source and generation workflow for the Onto2AI introduction demo.
 - `demo/entitlement/` - source and generation workflow for the Onto2AI entitlement demo.
-- `demo/introduction/introduction-script.md` - long-form narration and story source.
-- `demo/entitlement/entitlement-script.md` - long-form entitlement narration and story source.
+- `demo/introduction/introduction-script.md` - long-form editorial reference; synchronize accepted changes into the manifest.
+- `demo/entitlement/entitlement-script.md` - long-form entitlement editorial reference; synchronize accepted changes into the manifest.
 - `demo/introduction/generate_introduction_video.py` - canonical generator for the introduction video.
 - `demo/entitlement/generate_entitlement_video.py` - generator for the entitlement video.
 - `demo/introduction/render_introduction_template_deck.mjs` - presentation artifact-tool renderer for the LinkedIn-style deck.
@@ -103,7 +103,7 @@ python3 demo/entitlement/generate_entitlement_video.py --refresh-audio
 
 ## Single Source Of Truth
 
-Use `*_demo.json` as the canonical per-demo production file:
+Use `*_demo.json` as the canonical per-demo production file. The current generators do not parse the Markdown editorial scripts:
 
 - `narrative_lines[].text` - authoritative narration text.
 - `narrative_lines[].start_ms` / `end_ms` - scene timing.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "FIBO Ontology Conventions"
+  short_description: "Apply FIBO-compatible ontology conventions"
+  default_prompt: "Use $fibo-ontology-conventions to review this financial ontology for FIBO-compatible modeling."

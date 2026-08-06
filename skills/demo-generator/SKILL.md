@@ -1,6 +1,6 @@
 ---
-name: "Demo Generator"
-description: "Generate Onto2AI demo manifests, presentation-style review videos, and future screen-recording demo skeletons."
+name: demo-generator
+description: Generate or revise Onto2AI demo manifests, presentation review videos, and screen-recording demo skeletons. Use for introduction, entitlement, and other standardized product demos.
 ---
 # Demo Generator Instructions
 
@@ -10,7 +10,7 @@ Use this skill when the user wants to create, regenerate, or standardize Onto2AI
 
 The current standard is the introduction demo:
 
-- script-driven
+- manifest-driven
 - manifest-first
 - presentation-rendered
 - narrated with OpenAI `cedar`
@@ -26,6 +26,13 @@ Use `demo/README4DEMO` as the workflow overview and `demo/introduction/README.md
 - Narration output: `demo/video/introduction/introduction_narration.txt`
 - Audio output: `demo/audio/onto2ai_introduction_cedar.mp3`
 - Video output: `demo/video/review/onto2ai_introduction_template.mp4`
+
+The entitlement demo uses the parallel canonical generator and outputs:
+
+- Script: `demo/entitlement/generate_entitlement_video.py`
+- Editorial source: `demo/entitlement/entitlement-script.md`
+- Manifest: `demo/video/entitlement/entitlement_demo.json`
+- Video: `demo/video/review/onto2ai_entitlement_template.mp4`
 
 ## Regenerate The Introduction Demo
 
@@ -63,7 +70,7 @@ The manifest must carry:
 - `output_audio` points to the narration artifact.
 - `output_video` points to the review/final video artifact.
 
-Avoid parallel script, timing, and scene files that can drift away from the manifest. It is fine to keep a long-form source script under the relevant demo source folder, but the generator must derive the production narration from the manifest.
+The JSON manifest is authoritative for production narration and slides. Long-form Markdown scripts are editorial references and are not parsed by the current generators; when an editorial script changes, update the manifest explicitly before regeneration.
 
 ## Presentation-Style Demo Rules
 

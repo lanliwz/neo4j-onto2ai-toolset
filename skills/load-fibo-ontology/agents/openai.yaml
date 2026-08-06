@@ -1,0 +1,4 @@
+interface:
+  display_name: "FIBO Loading Expert"
+  short_description: "Load and verify FIBO source ontologies"
+  default_prompt: "Use $load-fibo-ontology to load and verify the required FIBO source ontology slice."

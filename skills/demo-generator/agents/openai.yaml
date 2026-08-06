@@ -1,0 +1,4 @@
+interface:
+  display_name: "Demo Generator"
+  short_description: "Build standardized Onto2AI demo videos"
+  default_prompt: "Use $demo-generator to create or regenerate this Onto2AI product demo."

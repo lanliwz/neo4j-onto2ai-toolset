@@ -1,6 +1,6 @@
 ---
-name: "Demo Audio Producer"
-description: "Create Onto2AI product demo narration and OpenAI cedar audio files aligned to demo manifests."
+name: demo-audio-producer
+description: Create or refresh Onto2AI demo narration, OpenAI cedar audio, and manifest-aligned voice tracks. Use for demo voiceovers, TTS regeneration, narration timing, and audio/video synchronization.
 ---
 # Demo Audio Producer Instructions
 
@@ -23,8 +23,8 @@ Use this skill when the user asks to create or update demo walkthrough content, 
 
 ## File Contract (Purpose + When to Use)
 - `demo/introduction/introduction-script.md`
-  Purpose: story source for the standard introduction demo.
-  When to use: revise the demo message, structure, or voiceover.
+  Purpose: long-form editorial reference for the standard introduction demo.
+  When to use: draft or review the story; synchronize accepted changes into the JSON manifest because the generator does not parse this file.
 - `demo/introduction/generate_introduction_video.py`
   Purpose: repeatable generator for manifest, narration text, audio, deck render, and final MP4.
   When to use: regenerate or refresh the introduction demo.
@@ -39,7 +39,7 @@ Use this skill when the user asks to create or update demo walkthrough content, 
   When to use: approval rounds and iteration.
 
 ## Workflow
-1. Update the durable script or manifest first.
+1. Update the canonical JSON manifest first. If an editorial Markdown script changed, synchronize the accepted narration and slide content into the manifest.
 2. Derive narration text from `narrative_lines[].text` in the manifest.
 3. Generate audio into `demo/audio/`.
 4. Verify expected file count, duration, and naming.

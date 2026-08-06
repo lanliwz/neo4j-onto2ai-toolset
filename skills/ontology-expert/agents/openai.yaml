@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ontology Expert"
+  short_description: "Design and validate ontology-driven schemas"
+  default_prompt: "Use $ontology-expert to review and implement this ontology change end to end."

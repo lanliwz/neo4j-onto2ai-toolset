@@ -1,0 +1,4 @@
+interface:
+  display_name: "Demo Audio Producer"
+  short_description: "Create synchronized demo narration audio"
+  default_prompt: "Use $demo-audio-producer to refresh narration and synchronized audio for this Onto2AI demo."

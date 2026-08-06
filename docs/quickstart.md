@@ -35,13 +35,15 @@ Full variable contract: [configuration.md](./configuration.md)
 
 ## 4. Load Ontology
 ```bash
-python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri>
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri> --no-reset
 ```
+
+`load` resets the configured target database by default. Use `--no-reset` unless a clean replacement was explicitly requested and the target database has been confirmed.
 
 Useful loader operations:
 ```bash
 # load the default FIBO domain slice explicitly
-python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --preset default-domains --no-reset
 
 # list recent load runs
 python -m neo4j_onto2ai_toolset.onto2ai_loader history --limit 10
@@ -53,7 +55,7 @@ python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source
 python -m neo4j_onto2ai_toolset.onto2ai_loader reload --run-id <run_id> --source loaded --local-files-only
 
 # first-time local-only load (no internet fetch)
-python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri> --local-files-only
+python -m neo4j_onto2ai_toolset.onto2ai_loader load --uri <ontology_iri> --local-files-only --no-reset
 ```
 
 ## 5. Start MCP Server

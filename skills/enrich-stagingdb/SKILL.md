@@ -1,6 +1,6 @@
 ---
-name: "Staging Database Expert"
-description: "Specialized skill for managing, enriching, and consolidating the Neo4j staging database."
+name: enrich-stagingdb
+description: Manage, enrich, consolidate, and validate Onto2AI schema content in Neo4j stagingdb. Use for ontology staging, duplicate consolidation, materialization, artifact regeneration, constraints, and domain-package smoke workflows.
 ---
 # Staging Database Expert Instructions
 
@@ -34,7 +34,7 @@ Use `get_materialized_schema` to discover available properties for a class, then
 **Workflow:**
 1. Query FIBO ontology: `get_materialized_schema(class_names=["person"])` to see all available relationships
 2. Check what already exists in staging: `MATCH (c:owl__Class {rdfs__label: 'person'})-[r]->(t) RETURN type(r), t.rdfs__label`
-3. Write enrichment via Cypher — create target class nodes with `MERGE` and relationships with `CREATE`
+3. Write enrichment via idempotent Cypher: `MERGE` target nodes by URI and `MERGE` relationships by stable type, endpoints, and URI.
 
 **Example — Enriching Person:**
 ```cypher
@@ -46,18 +46,16 @@ MERGE (personName:owl__Class {uri: 'https://spec.edmcouncil.org/fibo/ontology/FN
   ON CREATE SET personName.rdfs__label = 'person name',
                personName.skos__definition = 'designation by which someone is known in some context'
 
-CREATE (person)-[:hasName {
-  materialized: true,
-  uri: 'https://www.omg.org/spec/Commons/Designators/hasName',
-  skos__definition: 'is known by',
-  cardinality: '0..*'
-}]->(personName)
+MERGE (person)-[hasName:hasName {uri: 'https://www.omg.org/spec/Commons/Designators/hasName'}]->(personName)
+SET hasName.materialized = true,
+    hasName.skos__definition = 'is known by',
+    hasName.cardinality = '0..*'
 ```
 
 **Key rules for enrichment relationships:**
 - Always set `materialized: true` on relationship properties
 - Include `uri`, `skos__definition`, and `cardinality` on each relationship
-- Use `MERGE` for target nodes (to avoid duplicates) and `CREATE` for relationships
+- Use `MERGE` for nodes and relationships so repeated enrichment does not create duplicates.
 - Standard cardinality values: `1`, `0..1`, `0..*`, `1..*`
 
 ### Creating Custom Classes
@@ -65,29 +63,24 @@ When FIBO or the source ontology does not have a class you need, create it in st
 
 **Example — Creating Tax Payer:**
 ```cypher
-CREATE (tp:owl__Class {
-  rdfs__label: 'tax payer',
-  uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/TaxPayer',
-  skos__definition: 'A person who is obligated to pay taxes and is identified by a tax identifier.'
-})
+MERGE (tp:owl__Class {uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/TaxPayer'})
+SET tp.rdfs__label = 'tax payer',
+    tp.skos__definition = 'A person who is obligated to pay taxes and is identified by a tax identifier.'
 
 // Inheritance
 WITH tp
 MATCH (person:owl__Class {rdfs__label: 'person'})
-CREATE (tp)-[:rdfs__subClassOf {
-  materialized: true,
-  skos__definition: 'A tax payer is a person.'
-}]->(person)
+MERGE (tp)-[isPerson:rdfs__subClassOf]->(person)
+SET isPerson.materialized = true,
+    isPerson.skos__definition = 'A tax payer is a person.'
 
 // Associations
 WITH tp
 MATCH (taxId:owl__Class {rdfs__label: 'tax identifier'})
-CREATE (tp)-[:hasTaxId {
-  materialized: true,
-  uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/hasTaxId',
-  skos__definition: 'The tax identifier assigned to a tax payer.',
-  cardinality: '1..*'
-}]->(taxId)
+MERGE (tp)-[hasTaxId:hasTaxId {uri: 'http://www.onto2ai-toolset.com/ontology/tax/Tax/hasTaxId'}]->(taxId)
+SET hasTaxId.materialized = true,
+    hasTaxId.skos__definition = 'The tax identifier assigned to a tax payer.',
+    hasTaxId.cardinality = '1..*'
 ```
 
 **Rules for custom classes:**
@@ -97,7 +90,7 @@ CREATE (tp)-[:hasTaxId {
 - Always include `skos__definition`
 - Use `rdfs__subClassOf` for inheritance relationships
 
-### Enriching with Datatype Properties (Inline)
+### Materializing Datatype Properties
 For simple value-type properties, create `rdfs__Datatype` nodes directly instead of full classes.
 
 **Example — Enriching Conventional Street Address as US Physical Address:**
@@ -118,10 +111,14 @@ MERGE (city:rdfs__Datatype {uri: '...'})
 MERGE (state:rdfs__Datatype {uri: '...'})
   ON CREATE SET state.rdfs__label = 'state', state.xsd__type = 'xsd:string'
 
-CREATE (addr)-[:hasStreetAddress {materialized: true, cardinality: '1'}]->(sa)
-CREATE (addr)-[:hasZipCode {materialized: true, cardinality: '1'}]->(zip)
-CREATE (addr)-[:hasCity {materialized: true, cardinality: '1'}]->(city)
-CREATE (addr)-[:hasState {materialized: true, cardinality: '1'}]->(state)
+MERGE (addr)-[street:hasStreetAddress]->(sa)
+SET street.materialized = true, street.cardinality = '1'
+MERGE (addr)-[postal:hasZipCode]->(zip)
+SET postal.materialized = true, postal.cardinality = '1'
+MERGE (addr)-[locality:hasCity]->(city)
+SET locality.materialized = true, locality.cardinality = '1'
+MERGE (addr)-[region:hasState]->(state)
+SET region.materialized = true, region.cardinality = '1'
 ```
 
 **Common XSD types:**
@@ -145,17 +142,17 @@ Create instances of classes using `owl__NamedIndividual` nodes with `rdf__type` 
 ```cypher
 MATCH (country:owl__Class {rdfs__label: 'country'})
 
-CREATE (usa:owl__NamedIndividual {
-  rdfs__label: 'United States of America',
-  uri: 'https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedStatesOfAmerica',
-  skos__definition: 'country in North America'
-})
-CREATE (usa)-[:rdf__type {materialized: true}]->(country)
+MERGE (usa:owl__NamedIndividual {uri: 'https://www.omg.org/spec/LCC/Countries/ISO3166-1-CountryCodes/UnitedStatesOfAmerica'})
+SET usa.rdfs__label = 'United States of America',
+    usa.skos__definition = 'country in North America'
+MERGE (usa)-[countryType:rdf__type]->(country)
+SET countryType.materialized = true
 
 // Link to a class that uses this individual
 WITH usa
 MATCH (addr:owl__Class {rdfs__label: 'conventional street address'})
-CREATE (addr)-[:defaultCountry {materialized: true, cardinality: '1'}]->(usa)
+MERGE (addr)-[defaultCountry:defaultCountry]->(usa)
+SET defaultCountry.materialized = true, defaultCountry.cardinality = '1'
 ```
 
 If you need instance data attributes (for example, ISO codes), model them as relationships to `rdfs__Datatype` nodes instead of inline properties.
@@ -202,9 +199,12 @@ MERGE (state:rdfs__Datatype {rdfs__label: 'stateOrProvince', xsd__type: 'xsd:str
 
 MATCH (country:owl__Class {rdfs__label: 'country'})
 
-CREATE (pob)-[:hasCity {materialized: true, cardinality: '0..1'}]->(city)
-CREATE (pob)-[:hasStateOrProvince {materialized: true, cardinality: '0..1'}]->(state)
-CREATE (pob)-[:hasCountry {materialized: true, cardinality: '1'}]->(country)
+MERGE (pob)-[cityRel:hasCity]->(city)
+SET cityRel.materialized = true, cityRel.cardinality = '0..1'
+MERGE (pob)-[stateRel:hasStateOrProvince]->(state)
+SET stateRel.materialized = true, stateRel.cardinality = '0..1'
+MERGE (pob)-[countryRel:hasCountry]->(country)
+SET countryRel.materialized = true, countryRel.cardinality = '1'
 ```
 
 **Pattern**: Use datatypes for simple text fields (city, state names) and class references for complex objects (country with its own properties).
@@ -242,55 +242,52 @@ To ensure data integrity, maintain a Cypher constraints file for the finalized d
 
 **Core Principles:**
 1. **Separate Metadata**: Metadata properties like `uri`, `skos__definition`, and `rdfs__label` should NOT have constraints or persistent indexes in the archival script (keep them as comments only).
-2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`).
+2. **Enforce Structural Schema**: Mandatory properties (cardinality starting with `1`) MUST have existence constraints (`IS NOT NULL`), and ontology properties marked unique MUST have `IS UNIQUE` constraints.
 3. **Keep in Sync**: Generate or update the constraints file from current graph metadata as part of your release workflow (scripted or manual), and verify it against `stagingdb` before applying.
 4. **Enum-Aware Notes**: Keep mandatory enum/class relationships documented as comments in the generated constraints output (while reserving physical `IS NOT NULL` constraints for datatype-backed node properties).
 
 ### Regeneration Workflow (After Enum or Relationship Updates)
-After changing enum classes, named individuals, subclass relationships, or mandatory relationships, regenerate in this order:
-1. `extract_data_model(database='stagingdb')` → transient local review output under `staging/`
+After changing enum classes, named individuals, subclass relationships, or mandatory relationships, regenerate in this order. Prefer a checked-in package generator when one exists; it avoids manual copy drift.
+
+For the entitlement package, run from the repository root:
+
+```bash
+venv/bin/python scripts/regenerate_entitlement_artifacts.py --database stagingdb
+```
+
+For domains without a package generator, call the MCP tools in this order and explicitly serialize each returned object or string to the reviewed package path; these tools do not write files themselves:
+1. `extract_data_model(database='stagingdb')` → serialize `DataModel.model_dump_json(indent=2)` to the model JSON path.
    - Note: `rdfs__subClassOf` relationships are automatically included in the extracted model.
-2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → transient local review output under `staging/`
+2. `generate_schema_code(target_type='pydantic', database='stagingdb')` → write the returned code string to the application-model path.
    - Child classes inherit from their parent Pydantic class; inherited fields are not redeclared.
    - Pydantic is one supported application model target. Keep schema decisions generic enough for other target generators.
-3. `generate_neo4j_schema_description(database='stagingdb')` → transient local review output under `staging/`
+3. `generate_neo4j_schema_description(database='stagingdb')` → write the returned Markdown string to the query-context path.
    - Subclass nodes appear as `Child:Parent` multi-label in all five sections.
-4. `generate_neo4j_schema_constraint(database='stagingdb')` → transient local review output under `staging/`
-5. Copy finalized release artifacts into the relevant domain package staging folder.
+4. `generate_neo4j_schema_constraint(database='stagingdb')` → write the returned Cypher string to the constraint path.
+5. Write or copy finalized release artifacts into the relevant domain package staging folder only after reviewing the transient output.
 6. Run the domain workflow validation test, for example:
    - `python -m onto2ai_entitlement.staging.schema_to_data_flow_smoke_test`
    - or the matching smoke test for the active domain package.
-   - The smoke test must always recreate and use `testdb`
-   - Keep the sample data in `testdb` by default for manual review
+   - Use a dataset-oriented database. The entitlement smoke test creates a unique `entitlement-smoke-*` database by default and does not drop an existing database unless `--reset-database` is explicit.
+   - Use `--cleanup` for release verification; omit it only when retained sample data is needed for manual review.
    - Review the printed summary before considering finalization complete
-7. Publish the ontology package only after the smoke test passes.
-8. Ensure workflow semantics are covered by test data. For entitlement/tax-like examples, that may include:
-   - person/taxpayer has residence/address
-   - W-2 is issued by organization/employer and issued to person
-   - Form 1040 is submitted by taxpayer to IRS
+7. Build from the canonical domain package directory, inspect the wheel/source archive, and run the smoke workflow from an isolated wheel installation before publishing.
+8. Publish the ontology package only after the smoke test passes.
+9. Ensure workflow semantics are covered by test data. For entitlement, validate user-to-policy-group membership, policy-group inclusion, rule-to-column targets, and the database/schema/table/column containment chain.
 
 ### Domain Model Consistency
 To ensure generated application code models are fully compatible with the graph, follow these modeling standards. Pydantic is one supported target; the underlying contract should also support future application code model targets.
 
 **Key Patterns:**
-1. **URI Identity**: All core classes should inherit from a `SemanticModel` base class that includes an optional `uri: str` field.
-2. **Field Aliases**: Use `Field(alias="...")` to map Python field names to their ontological counterparts (the Neo4j relationship types or property names). This allows for clean Python code while maintaining strict graph parity.
+1. **Ontology Identity**: Preserve class and property URIs in `full_schema_model.json` and query context. Do not assume generated classes inherit from a shared semantic base unless that base is implemented by the selected target generator.
+2. **Field Aliases**: For Pydantic output, use `Field(alias="...")` to map Python field names to their ontological property or relationship names.
    - Example: `taxableIncome: Optional[MonetaryAmount] = Field(alias="hasTaxableIncome", ...)`
-3. **Automated Bridge**: For Pydantic output, use the `PydanticNeo4jBridge` utility to automate the conversion between Pydantic objects and Neo4j `MERGE` queries. This utility leverages the aliases to identify the correct graph predicates.
+3. **Persistence Adapter**: Use an implemented domain loader or write an explicit adapter that separates scalar node properties from object relationships. Do not reference a bridge utility unless it exists in the repository and is covered by tests.
 
 **Why**: This 1:1 parity between the domain model and the graph schema enables type-safe, automated data ingestion and extraction without manual Cypher mapping.
 
-### Effective Node Label Heuristic (Documentation Filtering)
-When generating final documentation (like `staging_schema.md`), use instance counts and topological activity to distinguish between primary Entity Classes and metadata/flattened classes.
-
-**Filtering Logic (Effective Label Calculation):**
-1.  **Direct Instances**: Any label with `count > 0` in the database is considered an effective Entity Class.
-2.  **Topological Activity**: Labels with outgoing relationships are considered structural classes and should be included.
-3.  **Domain Baseline**: Core entities (e.g., `Person`, `Employer`, `Account`, `Form1010`) are always kept regardless of instances.
-4.  **Leaf Node Rule (Exclusion)**: Labels with zero instances AND no outgoing relationships should be treated as **Datatypes** or **Enums**, even if they appear in the graph topology. They should be excluded from the main "Node Labels (Classes)" table but described in the "Graph Topology" and "Node Properties" sections.
-5.  **Enum Filter**: Explicitly exclude any class that is implemented as an application enum (identified by `enumValues`, named individuals, or `xsd_type` in metadata) from the Classes table.
-
-**Why**: This ensures the documentation matches the actual implemented model (where many ontological classes are flattened into properties) rather than listing every technical label used in the graph.
+### Strict Schema Description Parity
+`generate_neo4j_schema_description` currently ignores its legacy `use_heuristics` parameter and formats the complete result of `extract_data_model`. Do not filter classes by instance counts or leaf status in package artifacts. If a curated view is needed, generate it as a separate review artifact and keep the full schema description authoritative.
 
 ### ⚠️ CRITICAL: No Inline Properties on Named Individuals
 **NEVER store data attributes as inline properties on `owl__NamedIndividual` nodes.** All attributes must be modeled as relationships to `rdfs__Datatype` nodes.
@@ -306,17 +303,16 @@ CREATE (w2:owl__NamedIndividual {
 
 ✅ **CORRECT** — relationships to datatypes:
 ```cypher
-CREATE (w2:owl__NamedIndividual {
-  rdfs__label: 'W-2',
-  uri: '...',
-  skos__definition: '...'
-})
+MERGE (w2:owl__NamedIndividual {uri: '...'})
+SET w2.rdfs__label = 'W-2',
+    w2.skos__definition = '...'
 
 MERGE (wages:rdfs__Datatype {rdfs__label: 'wagesTipsOtherComp'})
   ON CREATE SET wages.xsd__type = 'xsd:decimal',
                wages.skos__definition = 'Box 1: Total wages, tips, and other compensation'
 
-CREATE (w2)-[:hasWagesTipsOtherComp {materialized: true, cardinality: '1'}]->(wages)
+MERGE (w2)-[wagesRel:hasWagesTipsOtherComp]->(wages)
+SET wagesRel.materialized = true, wagesRel.cardinality = '1'
 ```
 
 **Why**: Named individuals should only have metadata properties (`rdfs__label`, `uri`, `skos__definition`). All domain attributes must be expressed as graph relationships so they appear correctly in UML/Pydantic visualizations and can be properly queried.
@@ -334,8 +330,10 @@ CREATE (f)-[:rdf__type]->(report)  // WRONG: rdf__type implies instance
 
 ✅ **CORRECT** — form type as class:
 ```cypher
-CREATE (f:owl__Class {rdfs__label: 'Form 1040', uri: '...', skos__definition: '...'})
-CREATE (f)-[:rdfs__subClassOf {materialized: true}]->(report)  // Subclass hierarchy
+MERGE (f:owl__Class {uri: '...'})
+SET f.rdfs__label = 'Form 1040', f.skos__definition = '...'
+MERGE (f)-[formType:rdfs__subClassOf]->(report)
+SET formType.materialized = true  // Subclass hierarchy
 ```
 
 **To convert existing named individuals to classes:**
@@ -348,7 +346,8 @@ MATCH (f)-[oldType:rdf__type]->(c)
 DELETE oldType
 WITH DISTINCT f
 MATCH (parent:owl__Class {rdfs__label: 'report'})
-MERGE (f)-[:rdfs__subClassOf {materialized: true}]->(parent)
+MERGE (f)-[formType:rdfs__subClassOf]->(parent)
+SET formType.materialized = true
 ```
 
 **When to use which:**

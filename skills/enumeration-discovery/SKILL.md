@@ -1,6 +1,6 @@
 ---
-name: "Enumeration Discovery"
-description: "Instructions for identifying ontology enumeration classes and rendering them in generated application models."
+name: enumeration-discovery
+description: Identify OWL enumeration classes and preserve their members in generated application models and diagrams. Use for owl:NamedIndividual discovery, rdf:type membership, enum deduplication, and regeneration checks.
 ---
 # Enumeration Discovery Skill
 
@@ -39,4 +39,4 @@ In UML diagrams, ensure these classes use the `«enumeration»` stereotype.
 - **New Members**: When adding new individuals to the database, always ensure they are linked to the correct class via `rdf__type`.
 - **Deduplication**: Periodically run deduplication queries to ensure that enumeration members are not duplicated across different URIs.
 - **Schema vs Dataset Boundary**: `rdf__type` links are valid in `stagingdb` for schema/model enumeration discovery. Do not load ontology-only `rdf__type` links into dataset databases unless the task explicitly requires schema validation there.
-- **Regeneration Workflow**: After enum changes, regenerate transient local review artifacts under `staging/`, then copy finalized artifacts into the relevant domain package staging folder before release.
+- **Regeneration Workflow**: After enum changes, use the checked-in domain artifact generator when available. For entitlement, run `venv/bin/python scripts/regenerate_entitlement_artifacts.py --database stagingdb`; otherwise regenerate transient review artifacts and promote only reviewed output into the package.

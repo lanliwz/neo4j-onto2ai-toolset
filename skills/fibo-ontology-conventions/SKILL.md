@@ -1,6 +1,6 @@
 ---
-name: FIBO Ontology Conventions
-description: Rules for creating OWL ontologies strictly following the FIBO naming and documentation conventions.
+name: fibo-ontology-conventions
+description: Apply FIBO-compatible OWL naming, labels, definitions, URI structure, and alignment rules. Use when creating or refining financial ontologies or extracting a FIBO-based application profile.
 ---
 
 # FIBO Ontology Conventions
