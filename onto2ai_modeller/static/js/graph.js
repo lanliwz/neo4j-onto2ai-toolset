@@ -239,11 +239,11 @@ function initGraph() {
             spacingBelow: 2
         },
             new go.Binding("text", "name", (n) => `+ ${n}`),
-            new go.Binding("stroke", "kind", (k, obj) => {
+            new go.Binding("stroke", "", (data, obj) => {
                 const isLight = obj.diagram.model.modelData.isLight;
-                if (k === "association") return isLight ? "#4338ca" : "#818cf8";
+                if (data.kind === "association") return isLight ? "#4338ca" : "#818cf8";
                 return isLight ? "#065f46" : "#34d399";
-            }).ofModel()),
+            })),
         $(go.TextBlock, {
             font: "11px Inter, sans-serif",
             stroke: "#94a3b8",
@@ -642,6 +642,14 @@ async function loadGraphData(className) {
         model.modelData.isLight = isLight;
 
         myDiagram.model = model;
+
+        // Keep the property panel synchronized with class selection in the
+        // Target Ontology navigator, just as Source Ontology preview does.
+        const selectedNode = data.nodes.find(node => node.isCenter)
+            || data.nodes.find(node => node.label === className);
+        if (selectedNode) {
+            showNodeProperties(selectedNode);
+        }
 
         // Hide placeholder
         document.getElementById('graph-placeholder').classList.add('hidden');

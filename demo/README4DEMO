@@ -8,6 +8,7 @@ The current standard is the introduction demo: a manifest-driven, presentation-r
 
 - `demo/introduction/` - source and generation workflow for the Onto2AI introduction demo.
 - `demo/entitlement/` - source and generation workflow for the Onto2AI entitlement demo.
+- `demo/custodian_wealth/` - FIBO-to-finalized-client-ontology workflow for a fictional global custodian bank.
 - `demo/introduction/introduction-script.md` - long-form editorial reference; synchronize accepted changes into the manifest.
 - `demo/entitlement/entitlement-script.md` - long-form entitlement editorial reference; synchronize accepted changes into the manifest.
 - `demo/introduction/generate_introduction_video.py` - canonical generator for the introduction video.
@@ -56,6 +57,32 @@ Generated deliverables:
 - `demo/video/entitlement/entitlement_demo.json`
 - `demo/video/entitlement/entitlement_narration.txt`
 - `demo/video/review/onto2ai_entitlement_template.mp4`
+
+## Custodian Wealth Management Demo
+
+This demo follows a fictional institution, Northstar Custody Bank, from FIBO
+concept discovery through focused extraction, target customization, UML and
+application-schema review, validation, and publication of the fictional
+`northstar-client-ontology` package.
+
+The presentation is backed by the executable Harbor Ridge Family Office case
+under `demo/custodian_wealth/case/`. The case records exact FIBO selection
+decisions, target-model acceptance criteria, a 21-node application dataset, and
+a live smoke test that validates `stagingdb` before proving the business trace
+in the isolated `northstar-demo` database.
+
+Durable inputs:
+- `demo/custodian_wealth/custodian-wealth-script.md`
+- `demo/custodian_wealth/assets/modeller/*.png` - verified Modeller UI states used by the walkthrough.
+- `demo/custodian_wealth/generate_custodian_wealth_video.py`
+- `demo/custodian_wealth/render_custodian_wealth_deck.mjs`
+
+Generated deliverables:
+- `demo/custodian_wealth/onto2ai-custodian-wealth-video-deck.pptx`
+- `demo/audio/onto2ai_custodian_wealth_cedar.mp3`
+- `demo/video/custodian_wealth/custodian_wealth_demo.json`
+- `demo/video/custodian_wealth/custodian_wealth_narration.txt`
+- `demo/video/review/onto2ai_custodian_wealth.mp4`
 
 ## Regenerate Introduction Video
 

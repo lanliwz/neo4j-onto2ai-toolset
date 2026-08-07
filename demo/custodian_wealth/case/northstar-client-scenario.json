@@ -1,0 +1,150 @@
+{
+  "scenario_id": "harbor-ridge-onboarding-and-settlement",
+  "description": "Northstar onboards Harbor Ridge Family Office, opens a USD custody account, records a portfolio holding, and completes a related cash movement.",
+  "nodes": [
+    {
+      "id": "client-hrfo",
+      "labels": ["CustodianClient"],
+      "properties": {
+        "hasClientRecordId": "NSC-000184",
+        "hasClientDisplayName": "Harbor Ridge Family Office LLC",
+        "hasOnboardingDate": "2026-08-07",
+        "hasNextKycReviewDate": "2027-08-07"
+      }
+    },
+    {
+      "id": "client-status-active",
+      "labels": ["ClientStatus"],
+      "properties": {"name": "client active"}
+    },
+    {
+      "id": "onboarding-184",
+      "labels": ["ClientOnboardingCase"],
+      "properties": {"hasOnboardingCaseId": "KYC-2026-0184"}
+    },
+    {
+      "id": "kyc-medium",
+      "labels": ["KycRiskRating"],
+      "properties": {"name": "medium kyc risk"}
+    },
+    {
+      "id": "relationship-manager",
+      "labels": ["RelationshipManager"],
+      "properties": {"employeeId": "RM-1042", "displayName": "Jordan Lee"}
+    },
+    {
+      "id": "beneficial-owner",
+      "labels": ["BeneficialOwner"],
+      "properties": {"partyId": "PARTY-90018", "displayName": "Harbor Ridge Holdings LLC"}
+    },
+    {
+      "id": "service-agreement",
+      "labels": ["CustodyServiceAgreement"],
+      "properties": {"agreementId": "CSA-2026-0184"}
+    },
+    {
+      "id": "account-usd-4218",
+      "labels": ["CustodyAccount", "Account"],
+      "properties": {"hasCustodyAccountId": "NCT-USD-004218"}
+    },
+    {
+      "id": "account-status-active",
+      "labels": ["AccountStatus"],
+      "properties": {"name": "account active"}
+    },
+    {
+      "id": "usd",
+      "labels": ["Currency"],
+      "properties": {"alphabeticCode": "USD", "name": "US Dollar"}
+    },
+    {
+      "id": "account-provider",
+      "labels": ["AccountProvider"],
+      "properties": {"providerId": "NORTHSTAR", "displayName": "Northstar Custody Bank"}
+    },
+    {
+      "id": "account-balance",
+      "labels": ["Balance"],
+      "properties": {"amount": "2500000.00", "currency": "USD"}
+    },
+    {
+      "id": "account-open-date",
+      "labels": ["OpenDate"],
+      "properties": {"value": "2026-08-07"}
+    },
+    {
+      "id": "portfolio-income",
+      "labels": ["CustodyPortfolio"],
+      "properties": {"hasPortfolioId": "HRFO-INCOME-01"}
+    },
+    {
+      "id": "holding-treasury",
+      "labels": ["CustodyHolding"],
+      "properties": {"hasHoldingQuantity": "2500000"}
+    },
+    {
+      "id": "instrument-demo-note",
+      "labels": ["FinancialInstrument"],
+      "properties": {"instrumentId": "FI-DEMO-NOTE-2031", "displayName": "Northstar Demo Treasury Note 2031"}
+    },
+    {
+      "id": "settlement-731",
+      "labels": ["SettlementInstruction"],
+      "properties": {"hasSettlementInstructionId": "SI-2026-000731", "hasRequestedSettlementDate": "2026-08-10"}
+    },
+    {
+      "id": "settlement-status-completed",
+      "labels": ["SettlementInstructionStatus"],
+      "properties": {"name": "settlement completed"}
+    },
+    {
+      "id": "settlement-amount",
+      "labels": ["MonetaryAmount"],
+      "properties": {"amount": "2500000.00", "currency": "USD"}
+    },
+    {
+      "id": "cash-movement-731",
+      "labels": ["CashMovement", "Payment"],
+      "properties": {"hasPaymentReference": "PAY-2026-000731"}
+    },
+    {
+      "id": "payment-occurrence-kind",
+      "labels": ["OccurrenceKind"],
+      "properties": {"name": "custody settlement payment"}
+    }
+  ],
+  "relationships": [
+    {"from": "client-hrfo", "type": "hasClientStatus", "to": "client-status-active"},
+    {"from": "client-hrfo", "type": "hasOnboardingCase", "to": "onboarding-184"},
+    {"from": "onboarding-184", "type": "hasKycRiskRating", "to": "kyc-medium"},
+    {"from": "client-hrfo", "type": "hasRelationshipManager", "to": "relationship-manager"},
+    {"from": "client-hrfo", "type": "hasBeneficialOwner", "to": "beneficial-owner"},
+    {"from": "client-hrfo", "type": "hasCustodyServiceAgreement", "to": "service-agreement"},
+    {"from": "client-hrfo", "type": "hasCustodyAccount", "to": "account-usd-4218"},
+    {"from": "service-agreement", "type": "governsCustodyAccount", "to": "account-usd-4218"},
+    {"from": "account-usd-4218", "type": "hasAccountStatus", "to": "account-status-active"},
+    {"from": "account-usd-4218", "type": "hasBaseCurrency", "to": "usd"},
+    {"from": "account-usd-4218", "type": "isProvidedBy", "to": "account-provider"},
+    {"from": "account-usd-4218", "type": "hasBalance", "to": "account-balance"},
+    {"from": "account-usd-4218", "type": "hasOpenDate", "to": "account-open-date"},
+    {"from": "account-usd-4218", "type": "hasCustodyPortfolio", "to": "portfolio-income"},
+    {"from": "portfolio-income", "type": "hasCustodyHolding", "to": "holding-treasury"},
+    {"from": "holding-treasury", "type": "isHoldingOfFinancialInstrument", "to": "instrument-demo-note"},
+    {"from": "holding-treasury", "type": "hasValuationCurrency", "to": "usd"},
+    {"from": "account-usd-4218", "type": "hasSettlementInstruction", "to": "settlement-731"},
+    {"from": "settlement-731", "type": "debitsCustodyAccount", "to": "account-usd-4218"},
+    {"from": "settlement-731", "type": "hasSettlementCurrency", "to": "usd"},
+    {"from": "settlement-731", "type": "hasSettlementAmount", "to": "settlement-amount"},
+    {"from": "settlement-731", "type": "hasSettlementInstructionStatus", "to": "settlement-status-completed"},
+    {"from": "settlement-731", "type": "instructsCashMovement", "to": "cash-movement-731"},
+    {"from": "account-usd-4218", "type": "recordsCashMovement", "to": "cash-movement-731"},
+    {"from": "cash-movement-731", "type": "hasPaymentAmount", "to": "settlement-amount"},
+    {"from": "cash-movement-731", "type": "exemplifies", "to": "payment-occurrence-kind"}
+  ],
+  "expected_trace": [
+    "client-hrfo",
+    "account-usd-4218",
+    "settlement-731",
+    "cash-movement-731"
+  ]
+}

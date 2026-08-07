@@ -1,0 +1,90 @@
+{
+  "case_id": "northstar-custodian-client-001",
+  "institution": {
+    "name": "Northstar Custody Bank",
+    "fictional": true,
+    "business_line": "Institutional custody and wealth management"
+  },
+  "problem": "Create one governed client model for onboarding, custody accounts, portfolios, holdings, settlement instructions, and cash movements without starting from a blank ontology.",
+  "primary_question": "Can Northstar trace an approved client through its custody account and portfolio to a holding, settlement instruction, and completed cash movement?",
+  "source_ontology": "FIBO with supporting OMG Commons concepts",
+  "source_selections": [
+    {
+      "role": "account",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/Account",
+      "decision": "selected",
+      "reason": "Provides the financial account meaning, provider, holder, balance, identifier, and lifecycle context needed by a custody account."
+    },
+    {
+      "role": "payment",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/PaymentsAndSchedules/Payment",
+      "decision": "selected",
+      "reason": "Provides the monetary amount and obligation semantics needed by a custody cash movement."
+    },
+    {
+      "role": "party",
+      "uri": "https://www.omg.org/spec/Commons/PartiesAndSituations/Party",
+      "decision": "selected",
+      "reason": "Provides a stable general party concept for clients, owners, managers, and service providers."
+    },
+    {
+      "role": "currency",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/CurrencyAmount/Currency",
+      "decision": "selected",
+      "reason": "Provides the controlled currency concept used for account reporting, valuation, and settlement."
+    },
+    {
+      "role": "financial instrument",
+      "uri": "https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/FinancialInstrument",
+      "decision": "selected",
+      "reason": "Provides the governed investment instrument represented by a custody holding."
+    }
+  ],
+  "supporting_selections": [
+    "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/ProductsAndServices/Client",
+    "https://spec.edmcouncil.org/fibo/ontology/SEC/Securities/SecurityAssets/Portfolio",
+    "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/FinancialProductsAndServices/Holding",
+    "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/AccountSpecificServiceAgreement",
+    "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/RelationshipManager",
+    "https://spec.edmcouncil.org/fibo/ontology/BE/OwnershipAndControl/CorporateOwnership/BeneficialOwner"
+  ],
+  "target_model": {
+    "base_uri": "http://www.onto2ai-toolset.com/ontology/custodian/CustodianClient/",
+    "version": "0.1.0",
+    "classes": [
+      "custodian client",
+      "custody account",
+      "custody portfolio",
+      "custody holding",
+      "custody service agreement",
+      "cash movement",
+      "settlement instruction",
+      "client onboarding case",
+      "client status",
+      "account status",
+      "settlement instruction status",
+      "kyc risk rating"
+    ],
+    "formal_subclasses": {
+      "custody account": "https://spec.edmcouncil.org/fibo/ontology/FBC/ProductsAndServices/ClientsAndAccounts/Account",
+      "cash movement": "https://spec.edmcouncil.org/fibo/ontology/FND/ProductsAndServices/PaymentsAndSchedules/Payment"
+    },
+    "application_adaptations": [
+      "custodian client",
+      "custody portfolio",
+      "custody holding",
+      "custody service agreement",
+      "client onboarding case"
+    ],
+    "expected_custom_datatype_properties": 11,
+    "expected_custom_object_properties": 23
+  },
+  "acceptance_criteria": [
+    "Exact selected source URIs are present and source provenance is retained.",
+    "Every target class has a label, definition, and unique URI.",
+    "Identifiers, dates, quantity, statuses, and relationship cardinalities appear in generated application schemas.",
+    "The client-to-account-to-settlement-to-cash-movement path is testable with instance data.",
+    "No ontology schema nodes or ontology-only relationships are loaded into the dataset database.",
+    "The finalized release can be rebuilt from canonical RDF and versioned artifacts."
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "demo": "onto2ai_custodian_wealth_workflow",
+  "worked_example": "fictional global custodian bank",
+  "institution": "Northstar Custody Bank",
+  "final_package": "northstar-client-ontology",
+  "source_script": "demo/custodian_wealth/custodian-wealth-script.md",
+  "presentation_template": "demo/introduction/onto2ai-linkedin-presentation-template.pptx",
+  "rendered_deck": "demo/custodian_wealth/onto2ai-custodian-wealth-video-deck.pptx",
+  "output_video": "demo/video/review/onto2ai_custodian_wealth.mp4",
+  "output_audio": "demo/audio/onto2ai_custodian_wealth_cedar.mp3",
+  "silent": false,
+  "resolution": "1280x720",
+  "fps": 30,
+  "narrative_lines": [
+    {
+      "id": "custodian_wealth_01",
+      "start_ms": 0,
+      "end_ms": 12331,
+      "title": "Use Onto2AI Modeller",
+      "text": "This walkthrough shows how a designer uses Onto2AI Modeller, from Source Ontology discovery through Target Ontology, UML, Pydantic Models, Semantic Interaction, and Native Query, using a fictional custodian client case."
+    },
+    {
+      "id": "custodian_wealth_02",
+      "start_ms": 12331,
+      "end_ms": 24662,
+      "title": "The Harbor Ridge Case",
+      "text": "Northstar must onboard Harbor Ridge, open a USD custody account, record a portfolio holding, and complete settlement. The testable outcome is one trace from approved client to completed cash movement."
+    },
+    {
+      "id": "custodian_wealth_03",
+      "start_ms": 24662,
+      "end_ms": 38637,
+      "title": "Search Source Ontology",
+      "text": "Open Source Ontology, enter account in the search box, and select Search. Modeller returns ranked FIBO matches with concept type, definition, match reason, and score so the designer can compare candidates before selecting one."
+    },
+    {
+      "id": "custodian_wealth_04",
+      "start_ms": 38637,
+      "end_ms": 52201,
+      "title": "Preview a Source Concept",
+      "text": "Select Preview on the FIBO account result. Modeller adds the concept as an extraction seed, opens its relationship neighborhood in Ontology View, and shows its stable URI and definition in the Properties panel."
+    },
+    {
+      "id": "custodian_wealth_05",
+      "start_ms": 52201,
+      "end_ms": 65765,
+      "title": "Build the Extraction Workspace",
+      "text": "Repeat Search and Add for payment, party, currency, and financial instrument. Review the five Extraction Seeds, keep flatten inheritance enabled, then select Extract to Workspace to populate the Target Ontology without changing FIBO."
+    },
+    {
+      "id": "custodian_wealth_06",
+      "start_ms": 65765,
+      "end_ms": 79329,
+      "title": "Inspect Target Ontology",
+      "text": "Open Target Ontology, filter Classes for custodian client, and select the class. Ontology View focuses the graph and the Properties panel immediately shows the selected class URI, definition, source provenance, and customization strategy."
+    },
+    {
+      "id": "custodian_wealth_07",
+      "start_ms": 79329,
+      "end_ms": 92071,
+      "title": "Review UML Diagram",
+      "text": "Filter for custody account and select UML Diagram. Review its attributes, inherited Account behavior, association direction, relationship targets, and multiplicity. Use the expand button when the model needs more design space."
+    },
+    {
+      "id": "custodian_wealth_08",
+      "start_ms": 92071,
+      "end_ms": 104402,
+      "title": "Review Pydantic Models",
+      "text": "Select Pydantic Models for the same class. Modeller shows how ontology properties become typed fields, references, collections, required values, and uniqueness rules. Pydantic is one renderer, not the ontology itself."
+    },
+    {
+      "id": "custodian_wealth_09",
+      "start_ms": 104402,
+      "end_ms": 120843,
+      "title": "Test the Harbor Ridge Workflow",
+      "text": "The instance test links Harbor Ridge to account N C T U S D zero zero four two one eight, its income portfolio and holding, settlement instruction seven thirty one, and completed cash movement with payment reference seven thirty one."
+    },
+    {
+      "id": "custodian_wealth_10",
+      "start_ms": 120843,
+      "end_ms": 136873,
+      "title": "Use Semantic Interaction",
+      "text": "Open Semantic Interaction and ask whether the target supports Harbor Ridge onboarding, a U S D custody account, and settlement-to-cash traceability. Ask it to identify missing concepts and overly broad inherited fields, then apply accepted corrections in Target Ontology."
+    },
+    {
+      "id": "custodian_wealth_11",
+      "start_ms": 136873,
+      "end_ms": 152492,
+      "title": "Validate with Native Query",
+      "text": "Open Native Query, enter a read-only Cypher validation query, and select Run Query. Modeller displays the result in the Properties panel: 12 Northstar target classes and 34 custom properties. The external smoke test then validates instance data separately."
+    },
+    {
+      "id": "custodian_wealth_12",
+      "start_ms": 152492,
+      "end_ms": 166464,
+      "title": "Prepare the Package Handoff",
+      "text": "The Modeller session has produced an accepted, tested prototype. The next harness steps author canonical RDF, align generated schemas and constraints, repeat dataset validation, and publish a versioned Northstar package after release gates pass."
+    }
+  ],
+  "slides": [
+    {
+      "id": "custodian_wealth_01",
+      "title": "Use Onto2AI Modeller",
+      "subtitle": "A hands-on fictional custodian client walkthrough",
+      "bullets": [
+        "Start from trusted FIBO semantics.",
+        "Customize through ontology, UML, and application views.",
+        "Finalize `northstar-client-ontology`."
+      ]
+    },
+    {
+      "id": "custodian_wealth_02",
+      "title": "The Harbor Ridge Case",
+      "subtitle": "A measurable custody workflow",
+      "bullets": [
+        "Onboard a fictional family-office client.",
+        "Open one USD custody account and portfolio.",
+        "Trace settlement to a completed cash movement."
+      ]
+    },
+    {
+      "id": "custodian_wealth_03",
+      "title": "Search Source Ontology",
+      "subtitle": "Source Ontology",
+      "bullets": [
+        "Enter account and select Search.",
+        "Compare ranked FIBO matches and definitions.",
+        "Choose by meaning, URI, and context."
+      ]
+    },
+    {
+      "id": "custodian_wealth_04",
+      "title": "Preview a Source Concept",
+      "subtitle": "Ontology View",
+      "bullets": [
+        "Select Preview on the FIBO account result.",
+        "Review its Ontology View neighborhood.",
+        "Confirm URI and definition in Properties."
+      ]
+    },
+    {
+      "id": "custodian_wealth_05",
+      "title": "Build the Extraction Workspace",
+      "subtitle": "Five source seeds into Target Ontology",
+      "bullets": [
+        "Add account, payment, party, currency, and instrument.",
+        "Keep flatten inheritance enabled.",
+        "Select Extract to Workspace."
+      ]
+    },
+    {
+      "id": "custodian_wealth_06",
+      "title": "Inspect Target Ontology",
+      "subtitle": "Filter, select, and inspect a customized class",
+      "bullets": [
+        "Filter Classes for custodian client.",
+        "Select the class to focus Ontology View.",
+        "Review URI, definition, and provenance."
+      ]
+    },
+    {
+      "id": "custodian_wealth_07",
+      "title": "Review UML Diagram",
+      "subtitle": "Inspect implementation-neutral structure",
+      "bullets": [
+        "Filter and select custody account.",
+        "Select UML Diagram.",
+        "Review attributes, inheritance, and associations."
+      ]
+    },
+    {
+      "id": "custodian_wealth_08",
+      "title": "Review Pydantic Models",
+      "subtitle": "Inspect generated application impact",
+      "bullets": [
+        "Select Pydantic Models for the same class.",
+        "Review types, references, and collections.",
+        "Trace required and unique fields to ontology rules."
+      ]
+    },
+    {
+      "id": "custodian_wealth_09",
+      "title": "Test the Harbor Ridge Workflow",
+      "subtitle": "A real instance-oriented scenario",
+      "bullets": [
+        "Client to custody account and portfolio.",
+        "Holding to financial instrument.",
+        "Settlement instruction to completed cash movement."
+      ]
+    },
+    {
+      "id": "custodian_wealth_10",
+      "title": "Use Semantic Interaction",
+      "subtitle": "Ask graph-grounded design questions",
+      "bullets": [
+        "Ask whether the Harbor Ridge workflow is supported.",
+        "Request missing concepts and inheritance risks.",
+        "Apply accepted corrections in Target Ontology."
+      ]
+    },
+    {
+      "id": "custodian_wealth_11",
+      "title": "Validate with Native Query",
+      "subtitle": "Read-only evidence inside Modeller",
+      "bullets": [
+        "Enter a read-only Cypher query.",
+        "Select Run Query.",
+        "Confirm 12 target classes and 34 custom properties."
+      ]
+    },
+    {
+      "id": "custodian_wealth_12",
+      "title": "Prepare the Package Handoff",
+      "subtitle": "Move from accepted prototype into harness release work",
+      "bullets": [
+        "Author canonical RDF from accepted ontology intent.",
+        "Align application schemas and constraints.",
+        "Publish a versioned package after release validation."
+      ]
+    }
+  ]
+}

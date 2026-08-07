@@ -1,0 +1,23 @@
+This walkthrough shows how a designer uses Onto2AI Modeller, from Source Ontology discovery through Target Ontology, UML, Pydantic Models, Semantic Interaction, and Native Query, using a fictional custodian client case.
+
+Northstar must onboard Harbor Ridge, open a USD custody account, record a portfolio holding, and complete settlement. The testable outcome is one trace from approved client to completed cash movement.
+
+Open Source Ontology, enter account in the search box, and select Search. Modeller returns ranked FIBO matches with concept type, definition, match reason, and score so the designer can compare candidates before selecting one.
+
+Select Preview on the FIBO account result. Modeller adds the concept as an extraction seed, opens its relationship neighborhood in Ontology View, and shows its stable URI and definition in the Properties panel.
+
+Repeat Search and Add for payment, party, currency, and financial instrument. Review the five Extraction Seeds, keep flatten inheritance enabled, then select Extract to Workspace to populate the Target Ontology without changing FIBO.
+
+Open Target Ontology, filter Classes for custodian client, and select the class. Ontology View focuses the graph and the Properties panel immediately shows the selected class URI, definition, source provenance, and customization strategy.
+
+Filter for custody account and select UML Diagram. Review its attributes, inherited Account behavior, association direction, relationship targets, and multiplicity. Use the expand button when the model needs more design space.
+
+Select Pydantic Models for the same class. Modeller shows how ontology properties become typed fields, references, collections, required values, and uniqueness rules. Pydantic is one renderer, not the ontology itself.
+
+The instance test links Harbor Ridge to account N C T U S D zero zero four two one eight, its income portfolio and holding, settlement instruction seven thirty one, and completed cash movement with payment reference seven thirty one.
+
+Open Semantic Interaction and ask whether the target supports Harbor Ridge onboarding, a U S D custody account, and settlement-to-cash traceability. Ask it to identify missing concepts and overly broad inherited fields, then apply accepted corrections in Target Ontology.
+
+Open Native Query, enter a read-only Cypher validation query, and select Run Query. Modeller displays the result in the Properties panel: 12 Northstar target classes and 34 custom properties. The external smoke test then validates instance data separately.
+
+The Modeller session has produced an accepted, tested prototype. The next harness steps author canonical RDF, align generated schemas and constraints, repeat dataset validation, and publish a versioned Northstar package after release gates pass.
