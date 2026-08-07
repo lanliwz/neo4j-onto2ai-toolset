@@ -464,6 +464,7 @@ function initGraph() {
                 curve: go.Link.Bezier,
                 corner: 10,
                 selectable: true,
+                selectionAdorned: false,
                 click: (e, link) => onLinkClick(link)
             },
             $(go.Shape, {
@@ -479,11 +480,18 @@ function initGraph() {
             $(go.Shape, {
                 toArrow: "Triangle",
                 fill: "#64748b",
-                stroke: null,
+                stroke: "#64748b",
+                strokeWidth: 1,
                 scale: 1.2
             },
                 new go.Binding("fill", "isLight", (light) => light ? "#94a3b8" : "#64748b").ofModel(),
                 new go.Binding("fill", "isSelected", (sel, obj) => {
+                    if (sel) return "#f59e0b";
+                    const light = obj.diagram.model.modelData.isLight;
+                    return light ? "#94a3b8" : "#64748b";
+                }).ofObject(),
+                new go.Binding("stroke", "isLight", (light) => light ? "#94a3b8" : "#64748b").ofModel(),
+                new go.Binding("stroke", "isSelected", (sel, obj) => {
                     if (sel) return "#f59e0b";
                     const light = obj.diagram.model.modelData.isLight;
                     return light ? "#94a3b8" : "#64748b";
@@ -511,6 +519,7 @@ function initGraph() {
                 curve: go.Link.Bezier,
                 corner: 10,
                 selectable: true,
+                selectionAdorned: false,
                 click: (e, link) => onLinkClick(link)
             },
             $(go.Shape, {
@@ -667,6 +676,10 @@ function updateQueryDisplay(query) {
  */
 function onNodeClick(node) {
     const data = node.data;
+    if (data.sourceOntology && typeof window.showSourceNodeProperties === 'function') {
+        window.showSourceNodeProperties(data);
+        return;
+    }
     showNodeProperties(data);
 }
 
@@ -736,17 +749,19 @@ function showNodeProperties(data) {
     `;
 
     // Filtered properties (exclude already shown or technical)
-    const technicalFields = ['key', 'category', 'isCenter', '__gohashid', 'materialized', 'rdfs__label', 'uri', 'skos__definition'];
+    const technicalFields = ['key', 'category', 'isCenter', 'sourceOntology', '__gohashid', 'materialized', 'rdfs__label', 'uri', 'skos__definition'];
 
     // Core fields
-    html += `
-        <div class="property-item">
-            <div class="property-label">URI</div>
-            <div class="property-value">
-                ${escapeHtml(data.uri)}
+    if (data.uri) {
+        html += `
+            <div class="property-item">
+                <div class="property-label">URI</div>
+                <div class="property-value">
+                    ${escapeHtml(data.uri)}
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
 
     if (data.definition) {
         html += `

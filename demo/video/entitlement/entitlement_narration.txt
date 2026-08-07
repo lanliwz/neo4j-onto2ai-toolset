@@ -1,21 +1,23 @@
-This demo shows how Onto2AI turns an entitlement ontology into a validated package for row-level filtering and column-level masking.
+This demo shows the reusable Onto2AI workflow for designing, testing, and publishing a domain package. Entitlement is the worked example, and the final proof is the onto2ai entitlement package.
 
-Entitlement rules often live in scattered implementation details. That makes them hard to review, hard to validate, and risky for AI-assisted data access.
+Application teams often begin with code models, constraints, and API contracts. Without a shared semantic source, those artifacts drift and every team rebuilds domain meaning differently.
 
-The goal is a governed entitlement model that can be inspected as ontology and consumed as implementation-ready artifacts.
+The Onto2AI method starts with RDF. We define domain concepts, relationships, restrictions, enumerations, and documentation before committing to an implementation model.
 
-The core entitlement model is intentionally direct. Users inherit policy through groups, and policies collect the rules that govern access.
+For entitlement, the ontology connects users, policy groups, policies, row filter rules, column mask rules, and the protected database, table, and column context.
 
-The ontology also models the protected data surface: database, schema, table, column, connection profile, and sensitivity classification.
+Onto2AI Modeller loads the RDF into a modelling workspace where designers inspect the ontology graph, review class details, and refine relationships before generation.
 
-For row-level access, row filter rules describe the target column, the comparison semantics, where values come from, and how a query can be rewritten.
+Ontology View, UML, and application code model views make inheritance, cardinality, required properties, and enumeration choices visible before they become application contracts.
 
-For column-level protection, column mask rules describe how protected values are revealed, redacted, tokenized, substituted, or nullified.
+Onto2AI MCP turns ontology intent into aligned schema JSON, query context, Neo4j constraints, and an application code model. Pydantic is one supported target, not the goal itself.
 
-From that ontology, Onto2AI packages generated artifacts: schema JSON, query context, Neo4j constraints, and a Pydantic application model view.
+Ontology Mode validates RDF syntax, URI conventions, and package mirrors. Schema Mode checks generated artifacts and verifies the selected ontology in stagingdb.
 
-Before publishing, the entitlement package runs a smoke test that applies constraints, loads representative sample data, and validates the topology.
+Dataset Mode creates an isolated disposable database, applies constraints, loads representative entitlement instances, validates application topology, and rejects ontology-only runtime content.
 
-The result is an independent domain package. Teams consume the entitlement standard without copying the entire modelling workbench.
+Release Mode reruns the live gates, aligns versions, builds the wheel and source distribution with uv, and inspects their contents before it can report success.
 
-That is the Onto2AI entitlement workflow: model policy meaning once, generate aligned artifacts, validate them, and package the result for delivery.
+The final package contains the RDF ontology, generated schema artifacts, application code model, and reusable smoke test, independently consumable from the modelling workbench.
+
+Entitlement is only the example. The reusable method is to model meaning, inspect and refine it, generate aligned artifacts, test schema and runtime behavior, and publish an independent domain package.

@@ -1,6 +1,6 @@
-# Onto2AI Entitlement Demo
+# Onto2AI Domain Package Workflow Demo
 
-This folder contains the standard, repeatable generation flow for the Onto2AI entitlement demo.
+This folder demonstrates the standard way to use Onto2AI to design, test, and publish a domain package. Entitlement is the worked example, and `onto2ai-entitlement` is the final package produced by the workflow.
 
 ## Standard Flow
 

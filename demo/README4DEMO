@@ -41,7 +41,7 @@ Generated deliverables:
 
 ## Entitlement Demo
 
-The entitlement demo follows the same manifest-first, presentation-rendered structure.
+The entitlement demo follows the same manifest-first, presentation-rendered structure. Its subject is the reusable Onto2AI workflow for designing, testing, and publishing a domain package. Entitlement is the worked example, and `onto2ai-entitlement` is the final proof artifact; the demo should not become primarily an explanation of entitlement policy semantics.
 
 Durable inputs:
 - `demo/entitlement/entitlement-script.md`

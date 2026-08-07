@@ -2,7 +2,7 @@
 """Generate the standard Onto2AI entitlement demo video.
 
 Standard flow:
-1. Build the per-demo manifest from the entitlement storyline.
+1. Load the manifest for the Onto2AI domain-package workflow.
 2. Build or reuse OpenAI cedar narration.
 3. Render the LinkedIn-style presentation deck and slide frames.
 4. Assemble a review MP4 from rendered frames plus narration.
@@ -56,144 +56,6 @@ TTS_MODEL = "gpt-4o-mini-tts-2025-12-15"
 TTS_VOICE = "cedar"
 
 
-DEFAULT_SLIDES = [
-    {
-        "title": "Onto2AI Entitlement",
-        "subtitle": "From policy ontology to validated application artifacts",
-        "bullets": [
-            "Model data access policy as governed semantic meaning.",
-            "Connect users, policy groups, rules, and protected columns.",
-            "Package ontology and implementation artifacts together.",
-        ],
-        "narration": (
-            "This demo shows how Onto2AI turns an entitlement ontology into a "
-            "validated package for row-level filtering and column-level masking."
-        ),
-    },
-    {
-        "title": "The Entitlement Challenge",
-        "bullets": [
-            "Access rules are often scattered across code, SQL, tickets, and documentation.",
-            "Row filters and column masks drift away from data catalog meaning.",
-            "AI-assisted query generation needs governed policy context.",
-        ],
-        "narration": (
-            "Entitlement rules often live in scattered implementation details. "
-            "That makes them hard to review, hard to validate, and risky for AI-assisted data access."
-        ),
-    },
-    {
-        "title": "The Goal",
-        "bullets": [
-            "Create one semantic source for data-access policy structure.",
-            "Generate application-ready schema, constraints, and code model artifacts.",
-            "Validate policy topology before publishing the domain package.",
-        ],
-        "narration": (
-            "The goal is a governed entitlement model that can be inspected as ontology "
-            "and consumed as implementation-ready artifacts."
-        ),
-    },
-    {
-        "title": "Core Domain Model",
-        "bullets": [
-            "User belongs to policy groups.",
-            "Policy groups include policies.",
-            "Policies contain row-filter and column-mask rules.",
-        ],
-        "narration": (
-            "The core entitlement model is intentionally direct. Users inherit policy "
-            "through groups, and policies collect the rules that govern access."
-        ),
-    },
-    {
-        "title": "Protected Data Context",
-        "bullets": [
-            "Relational database, schema, table, and column describe the target surface.",
-            "JDBC connection profiles capture connection metadata.",
-            "Sensitivity classification marks protected columns.",
-        ],
-        "narration": (
-            "The ontology also models the protected data surface: database, schema, "
-            "table, column, connection profile, and sensitivity classification."
-        ),
-    },
-    {
-        "title": "Row Filter Rules",
-        "bullets": [
-            "Target the filtered column context.",
-            "Capture comparison operator, match mode, and value source type.",
-            "Keep LLM rewrite instruction and deterministic rewrite template together.",
-        ],
-        "narration": (
-            "For row-level access, row filter rules describe the target column, the "
-            "comparison semantics, where values come from, and how a query can be rewritten."
-        ),
-    },
-    {
-        "title": "Column Mask Rules",
-        "bullets": [
-            "Target columns that require masking.",
-            "Select mask action, masking method, and fallback behavior.",
-            "Capture mask value expression and rewrite template.",
-        ],
-        "narration": (
-            "For column-level protection, column mask rules describe how protected values "
-            "are revealed, redacted, tokenized, substituted, or nullified."
-        ),
-    },
-    {
-        "title": "Generate Artifacts",
-        "bullets": [
-            "RDF ontology remains the source of truth.",
-            "Generated artifacts include schema JSON, query context, constraints, and Pydantic.",
-            "The package can later support other application code model targets.",
-        ],
-        "narration": (
-            "From that ontology, Onto2AI packages generated artifacts: schema JSON, "
-            "query context, Neo4j constraints, and a Pydantic application model view."
-        ),
-    },
-    {
-        "title": "Validate Before Publish",
-        "bullets": [
-            "Smoke test creates a safe generated Neo4j database by default.",
-            "It applies constraints and loads representative entitlement sample data.",
-            "It validates required properties and all app topology relationships.",
-        ],
-        "narration": (
-            "Before publishing, the entitlement package runs a smoke test that applies "
-            "constraints, loads representative sample data, and validates the topology."
-        ),
-    },
-    {
-        "title": "Package Independently",
-        "bullets": [
-            "The entitlement model is packaged separately from the core toolset.",
-            "Consumers get RDF, generated artifacts, and validation workflow.",
-            "The package becomes a governed enterprise standard for application teams.",
-        ],
-        "narration": (
-            "The result is an independent domain package. Teams consume the entitlement "
-            "standard without copying the entire modelling workbench."
-        ),
-    },
-    {
-        "title": "Onto2AI Entitlement",
-        "subtitle": "Governed data access policy, ready for implementation",
-        "bullets": [
-            "Model policy meaning once.",
-            "Generate aligned implementation artifacts.",
-            "Validate and package before distribution.",
-        ],
-        "narration": (
-            "That is the Onto2AI entitlement workflow: model policy meaning once, "
-            "generate aligned artifacts, validate them, and package the result for delivery."
-        ),
-    },
-]
-
-
 def run(cmd: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
     subprocess.run(cmd, cwd=cwd, env=env, check=True)
 
@@ -210,7 +72,7 @@ def ensure_inputs() -> None:
 
 def load_source_slides() -> list[dict[str, object]]:
     if not MANIFEST_PATH.exists():
-        return DEFAULT_SLIDES
+        raise SystemExit(f"Missing canonical demo manifest: {MANIFEST_PATH}")
 
     source = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     slides = source.get("slides") or []
@@ -287,7 +149,9 @@ def build_manifest(slides: list[dict[str, object]], duration: float, *, silent: 
         )
 
     manifest = {
-        "demo": "onto2ai_entitlement",
+        "demo": "onto2ai_domain_package_workflow",
+        "worked_example": "entitlement",
+        "final_package": "onto2ai-entitlement",
         "source_script": str(SCRIPT_PATH.relative_to(ROOT)),
         "presentation_template": "demo/entitlement/onto2ai-linkedin-presentation-template.pptx",
         "rendered_deck": str(DECK_PATH.relative_to(ROOT)),

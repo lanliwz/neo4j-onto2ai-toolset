@@ -25,17 +25,18 @@ const COLORS = {
 };
 
 const EYEBROWS = [
-  "Entitlement",
-  "Challenge",
-  "Goal",
-  "Domain model",
-  "Data surface",
-  "Row filters",
-  "Column masks",
-  "Artifacts",
-  "Validation",
-  "Distribution",
-  "Takeaway",
+  "Onto2AI workflow",
+  "The challenge",
+  "Ontology mode",
+  "Worked example",
+  "Modeller",
+  "Design review",
+  "MCP generation",
+  "Harness gates",
+  "Dataset mode",
+  "Release mode",
+  "Package output",
+  "Reusable method",
 ];
 
 async function writeBlob(file, blob) {
@@ -82,7 +83,7 @@ function addChrome(slide, section, slideNo, total) {
   addRect(slide, { left: 0, top: 0, width: W, height: 12 }, COLORS.cyan);
   addRect(slide, { left: 0, top: H - 10, width: W, height: 10 }, COLORS.orange);
   addRect(slide, { left: 72, top: 646, width: 1136, height: 1 }, "#334963");
-  addText(slide, "Onto2AI Modeller", { left: 72, top: 664, width: 300, height: 28 }, {
+  addText(slide, "Onto2AI Toolset", { left: 72, top: 664, width: 300, height: 28 }, {
     fontSize: 18,
     bold: true,
     color: COLORS.cyan,
@@ -143,8 +144,6 @@ function addBulletCards(slide, bullets, colors = [COLORS.blue, COLORS.orange, CO
 }
 
 function titleFor(index, slideData) {
-  if (index === 0) return "Onto2AI Entitlement";
-  if (index === 10) return "Governed access policy, ready for implementation";
   return slideData.title;
 }
 
@@ -195,7 +194,7 @@ async function main() {
       });
       addRect(slide, { left: 0, top: 0, width: W, height: H }, index === 0 ? "#020914/54" : "#020914/66");
       addRect(slide, { left: 0, top: 0, width: 590, height: H }, "#030A14/58");
-      addText(slide, index === 0 ? "ONTO2AI ENTITLEMENT" : "CLOSING TAKEAWAY", {
+      addText(slide, index === 0 ? "ONTO2AI DOMAIN WORKFLOW" : "REUSABLE METHOD", {
         left: 76,
         top: 70,
         width: 360,
@@ -212,7 +211,7 @@ async function main() {
         color: "#DCEBFF",
       });
       addRound(slide, { left: 80, top: 560, width: 390, height: 46 }, "#0B1E33/86", COLORS.cyan);
-      addText(slide, "From policy ontology to validated artifacts", {
+      addText(slide, index === 0 ? "Design, test, and publish a domain package" : "Ontology to independent package", {
         left: 102,
         top: 572,
         width: 348,
@@ -228,14 +227,19 @@ async function main() {
       addRound(slide, { left: 210, top: 456, width: 860, height: 78 }, "#122640", COLORS.blue);
       addRound(slide, { left: 290, top: 384, width: 700, height: 72 }, "#1C2840", COLORS.orange);
       addRound(slide, { left: 370, top: 318, width: 540, height: 66 }, "#2A2634", COLORS.amber);
-      addText(slide, "ROW FILTER RULE", { left: 370, top: 338, width: 540, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
-      addText(slide, "VALUE SOURCE", { left: 290, top: 406, width: 700, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
-      addText(slide, "QUERY REWRITE CONTEXT", { left: 210, top: 478, width: 860, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
+      addText(slide, "ONTOLOGY VIEW", { left: 370, top: 338, width: 540, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
+      addText(slide, "UML MODEL", { left: 290, top: 406, width: 700, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
+      addText(slide, "APPLICATION CODE MODEL", { left: 210, top: 478, width: 860, height: 28 }, { fontSize: 25, bold: true, alignment: "center" });
+    } else if (index === 7) {
+      addCard(slide, "Ontology Mode", "RDF syntax, URIs, semantics, and package mirrors.", 92, 342, 500, 118, COLORS.blue);
+      addCard(slide, "Schema Mode", "Artifact alignment and live stagingdb verification.", 656, 342, 500, 118, COLORS.orange);
+      addCard(slide, "Dataset Mode", "Isolated runtime data and topology validation.", 92, 486, 500, 118, COLORS.cyan);
+      addCard(slide, "Release Mode", "Version alignment, build, and package inspection.", 656, 486, 500, 118, COLORS.amber);
     } else if (index === 8) {
-      addCard(slide, "Generated Database", "Safe smoke-test database created or reused.", 92, 330, 500, 118, COLORS.blue);
+      addCard(slide, "Isolated Database", "Disposable smoke-test database created for the run.", 92, 330, 500, 118, COLORS.blue);
       addCard(slide, "Constraints", "Required identifiers and uniqueness are applied.", 656, 330, 500, 118, COLORS.orange);
-      addCard(slide, "Sample Data", "Representative users, policies, rules, and columns are loaded.", 92, 486, 500, 118, COLORS.cyan);
-      addCard(slide, "Topology Check", "All application relationships are validated.", 656, 486, 500, 118, COLORS.amber);
+      addCard(slide, "Runtime Instances", "Representative users, policies, rules, and columns are loaded.", 92, 486, 500, 118, COLORS.cyan);
+      addCard(slide, "Boundary Check", "Application topology passes with no ontology-only content.", 656, 486, 500, 118, COLORS.amber);
     } else if (index === 3) {
       const labels = ["User", "Group", "Policy", "Rule", "Column"];
       for (let i = 0; i < labels.length; i++) {

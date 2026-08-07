@@ -1096,6 +1096,18 @@ async def preview_concept_neighborhood(
     db = get_staging_db(database) if database else semanticdb
     try:
         labels = [str(class_name or "").strip()]
+        seed_rows = db.execute_cypher(
+            """
+            MATCH (c:owl__Class)
+            WHERE c.rdfs__label IN $labels OR c.uri IN $labels
+            RETURN DISTINCT
+              c.rdfs__label AS label,
+              c.uri AS uri,
+              c.skos__definition AS definition
+            """,
+            params={"labels": labels},
+            name="mcp_preview_concept_seed",
+        )
         query = MATERIALIZED_SCHEMA_QUERY if include_incoming else MATERIALIZED_SCHEMA_OUTGOING_QUERY
         rows = db.execute_cypher(
             query,
@@ -1105,6 +1117,17 @@ async def preview_concept_neighborhood(
 
         classes: Dict[str, Dict[str, Any]] = {}
         relationships: List[Dict[str, Any]] = []
+        property_keys: set[tuple[str, str, str]] = set()
+        for row in seed_rows:
+            label = row.get("label")
+            if label:
+                classes[label] = {
+                    "label": label,
+                    "uri": row.get("uri"),
+                    "definition": row.get("definition"),
+                    "properties": [],
+                }
+
         for row in rows:
             src_label = row.get("SourceClassLabel")
             tgt_label = row.get("TargetClassLabel")
@@ -1113,25 +1136,51 @@ async def preview_concept_neighborhood(
                     "label": src_label,
                     "uri": row.get("SourceClassURI"),
                     "definition": row.get("SourceClassDef"),
+                    "properties": [],
                 }
+
+            if row.get("PropMetaType") == "owl__DatatypeProperty":
+                property_key = (src_label or "", row.get("RelType") or "", row.get("RelURI") or "")
+                if src_label and property_key not in property_keys:
+                    property_keys.add(property_key)
+                    classes[src_label]["properties"].append(
+                        {
+                            "name": row.get("RelType"),
+                            "type": tgt_label,
+                            "uri": row.get("RelURI"),
+                            "definition": row.get("RelDef"),
+                            "cardinality": row.get("Cardinality"),
+                            "requirement": row.get("Requirement"),
+                            "unique": bool(row.get("Unique")),
+                        }
+                    )
+                continue
+
             if tgt_label and tgt_label != "Resource" and tgt_label not in classes:
                 classes[tgt_label] = {
                     "label": tgt_label,
                     "uri": row.get("TargetClassURI"),
                     "definition": row.get("TargetClassDef"),
+                    "properties": [],
                 }
-            relationships.append(
-                {
-                    "source_class": src_label,
-                    "relationship_type": row.get("RelType"),
-                    "relationship_uri": row.get("RelURI"),
-                    "definition": row.get("RelDef"),
-                    "cardinality": row.get("Cardinality"),
-                    "requirement": row.get("Requirement"),
-                    "target_class": tgt_label,
-                    "target_uri": row.get("TargetClassURI"),
-                }
-            )
+            if src_label and tgt_label and row.get("RelType"):
+                relationships.append(
+                    {
+                        "source_class": src_label,
+                        "source_uri": row.get("SourceClassURI"),
+                        "relationship_type": row.get("RelType"),
+                        "relationship_uri": row.get("RelURI"),
+                        "definition": row.get("RelDef"),
+                        "cardinality": row.get("Cardinality"),
+                        "requirement": row.get("Requirement"),
+                        "unique": bool(row.get("Unique")),
+                        "target_class": tgt_label,
+                        "target_uri": row.get("TargetClassURI"),
+                    }
+                )
+
+        for class_data in classes.values():
+            class_data["properties"].sort(key=lambda item: item.get("name") or "")
 
         return {
             "database": database or getattr(semanticdb, "_database_name", "semanticdb"),

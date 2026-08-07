@@ -354,42 +354,91 @@ async function previewSourceConcept(label) {
 
 function renderSourcePreview(data, container) {
     const classes = Array.isArray(data.classes) ? data.classes : [];
-    const relationships = Array.isArray(data.relationships) ? data.relationships : [];
-    container.innerHTML = `
-        <div class="source-preview">
-            <h3>${escapeHtml(data.class_name || 'Source Concept')}</h3>
-            <div class="property-section">
-                <h4>Classes</h4>
-                ${classes.slice(0, 12).map(cls => `
-                    <div class="source-preview-row">
-                        <strong>${escapeHtml(cls.label)}</strong>
-                        <span>${escapeHtml(cls.definition || '')}</span>
-                    </div>
-                `).join('') || '<div class="placeholder">No related classes found</div>'}
-            </div>
-            <div class="property-section">
-                <h4>Relationships</h4>
-                ${relationships.slice(0, 20).map(rel => `
-                    <div class="source-preview-rel">
-                        <span>${escapeHtml(rel.source_class)}</span>
-                        <code>${escapeHtml(rel.relationship_type)}</code>
-                        <span>${escapeHtml(rel.target_class)}</span>
-                    </div>
-                `).join('') || '<div class="placeholder">No relationships found</div>'}
-            </div>
-        </div>
-    `;
+    const selected = classes.find(cls => cls.label === data.class_name || cls.uri === data.class_name)
+        || classes[0];
+    if (!selected) {
+        container.innerHTML = '<div class="placeholder">No source class details found</div>';
+        return;
+    }
+    showNodeProperties(sourceClassToGraphNode(selected, data.class_name));
 }
+
+function sourceClassToGraphNode(cls, selectedClass) {
+    const properties = {};
+    for (const property of Array.isArray(cls.properties) ? cls.properties : []) {
+        const name = property.name || property.uri || 'Property';
+        const details = [
+            property.type || 'Resource',
+            property.cardinality ? `cardinality ${property.cardinality}` : null,
+            property.requirement || null,
+            property.unique ? 'unique' : null,
+            property.definition || null
+        ].filter(Boolean);
+        properties[name] = details.join(' · ');
+    }
+
+    return {
+        key: cls.uri || cls.label,
+        label: cls.label || 'Class',
+        uri: cls.uri || '',
+        definition: cls.definition || '',
+        category: 'class',
+        properties,
+        sourceOntology: true,
+        isCenter: cls.label === selectedClass || cls.uri === selectedClass
+    };
+}
+
+async function showSourceNodeProperties(nodeData) {
+    const propertiesContent = document.getElementById('properties-content');
+    const identifier = nodeData.uri || nodeData.label;
+    propertiesContent.innerHTML = `<div class="loading">Loading ${escapeHtml(nodeData.label)} properties...</div>`;
+
+    try {
+        const params = new URLSearchParams({ class_name: identifier, include_incoming: 'true' });
+        const response = await fetch(`/api/source/preview?${params.toString()}`);
+        const data = await response.json();
+        if (!response.ok || data.status === 'error' || data.error) {
+            throw new Error(data.error || (typeof data.detail === 'string' ? data.detail : 'Source class preview failed'));
+        }
+        renderSourcePreview(data, propertiesContent);
+    } catch (error) {
+        console.error('Source node property error:', error);
+        propertiesContent.innerHTML = `<div class="placeholder danger-text">${escapeHtml(error.message)}</div>`;
+    }
+}
+
+window.showSourceNodeProperties = showSourceNodeProperties;
 
 function renderSourcePreviewGraph(data) {
     const relationships = Array.isArray(data.relationships) ? data.relationships : [];
     const nodeMap = new Map();
+    for (const cls of Array.isArray(data.classes) ? data.classes : []) {
+        const node = sourceClassToGraphNode(cls, data.class_name);
+        nodeMap.set(node.key, node);
+    }
     relationships.forEach(rel => {
-        if (rel.source_class) {
-            nodeMap.set(rel.source_class, { key: rel.source_class, label: rel.source_class, category: 'class' });
+        const sourceKey = rel.source_uri || rel.source_class;
+        const targetKey = rel.target_uri || rel.target_class;
+        if (rel.source_class && !nodeMap.has(sourceKey)) {
+            nodeMap.set(sourceKey, {
+                key: sourceKey,
+                label: rel.source_class,
+                uri: rel.source_uri || '',
+                category: 'class',
+                properties: {},
+                sourceOntology: true
+            });
         }
-        if (rel.target_class) {
-            nodeMap.set(rel.target_class, { key: rel.target_class, label: rel.target_class, category: 'class' });
+        if (rel.target_class && !nodeMap.has(targetKey)) {
+            nodeMap.set(targetKey, {
+                key: targetKey,
+                label: rel.target_class,
+                uri: rel.target_uri || '',
+                category: 'class',
+                properties: {},
+                sourceOntology: true
+            });
         }
     });
 
@@ -398,10 +447,18 @@ function renderSourcePreviewGraph(data) {
         links: relationships
             .filter(rel => rel.source_class && rel.target_class && rel.relationship_type)
             .map(rel => ({
-                from: rel.source_class,
-                to: rel.target_class,
+                from: rel.source_uri || rel.source_class,
+                to: rel.target_uri || rel.target_class,
                 relationship: rel.relationship_type,
-                definition: rel.definition || ''
+                uri: rel.relationship_uri || '',
+                definition: rel.definition || '',
+                cardinality: rel.cardinality || '',
+                requirement: rel.requirement || '',
+                properties: {
+                    cardinality: rel.cardinality || '',
+                    requirement: rel.requirement || '',
+                    unique: !!rel.unique
+                }
             })),
         query: 'Onto2AI MCP preview_concept_neighborhood'
     };

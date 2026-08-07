@@ -1,5 +1,7 @@
 {
-  "demo": "onto2ai_entitlement",
+  "demo": "onto2ai_domain_package_workflow",
+  "worked_example": "entitlement",
+  "final_package": "onto2ai-entitlement",
   "source_script": "demo/entitlement/entitlement-script.md",
   "presentation_template": "demo/entitlement/onto2ai-linkedin-presentation-template.pptx",
   "rendered_deck": "demo/entitlement/onto2ai-entitlement-template-video-deck.pptx",
@@ -12,190 +14,207 @@
     {
       "id": "entitlement_01",
       "start_ms": 0,
-      "end_ms": 9074,
-      "title": "Onto2AI Entitlement",
-      "text": "This demo shows how Onto2AI turns an entitlement ontology into a validated package for row-level filtering and column-level masking."
+      "end_ms": 13067,
+      "title": "Design to Package with Onto2AI",
+      "text": "This demo shows the reusable Onto2AI workflow for designing, testing, and publishing a domain package. Entitlement is the worked example, and the final proof is the onto2ai entitlement package."
     },
     {
       "id": "entitlement_02",
-      "start_ms": 9074,
-      "end_ms": 20058,
-      "title": "The Entitlement Challenge",
-      "text": "Entitlement rules often live in scattered implementation details. That makes them hard to review, hard to validate, and risky for AI-assisted data access."
+      "start_ms": 13067,
+      "end_ms": 24782,
+      "title": "Why Start with Ontology?",
+      "text": "Application teams often begin with code models, constraints, and API contracts. Without a shared semantic source, those artifacts drift and every team rebuilds domain meaning differently."
     },
     {
       "id": "entitlement_03",
-      "start_ms": 20058,
-      "end_ms": 28654,
-      "title": "The Goal",
-      "text": "The goal is a governed entitlement model that can be inspected as ontology and consumed as implementation-ready artifacts."
+      "start_ms": 24782,
+      "end_ms": 34244,
+      "title": "Author the Semantic Source",
+      "text": "The Onto2AI method starts with RDF. We define domain concepts, relationships, restrictions, enumerations, and documentation before committing to an implementation model."
     },
     {
       "id": "entitlement_04",
-      "start_ms": 28654,
-      "end_ms": 38205,
-      "title": "Core Domain Model",
-      "text": "The core entitlement model is intentionally direct. Users inherit policy through groups, and policies collect the rules that govern access."
+      "start_ms": 34244,
+      "end_ms": 44607,
+      "title": "Entitlement as the Example",
+      "text": "For entitlement, the ontology connects users, policy groups, policies, row filter rules, column mask rules, and the protected database, table, and column context."
     },
     {
       "id": "entitlement_05",
-      "start_ms": 38205,
-      "end_ms": 46323,
-      "title": "Protected Data Context",
-      "text": "The ontology also models the protected data surface: database, schema, table, column, connection profile, and sensitivity classification."
+      "start_ms": 44607,
+      "end_ms": 54970,
+      "title": "Inspect in Onto2AI Modeller",
+      "text": "Onto2AI Modeller loads the RDF into a modelling workspace where designers inspect the ontology graph, review class details, and refine relationships before generation."
     },
     {
       "id": "entitlement_06",
-      "start_ms": 46323,
-      "end_ms": 57784,
-      "title": "Row Filter Rules",
-      "text": "For row-level access, row filter rules describe the target column, the comparison semantics, where values come from, and how a query can be rewritten."
+      "start_ms": 54970,
+      "end_ms": 64883,
+      "title": "Review from Multiple Views",
+      "text": "Ontology View, UML, and application code model views make inheritance, cardinality, required properties, and enumeration choices visible before they become application contracts."
     },
     {
       "id": "entitlement_07",
-      "start_ms": 57784,
-      "end_ms": 65902,
-      "title": "Column Mask Rules",
-      "text": "For column-level protection, column mask rules describe how protected values are revealed, redacted, tokenized, substituted, or nullified."
+      "start_ms": 64883,
+      "end_ms": 77049,
+      "title": "Generate through Onto2AI MCP",
+      "text": "Onto2AI MCP turns ontology intent into aligned schema JSON, query context, Neo4j constraints, and an application code model. Pydantic is one supported target, not the goal itself."
     },
     {
       "id": "entitlement_08",
-      "start_ms": 65902,
-      "end_ms": 74976,
-      "title": "Generate Artifacts",
-      "text": "From that ontology, Onto2AI packages generated artifacts: schema JSON, query context, Neo4j constraints, and a Pydantic application model view."
+      "start_ms": 77049,
+      "end_ms": 86962,
+      "title": "Enforce with Harness Modes",
+      "text": "Ontology Mode validates RDF syntax, URI conventions, and package mirrors. Schema Mode checks generated artifacts and verifies the selected ontology in stagingdb."
     },
     {
       "id": "entitlement_09",
-      "start_ms": 74976,
-      "end_ms": 84527,
-      "title": "Validate Before Publish",
-      "text": "Before publishing, the entitlement package runs a smoke test that applies constraints, loads representative sample data, and validates the topology."
+      "start_ms": 86962,
+      "end_ms": 96424,
+      "title": "Test Runtime Behavior",
+      "text": "Dataset Mode creates an isolated disposable database, applies constraints, loads representative entitlement instances, validates application topology, and rejects ontology-only runtime content."
     },
     {
       "id": "entitlement_10",
-      "start_ms": 84527,
-      "end_ms": 93123,
-      "title": "Package Independently",
-      "text": "The result is an independent domain package. Teams consume the entitlement standard without copying the entire modelling workbench."
+      "start_ms": 96424,
+      "end_ms": 107688,
+      "title": "Build through Release Mode",
+      "text": "Release Mode reruns the live gates, aligns versions, builds the wheel and source distribution with uv, and inspects their contents before it can report success."
     },
     {
       "id": "entitlement_11",
-      "start_ms": 93123,
-      "end_ms": 103152,
-      "title": "Onto2AI Entitlement",
-      "text": "That is the Onto2AI entitlement workflow: model policy meaning once, generate aligned artifacts, validate them, and package the result for delivery."
+      "start_ms": 107688,
+      "end_ms": 118051,
+      "title": "Publish onto2ai-entitlement",
+      "text": "The final package contains the RDF ontology, generated schema artifacts, application code model, and reusable smoke test, independently consumable from the modelling workbench."
+    },
+    {
+      "id": "entitlement_12",
+      "start_ms": 118051,
+      "end_ms": 131568,
+      "title": "A Reusable Onto2AI Method",
+      "text": "Entitlement is only the example. The reusable method is to model meaning, inspect and refine it, generate aligned artifacts, test schema and runtime behavior, and publish an independent domain package."
     }
   ],
   "slides": [
     {
       "id": "entitlement_01",
-      "title": "Onto2AI Entitlement",
-      "subtitle": "From policy ontology to validated application artifacts",
+      "title": "Design to Package with Onto2AI",
+      "subtitle": "A reusable domain-modelling workflow, demonstrated with entitlement",
       "bullets": [
-        "Model data access policy as governed semantic meaning.",
-        "Connect users, policy groups, rules, and protected columns.",
-        "Package ontology and implementation artifacts together."
+        "Design domain meaning before implementation details.",
+        "Generate and test aligned application artifacts.",
+        "Publish `onto2ai-entitlement` as the final proof."
       ]
     },
     {
       "id": "entitlement_02",
-      "title": "The Entitlement Challenge",
+      "title": "Why Start with Ontology?",
       "subtitle": null,
       "bullets": [
-        "Access rules are often scattered across code, SQL, tickets, and documentation.",
-        "Row filters and column masks drift away from data catalog meaning.",
-        "AI-assisted query generation needs governed policy context."
+        "Code models and constraints capture implementation, not shared meaning.",
+        "Independent teams create incompatible versions of the same domain.",
+        "A semantic source keeps downstream artifacts aligned."
       ]
     },
     {
       "id": "entitlement_03",
-      "title": "The Goal",
+      "title": "Author the Semantic Source",
       "subtitle": null,
       "bullets": [
-        "Create one semantic source for data-access policy structure.",
-        "Generate application-ready schema, constraints, and code model artifacts.",
-        "Validate policy topology before publishing the domain package."
+        "Create RDF classes, properties, restrictions, and enumerations.",
+        "Document business meaning and stable identifiers.",
+        "Keep RDF as the authoritative design artifact."
       ]
     },
     {
       "id": "entitlement_04",
-      "title": "Core Domain Model",
+      "title": "Entitlement as the Example",
       "subtitle": null,
       "bullets": [
-        "User belongs to policy groups.",
-        "Policy groups include policies.",
-        "Policies contain row-filter and column-mask rules."
+        "User to Policy Group to Policy establishes access assignment.",
+        "Policies collect row-filter and column-mask rules.",
+        "Rules target the protected database, table, and column context."
       ]
     },
     {
       "id": "entitlement_05",
-      "title": "Protected Data Context",
+      "title": "Inspect in Onto2AI Modeller",
       "subtitle": null,
       "bullets": [
-        "Relational database, schema, table, and column describe the target surface.",
-        "JDBC connection profiles capture connection metadata.",
-        "Sensitivity classification marks protected columns."
+        "Load RDF into the target ontology workspace.",
+        "Navigate classes, properties, definitions, and relationships.",
+        "Tune the ontology before generating implementation contracts."
       ]
     },
     {
       "id": "entitlement_06",
-      "title": "Row Filter Rules",
+      "title": "Review from Multiple Views",
       "subtitle": null,
       "bullets": [
-        "Target the filtered column context.",
-        "Capture comparison operator, match mode, and value source type.",
-        "Keep LLM rewrite instruction and deterministic rewrite template together."
+        "Ontology View reveals semantic graph structure.",
+        "UML exposes inheritance and relationship cardinality.",
+        "Application model views preview implementation impact."
       ]
     },
     {
       "id": "entitlement_07",
-      "title": "Column Mask Rules",
+      "title": "Generate through Onto2AI MCP",
       "subtitle": null,
       "bullets": [
-        "Target columns that require masking.",
-        "Select mask action, masking method, and fallback behavior.",
-        "Capture mask value expression and rewrite template."
+        "Extract a complete ontology-aligned schema model.",
+        "Generate query context and Neo4j constraints.",
+        "Produce Pydantic or another application code model target."
       ]
     },
     {
       "id": "entitlement_08",
-      "title": "Generate Artifacts",
+      "title": "Enforce with Harness Modes",
       "subtitle": null,
       "bullets": [
-        "RDF ontology remains the source of truth.",
-        "Generated artifacts include schema JSON, query context, constraints, and Pydantic.",
-        "The package can later support other application code model targets."
+        "Ontology: validate RDF, URIs, syntax, and package mirrors.",
+        "Schema: detect artifact drift and compile code models.",
+        "Live schema gate: verify expected classes in `stagingdb`."
       ]
     },
     {
       "id": "entitlement_09",
-      "title": "Validate Before Publish",
+      "title": "Test Runtime Behavior",
       "subtitle": null,
       "bullets": [
-        "Smoke test creates a safe generated Neo4j database by default.",
-        "It applies constraints and loads representative entitlement sample data.",
-        "It validates required properties and all app topology relationships."
+        "Create an isolated disposable dataset database.",
+        "Apply constraints and load representative entitlement instances.",
+        "Validate topology and reject ontology-only runtime content."
       ]
     },
     {
       "id": "entitlement_10",
-      "title": "Package Independently",
+      "title": "Build through Release Mode",
       "subtitle": null,
       "bullets": [
-        "The entitlement model is packaged separately from the core toolset.",
-        "Consumers get RDF, generated artifacts, and validation workflow.",
-        "The package becomes a governed enterprise standard for application teams."
+        "Require live schema and dataset gates before release.",
+        "Align package, Python, and ontology version markers.",
+        "Build and inspect wheel and source distribution with `uv`."
       ]
     },
     {
       "id": "entitlement_11",
-      "title": "Onto2AI Entitlement",
-      "subtitle": "Governed data access policy, ready for implementation",
+      "title": "Publish onto2ai-entitlement",
+      "subtitle": null,
       "bullets": [
-        "Model policy meaning once.",
-        "Generate aligned implementation artifacts.",
-        "Validate and package before distribution."
+        "RDF ontology and generated schema artifacts.",
+        "Application code model and query context.",
+        "Reusable dataset smoke test and independent package metadata."
+      ]
+    },
+    {
+      "id": "entitlement_12",
+      "title": "A Reusable Onto2AI Method",
+      "subtitle": "Ontology to implementation without losing semantic intent",
+      "bullets": [
+        "Model meaning.",
+        "Inspect, generate, and test.",
+        "Publish an independent domain package."
       ]
     }
   ]

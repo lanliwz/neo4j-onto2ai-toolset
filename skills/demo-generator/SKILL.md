@@ -34,6 +34,8 @@ The entitlement demo uses the parallel canonical generator and outputs:
 - Manifest: `demo/video/entitlement/entitlement_demo.json`
 - Video: `demo/video/review/onto2ai_entitlement_template.mp4`
 
+For this demo, keep the narrative centered on how to use Onto2AI: author ontology meaning, inspect and refine it in Modeller, generate through MCP, enforce the four Harness Modes, and publish an independent package. Use entitlement as the worked example and `onto2ai-entitlement` as the final proof, not as the primary subject of the presentation.
+
 ## Regenerate The Introduction Demo
 
 Reuse the existing OpenAI `cedar` narration:

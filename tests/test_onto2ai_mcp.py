@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from neo4j_onto2ai_toolset.onto2ai_mcp import (
     extract_domain_subset,
@@ -69,6 +70,70 @@ class MaterializedSchemaQueryTests(unittest.TestCase):
         self.assertIn("coalesce(r.unique, false) as prop_unique", constraint_source)
         self.assertIn('"unique_properties": set()', constraint_source)
         self.assertIn("REQUIRE n.`{prop_name}` IS UNIQUE", constraint_source)
+
+
+class SourceConceptPreviewTests(unittest.IsolatedAsyncioTestCase):
+    async def test_preview_attaches_datatype_properties_to_source_class(self):
+        class FakeDatabase:
+            def execute_cypher(self, query, params=None, name=None):
+                if name == "mcp_preview_concept_seed":
+                    return [
+                        {
+                            "label": "Account",
+                            "uri": "urn:test:Account",
+                            "definition": "A financial account.",
+                        }
+                    ]
+                if name == "mcp_preview_concept_neighborhood":
+                    return [
+                        {
+                            "SourceClassLabel": "Account",
+                            "SourceClassURI": "urn:test:Account",
+                            "SourceClassDef": "A financial account.",
+                            "RelType": "accountNumber",
+                            "RelURI": "urn:test:accountNumber",
+                            "RelDef": "The account identifier.",
+                            "Cardinality": "1",
+                            "Requirement": "Mandatory",
+                            "Unique": True,
+                            "PropMetaType": "owl__DatatypeProperty",
+                            "TargetClassLabel": "string",
+                            "TargetClassURI": "http://www.w3.org/2001/XMLSchema#string",
+                            "TargetClassDef": None,
+                        },
+                        {
+                            "SourceClassLabel": "Account",
+                            "SourceClassURI": "urn:test:Account",
+                            "SourceClassDef": "A financial account.",
+                            "RelType": "hasOwner",
+                            "RelURI": "urn:test:hasOwner",
+                            "RelDef": "Connects an account to its owner.",
+                            "Cardinality": "1..*",
+                            "Requirement": "Mandatory",
+                            "Unique": False,
+                            "PropMetaType": "owl__ObjectProperty",
+                            "TargetClassLabel": "Party",
+                            "TargetClassURI": "urn:test:Party",
+                            "TargetClassDef": "A person or organization.",
+                        },
+                    ]
+                raise AssertionError(f"Unexpected query name: {name}")
+
+            def close(self):
+                return None
+
+        with patch(
+            "neo4j_onto2ai_toolset.onto2ai_tool_config.get_staging_db",
+            return_value=FakeDatabase(),
+        ):
+            result = await preview_concept_neighborhood("Account", database="source")
+
+        classes = {item["label"]: item for item in result["classes"]}
+        self.assertEqual(classes["Account"]["properties"][0]["name"], "accountNumber")
+        self.assertTrue(classes["Account"]["properties"][0]["unique"])
+        self.assertNotIn("string", classes)
+        self.assertIn("Party", classes)
+        self.assertEqual(result["relationships"][0]["relationship_type"], "hasOwner")
 
 
 if __name__ == "__main__":
